@@ -1,0 +1,23 @@
+@if (data) {
+  <div class="card mb-3" style="min-height: 210px;">
+    <div class="card-body d-flex flex-column">
+
+      <div class="mt-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <h6 class="card-title fw-bold">{{ data.titulo }}</h6>
+          <span class="badge" [ngClass]="data.badgeClasseCor">{{ data.badgeTexto }}</span>
+        </div>
+        <p class="card-text small text-muted mt-4">
+          {{ data.descricao }}
+        </p>
+      </div>
+
+      <div class="mt-auto d-flex justify-content-between align-items-center">
+        <img [src]="data.urlImagem" alt="Ícone da tarefa" style="width: 24px; height: 24px;">
+        <small class="text-muted">Criado em: {{ data.dataCriacao }}</small>
+      </div>
+
+    </div>
+  </div>
+}
+

@@ -1,7 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
 
 /* Importing Bootstrap SCSS file. */
-@import 'bootstrap/scss/bootstrap';
+@use 'bootstrap/scss/bootstrap';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 
 /* Em src/styles.scss ou src/styles.css */
 
@@ -10,7 +12,8 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: sans-serif; // Opcional, mas uma boa prática.
+  font-family: 'Inter', sans-serif;
+  background-color: #e5e7eb;
 }
 
 // 1. Transforma o container principal em um layout flexível.
@@ -26,7 +29,7 @@ app-side-bar {
   // 0 -> não deve crescer
   // 0 -> não deve encolher
   // 250px -> terá uma base de largura fixa de 250px
-  flex: 0 0 200px;
+  flex: 0 0 240px;
   background-color: #f4f4f4; // Cor de fundo para visualização.
   padding: 20px;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1); // Sombra sutil para separar.
