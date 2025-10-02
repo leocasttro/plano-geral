@@ -1,7 +1,5 @@
-<!-- Início da estrutura do quadro Kanban -->
 <div class="container-fluid">
   <div class="kanban-board mt-4 ms-1" cdkDropListGroup>
-    <!-- Coluna 1: A Fazer -->
     <div class="kanban-column shadow-sm">
       <div class="kanban-column-header d-flex justify-content-between">
         <h6 class="fw-bold">
@@ -15,62 +13,20 @@
         [cdkDropListData]="tarefasPendentes"
         (cdkDropListDropped)="drop($event)"
       >
-        <!--
-          A MÁGICA ACONTECE AQUI:
-          - @for: Percorre cada item na lista 'tarefasPendentes'.
-          - [data]="tarefa": Passa o objeto 'tarefa' atual para a propriedade de entrada 'data' do app-card-component.
-          - track tarefa.titulo: Otimiza a renderização, identificando cada item de forma única.
-        -->
         @for (tarefa of tarefasPendentes; track tarefa.titulo) {
-        <app-card-component cdkDrag [data]="tarefa" />
-        }
-      </div>
-    </div>
-    <!-- Fim da Coluna 1 -->
-
-    <!-- Coluna 2: Em Andamento (Repetir o padrão para as outras listas) -->
-    <div class="kanban-column shadow-sm">
-      <div class="kanban-column-header d-flex justify-content-between">
-        <h6 class="fw-bold">
-          <i class="fas fa-clipboard-list me-2"></i>Aprovado
-        </h6>
-        <span class="count">{{ tarefasEmAndamento.length }}</span>
-      </div>
-      <div
-        class="kanban-cards"
-        cdkDropList
-        [cdkDropListData]="tarefasEmAndamento"
-        (cdkDropListDropped)="drop($event)"
-      >
-        @for (tarefa of tarefasEmAndamento; track tarefa.titulo) {
-        <app-card-component cdkDrag [data]="tarefa" />
-        }
-      </div>
-    </div>
-    <!-- Fim da Coluna 2 -->
-    <div class="kanban-column shadow-sm">
-      <div class="kanban-column-header d-flex justify-content-between">
-        <h6 class="fw-bold">
-          <i class="fas fa-clipboard-list me-2"></i>Andamento
-        </h6>
-        <span class="count">{{ tarefasEmAndamento.length }}</span>
-      </div>
-      <div
-        class="kanban-cards"
-        cdkDropList
-        [cdkDropListData]="tarefasEmAndamento"
-        (cdkDropListDropped)="drop($event)"
-      >
-        @for (tarefa of tarefasEmAndamento; track tarefa.titulo) {
-        <app-card-component cdkDrag [data]="tarefa" />
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        />
         }
       </div>
     </div>
 
-        <div class="kanban-column shadow-sm">
+    <div class="kanban-column shadow-sm">
       <div class="kanban-column-header d-flex justify-content-between">
         <h6 class="fw-bold">
-          <i class="fas fa-clipboard-list me-2"></i>concluido
+          <i class="fas fa-clipboard-list me-2"></i>Pendente
         </h6>
         <span class="count">{{ tarefasEmAndamento.length }}</span>
       </div>
@@ -81,7 +37,57 @@
         (cdkDropListDropped)="drop($event)"
       >
         @for (tarefa of tarefasEmAndamento; track tarefa.titulo) {
-        <app-card-component cdkDrag [data]="tarefa" />
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        />
+        }
+      </div>
+    </div>
+
+    <div class="kanban-column shadow-sm">
+      <div class="kanban-column-header d-flex justify-content-between">
+        <h6 class="fw-bold">
+          <i class="fas fa-clipboard-list me-2"></i>Pendente
+        </h6>
+        <span class="count">{{ tarefas.length }}</span>
+      </div>
+      <div
+        class="kanban-cards"
+        cdkDropList
+        [cdkDropListData]="tarefas"
+        (cdkDropListDropped)="drop($event)"
+      >
+        @for (tarefa of tarefas; track tarefa.titulo) {
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        />
+        }
+      </div>
+    </div>
+
+    <div class="kanban-column shadow-sm">
+      <div class="kanban-column-header d-flex justify-content-between">
+        <h6 class="fw-bold">
+          <i class="fas fa-clipboard-list me-2"></i>Pendente
+        </h6>
+        <span class="count">{{ tarefasTeste.length }}</span>
+      </div>
+      <div
+        class="kanban-cards"
+        cdkDropList
+        [cdkDropListData]="tarefasTeste"
+        (cdkDropListDropped)="drop($event)"
+      >
+        @for (tarefa of tarefasTeste; track tarefa.titulo) {
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        />
         }
       </div>
     </div>
