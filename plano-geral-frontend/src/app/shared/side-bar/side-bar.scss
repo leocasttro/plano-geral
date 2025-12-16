@@ -1,0 +1,27 @@
+.titulo {
+  font-size: larger;
+}
+
+.subtext {
+  font-size: small;
+}
+
+
+.nav-link {
+  transition: all 0.2s ease-in-out;
+  border: 2px solid transparent;
+  height: 80px;
+
+  display: flex;
+  align-items: center;
+
+  padding-left: 20px;
+}
+
+.nav-link.active {
+  background-color: #0d6efd;
+  color: #ffff;
+  font-weight: 500;
+  border-color: #0d6efd;
+  border-radius: 8px;
+}
