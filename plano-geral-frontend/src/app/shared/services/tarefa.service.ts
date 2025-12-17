@@ -33,7 +33,7 @@ export class TarefaService {
   }
 
   /** 🔹 Atualiza uma tarefa */
-  atualizar(id: number, tarefa: Tarefa): Observable<Tarefa> {
+  atualizar(id: number, tarefa: Partial<Tarefa>): Observable<Tarefa> {
     return this.http.put<Tarefa>(`${this.apiUrl}/${id}`, tarefa);
   }
 
@@ -42,4 +42,3 @@ export class TarefaService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
-

@@ -65,3 +65,21 @@
   // Opcional: para garantir que o texto não fique muito grande
   font-size: 14px;
 }
+
+
+.kanban-add-btn {
+  width: 25px;
+  height: 25px;
+  padding: 0; // remove padding padrão do btn
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+}
+
+.kanban-add-btn fa-icon {
+  font-size: 14px; // ajusta o ícone para caber certinho
+}

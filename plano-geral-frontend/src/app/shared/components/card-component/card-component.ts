@@ -6,6 +6,7 @@ import { faArrowDown, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 
 export interface CardData {
+  id?: number;
   titulo: string;
   descricao: string;
   badgeTexto: string;

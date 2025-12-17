@@ -1,101 +1,157 @@
 <div class="container-fluid">
   <div class="kanban-board mt-4 ms-1" cdkDropListGroup>
-
     <div class="kanban-column shadow-sm border-start border-warning-subtle">
-      <div class="kanban-column-header d-flex justify-content-between align-items-center bg-warning-subtle p-2 rounded-top">
+      <div
+        class="kanban-column-header d-flex justify-content-between align-items-center bg-warning-subtle p-2 rounded-top"
+      >
         <h6 class="fw-bold text-dark mb-0">
           <i class="fas fa-hourglass-start me-2 text-warning"></i>Pendente
         </h6>
-        <span class="count badge bg-warning text-dark">{{ tarefasPendentes.length }}</span>
+
+        <div class="d-flex align-items-center gap-2">
+          <span class="count badge bg-warning text-dark">
+            {{ tarefasPendentes.length }}
+          </span>
+
+          <button
+            type="button"
+            class="btn btn-warning kanban-add-btn"
+            (click)="onNovaTarefa()"
+            title="Adicionar atividade"
+          >
+            <fa-icon [icon]="faPlus"></fa-icon>
+          </button>
+        </div>
       </div>
 
       <div
         class="kanban-cards p-2"
         cdkDropList
         [cdkDropListData]="tarefasPendentes"
-        (cdkDropListDropped)="drop($event)"
+        (cdkDropListDropped)="drop($event, 'pendente')"
       >
         @for (tarefa of tarefasPendentes; track tarefa.titulo) {
-          <app-card-component
-            cdkDrag
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        ></app-card-component>
         }
       </div>
     </div>
 
-    <div class="kanban-column shadow-sm border-start border-primary-subtle">
-      <div class="kanban-column-header d-flex justify-content-between align-items-center bg-primary-subtle p-2 rounded-top">
+    <div class="kanban-column shadow-sm border-start border-warning-subtle">
+      <div
+        class="kanban-column-header d-flex justify-content-between align-items-center bg-info-subtle p-2 rounded-top"
+      >
         <h6 class="fw-bold text-dark mb-0">
-          <i class="fas fa-spinner me-2 text-primary"></i>Em andamento
+          <i class="fas fa-hourglass-start me-2 text-primary"></i>Em andamento
         </h6>
-        <span class="count badge bg-primary">{{ tarefasEmAndamento.length }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="count badge bg-primary"
+            >{{ tarefasEmAndamento.length }}</span
+          >
+          <button
+            type="button"
+            class="btn btn-sm btn-primary kanban-add-btn"
+            (click)="onNovaTarefa()"
+            title="Adicionar atividade"
+          >
+            <fa-icon [icon]="faPlus"></fa-icon>
+          </button>
+        </div>
       </div>
 
       <div
         class="kanban-cards p-2"
         cdkDropList
         [cdkDropListData]="tarefasEmAndamento"
-        (cdkDropListDropped)="drop($event)"
+        (cdkDropListDropped)="drop($event, 'em_andamento')"
       >
         @for (tarefa of tarefasEmAndamento; track tarefa.titulo) {
-          <app-card-component
-            cdkDrag
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        ></app-card-component>
         }
       </div>
     </div>
 
     <div class="kanban-column shadow-sm border-start border-success-subtle">
-      <div class="kanban-column-header d-flex justify-content-between align-items-center bg-success-subtle p-2 rounded-top">
+      <div
+        class="kanban-column-header d-flex justify-content-between align-items-center bg-success-subtle p-2 rounded-top"
+      >
         <h6 class="fw-bold text-dark mb-0">
-          <i class="fas fa-check-circle me-2 text-success"></i>Concluídas
+          <i class="fas fa-hourglass-start me-2 text-success"></i>Concluídas
         </h6>
-        <span class="count badge bg-success">{{ tarefasConcluidas.length }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="count badge bg-success"
+            >{{ tarefasConcluidas.length }}</span
+          >
+          <button
+            type="button"
+            class="btn btn-sm btn-success kanban-add-btn"
+            (click)="onNovaTarefa()"
+            title="Adicionar atividade"
+          >
+            <fa-icon [icon]="faPlus"></fa-icon>
+          </button>
+        </div>
       </div>
 
       <div
         class="kanban-cards p-2"
         cdkDropList
         [cdkDropListData]="tarefasConcluidas"
-        (cdkDropListDropped)="drop($event)"
+        (cdkDropListDropped)="drop($event, 'concluida')"
       >
         @for (tarefa of tarefasConcluidas; track tarefa.titulo) {
-          <app-card-component
-            cdkDrag
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        ></app-card-component>
         }
       </div>
     </div>
 
     <div class="kanban-column shadow-sm border-start border-secondary-subtle">
-      <div class="kanban-column-header d-flex justify-content-between align-items-center bg-light p-2 rounded-top">
+      <div
+        class="kanban-column-header d-flex justify-content-between align-items-center bg-light p-2 rounded-top"
+      >
         <h6 class="fw-bold text-dark mb-0">
-          <i class="fas fa-clipboard-list me-2 text-secondary"></i>Outros
+          <i class="fas fa-hourglass-start me-2 text-secondary"></i>Outros
         </h6>
-        <span class="count badge bg-secondary">{{ tarefasTeste.length }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="count badge bg-secondary"
+            >{{ tarefasTeste.length }}</span
+          >
+          <button
+            type="button"
+            class="btn btn-sm bg-secondary kanban-add-btn text-light"
+            (click)="onNovaTarefa()"
+            title="Adicionar atividade"
+          >
+            <fa-icon [icon]="faPlus"></fa-icon>
+          </button>
+        </div>
       </div>
 
       <div
         class="kanban-cards p-2"
         cdkDropList
         [cdkDropListData]="tarefasTeste"
-        (cdkDropListDropped)="drop($event)"
+        (cdkDropListDropped)="drop($event, 'outros')"
       >
         @for (tarefa of tarefasTeste; track tarefa.titulo) {
-          <app-card-component
-            cdkDrag
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+        ></app-card-component>
         }
       </div>
     </div>
-
   </div>
 </div>

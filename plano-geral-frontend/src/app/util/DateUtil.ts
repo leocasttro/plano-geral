@@ -9,23 +9,19 @@ export interface SimpleDateTime {
  * Retorna null se input inválido.
  */
 export function splitDateTime(datetime?: string | null): SimpleDateTime | null {
-  if (!datetime || typeof datetime !== 'string') return null;
+  if (!datetime) return null;
 
-  const clean = datetime.split('.')[0].trim(); // remove milissegundos e espaços
-  const parts = clean.split(/[ T]/); // aceita espaço ou 'T'
-  if (parts.length < 2) return null;
+  const d = new Date(datetime); // JS já converte UTC -> local
 
-  const [date, time] = parts;
-  const dateParts = date.split('-');
-  if (dateParts.length !== 3) return null;
-
-  const [yyyy, mm, dd] = dateParts;
-  // simples validação numérica básica
-  if (!/^\d{4}$/.test(yyyy) || !/^\d{1,2}$/.test(mm) || !/^\d{1,2}$/.test(dd)) return null;
-
-  const timePart = time.split(':').slice(0, 3).join(':'); // garante HH:MM:SS (descarta ms se sobraram)
   return {
-    date: `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`,
-    time: timePart,
+    date: `${String(d.getDate()).padStart(2, '0')}/` +
+          `${String(d.getMonth() + 1).padStart(2, '0')}/` +
+          `${d.getFullYear()}`,
+    time: `${String(d.getHours()).padStart(2, '0')}:` +
+          `${String(d.getMinutes()).padStart(2, '0')}:` +
+          `${String(d.getSeconds()).padStart(2, '0')}`,
   };
 }
+
+
+

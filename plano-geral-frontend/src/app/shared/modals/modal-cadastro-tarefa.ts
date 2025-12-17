@@ -15,9 +15,9 @@ export class ModalCadastroTarefa {
   tarefa = {
     titulo: '',
     descricao: '',
-    status: 'pendente',
+    status: '',
     responsavel: '',
-    urlImagem: 'https://cdn-icons-png.flaticon.com/512/1998/1998611.png',
+    urlImagem: 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png',
     prioridade: 'normal',
     badgeClasseCor: 'bg-info',
     badgeTexto: 'Normal',
@@ -59,7 +59,6 @@ export class ModalCadastroTarefa {
   salvar() {
     this.tarefaService.criarTarefa(this.tarefa).subscribe({
       next: (novaTarefa) => {
-        console.log('Tarefa criada com sucesso!', novaTarefa);
         this.activeModal.close(novaTarefa);
       },
       error: (err) => console.error('Erro ao criar tarefa:', err)

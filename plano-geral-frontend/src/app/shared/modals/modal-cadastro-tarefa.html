@@ -1,69 +1,88 @@
-<div class="modal-body">
+<div class="modal-body px-5">
+  <div class="title py-4 fw-bold">
+    <h3 class="fw-bold text-secondary">
+      Cadastrar atividade
+    </h3>
+  </div>
   <form>
-    <div class="mb-3">
-      <label for="titulo" class="form-label fw-semibold">Título</label>
-      <input
-        type="text"
-        class="form-control"
-        id="titulo"
-        [(ngModel)]="tarefa.titulo"
-        name="titulo"
-        required
-      />
+    <!-- LINHA 1: Título + Status -->
+    <div class="row mb-3">
+      <div class="col-md-8">
+        <label for="titulo" class="fw-bold text-secondary">Título</label>
+        <input
+          type="text"
+          class="form-control"
+          id="titulo"
+          [(ngModel)]="tarefa.titulo"
+          name="titulo"
+          required
+        />
+      </div>
+
+      <div class="col-md-4">
+        <label for="status" class="fw-bold text-secondary">Status</label>
+        <select
+          class="form-select"
+          id="status"
+          [(ngModel)]="tarefa.status"
+          name="status"
+        >
+          <option value="pendente">Pendente</option>
+          <option value="em_andamento">Em andamento</option>
+          <option value="concluida">Concluída</option>
+        </select>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="descricao" class="form-label fw-semibold">Descrição</label>
-      <textarea
-        class="form-control"
-        id="descricao"
-        rows="3"
-        [(ngModel)]="tarefa.descricao"
-        name="descricao"
-      ></textarea>
+    <!-- LINHA 2: Descrição (duas colunas) -->
+    <div class="row mb-3">
+      <div class="col-12">
+        <label for="descricao" class="fw-bold text-secondary">Descrição</label>
+        <textarea
+          class="form-control"
+          id="descricao"
+          rows="3"
+          [(ngModel)]="tarefa.descricao"
+          name="descricao"
+        ></textarea>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="status" class="form-label fw-semibold">Status</label>
-      <select
-        class="form-select"
-        id="status"
-        [(ngModel)]="tarefa.status"
-        name="status"
-      >
-        <option value="pendente">Pendente</option>
-        <option value="em_andamento">Em andamento</option>
-        <option value="concluida">Concluída</option>
-      </select>
+    <!-- LINHA 3: Responsável + Prioridade -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="responsavel" class="fw-bold text-secondary"
+          >Responsável</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          id="responsavel"
+          [(ngModel)]="tarefa.responsavel"
+          name="responsavel"
+        />
+      </div>
+
+      <div class="col-md-6">
+        <label for="prioridade" class="fw-bold text-secondary"
+          >Prioridade</label
+        >
+        <select
+          class="form-select"
+          id="prioridade"
+          [(ngModel)]="tarefa.prioridade"
+          name="prioridade"
+          (change)="atualizarPrioridade()"
+        >
+          <option value="alta">Alta</option>
+          <option value="atencao">Atenção</option>
+          <option value="normal">Normal</option>
+          <option value="concluido">Concluído</option>
+        </select>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label for="responsavel" class="form-label fw-semibold">Responsável</label>
-      <input
-        type="text"
-        class="form-control"
-        id="responsavel"
-        [(ngModel)]="tarefa.responsavel"
-        name="responsavel"
-      />
-    </div>
-
-    <div class="mb-3">
-      <label for="prioridade" class="form-label fw-semibold">Prioridade</label>
-      <select
-        class="form-select"
-        id="prioridade"
-        [(ngModel)]="tarefa.prioridade"
-        name="prioridade"
-        (change)="atualizarPrioridade()"
-      >
-        <option value="alta">Alta</option>
-        <option value="atencao">Atenção</option>
-        <option value="normal">Normal</option>
-        <option value="concluido">Concluído</option>
-      </select>
-    </div>
-
+    <!-- CHECKLIST -->
     <div *ngIf="tarefa.checklist.length === 0" class="mb-3 text-end">
       <button
         type="button"
@@ -75,7 +94,7 @@
     </div>
 
     <div class="mb-3" *ngIf="tarefa.checklist.length > 0">
-      <label class="form-label fw-semibold">Subtarefa</label>
+      <label class="fw-bold text-secondary">Subtarefa</label>
 
       <div
         *ngFor="let item of tarefa.checklist; let i = index"
@@ -108,9 +127,12 @@
   </form>
 </div>
 
-
 <div class="modal-footer">
-  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="activeModal.dismiss()"
+  >
     Cancelar
   </button>
   <button type="button" class="btn btn-primary" (click)="salvar()">
