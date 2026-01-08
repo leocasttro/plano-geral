@@ -21,11 +21,12 @@ import {
 } from '../../shared/components/card-component/card-component';
 import { TarefaService, Tarefa } from '../../shared/services/tarefa.service';
 import { NavBar } from '../../shared/nav-bar/nav-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { ModalCadastroTarefa } from '../../shared/modals/modal-cadastro-tarefa';
 import { splitDateTime } from '../../util/DateUtil';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { TarefaDrawersComponent } from '../../shared/drawers/tarefa-drawers-component';
 
 @Component({
   selector: 'app-planoGeral',
@@ -57,7 +58,8 @@ export class Pedidos implements OnInit {
   constructor(
     private tarefaService: TarefaService,
     private cdr: ChangeDetectorRef,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private offcanvasService: NgbOffcanvas
   ) {}
 
   ngOnInit(): void {
@@ -163,5 +165,16 @@ export class Pedidos implements OnInit {
         status: item.concluido ? 'Concluído' : 'Pendente',
       })),
     };
+  }
+
+  abrirDetalheTarefa(tarefa: CardData): void {
+    const ref = this.offcanvasService.open(TarefaDrawersComponent, {
+      position: 'end', // 👉 vem da direita
+      backdrop: true,
+      scroll: true,
+      panelClass: 'issue-offcanvas',
+    });
+
+    ref.componentInstance.tarefa = tarefa;
   }
 }

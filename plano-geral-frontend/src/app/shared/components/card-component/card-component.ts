@@ -1,9 +1,21 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap'; // ✨ 1. Importe o módulo aqui
+import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faArrowDown, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faMinus } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
+
+/* ================= MODELS ================= */
+
+export interface Atividade {
+  usuario: string;
+  data: string; // ou Date
+}
+
+export interface ChecklistItem {
+  nome: string;
+  status: 'Pendente' | 'Concluído';
+}
 
 export interface CardData {
   id?: number;
@@ -13,14 +25,18 @@ export interface CardData {
   badgeClasseCor: string;
   urlImagem: string;
   dataCriacao: string;
-  status?: string; // ✅ necessário
+  status?: string;
+
   checklist: ChecklistItem[];
+
+  atividades?: Atividade[];
+  tags?: string[];
+  responsavel?: string;
+  dataInicio?: string;
+  dataFim?: string;
 }
 
-export interface ChecklistItem {
-  nome: string;
-  status: 'Pendente' | 'Concluído';
-}
+/* ================= COMPONENT ================= */
 
 @Component({
   selector: 'app-card-component',
@@ -31,27 +47,26 @@ export interface ChecklistItem {
 })
 export class CardComponent {
   @Input() data!: CardData;
+
   @Output() checklistItemselected = new EventEmitter<ChecklistItem>();
+  @Output() tituloClick = new EventEmitter<CardData>();
 
   faMinus = faMinus;
-
-  public isCollapsed = true;
+  isCollapsed = true;
 
   ngOnInit(): void {
     console.log('📦 Dados recebidos no CardComponent:', this.data);
-    if (this.data?.checklist) {
-      console.log('🧾 Checklist:', this.data.checklist);
-    } else {
-      console.warn('⚠️ Nenhum checklist encontrado neste card.');
-    }
   }
 
-  onChecklistItemClick(item: ChecklistItem) {
+  onChecklistItemClick(item: ChecklistItem): void {
     this.checklistItemselected.emit(item);
   }
 
-  public gerarIdUnico(titulo: string): string {
+  gerarIdUnico(titulo: string): string {
     return 'cardID-' + titulo.replace(/\s+/g, '');
   }
 
+  onTituloClick(): void {
+    this.tituloClick.emit(this.data);
+  }
 }

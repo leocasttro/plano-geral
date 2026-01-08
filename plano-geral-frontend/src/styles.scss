@@ -51,6 +51,11 @@ app-side-bar {
 
 }
 
+.issue-offcanvas {
+  width: 750px !important;   // ajuste como quiser
+  max-width: 90vw;           // evita quebrar em telas pequenas
+}
+
 // 4. Ajuste na Navbar (Opcional, mas recomendado)
 // Como a navbar está fora do main, precisamos ajustar sua posição.
 // Uma forma é colocar a navbar DENTRO do main no seu HTML.
