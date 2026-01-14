@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
@@ -18,13 +18,13 @@ export interface ChecklistItem {
 }
 
 export interface CardData {
-  id?: number;
+  id?: string;
   titulo: string;
   descricao: string;
   badgeTexto: string;
   badgeClasseCor: string;
   urlImagem: string;
-  dataCriacao: string;
+  dataCriacao: Date;
   status?: string;
 
   checklist: ChecklistItem[];
@@ -41,7 +41,13 @@ export interface CardData {
 @Component({
   selector: 'app-card-component',
   standalone: true,
-  imports: [NgClass, NgbCollapseModule, FontAwesomeModule, FormsModule],
+  imports: [
+    NgClass,
+    NgbCollapseModule,
+    FontAwesomeModule,
+    FormsModule,
+    DatePipe,
+  ],
   templateUrl: './card-component.html',
   styleUrls: ['./card-component.scss'],
 })
@@ -53,9 +59,10 @@ export class CardComponent {
 
   faMinus = faMinus;
   isCollapsed = true;
+  collapseId!: string;
 
   ngOnInit(): void {
-    console.log('📦 Dados recebidos no CardComponent:', this.data);
+    this.collapseId = 'cardID-' + this.data.id;
   }
 
   onChecklistItemClick(item: ChecklistItem): void {

@@ -1,4 +1,4 @@
-import { AppDataSource } from "../database/data-source";
+import { AppDataSource } from "../infra/database/data-source";
 import { Tarefa } from "../entities/tarefa.entity";
 
 export class TarefaService {

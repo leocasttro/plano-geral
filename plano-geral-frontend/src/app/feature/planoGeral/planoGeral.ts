@@ -19,7 +19,8 @@ import {
   CardData,
   ChecklistItem,
 } from '../../shared/components/card-component/card-component';
-import { TarefaService, Tarefa } from '../../shared/services/tarefa.service';
+import { TarefaApi } from '../../domain/tarefa/tarefa.api';
+import { TarefaDTO } from '../../domain/tarefa/tarefa.model';
 import { NavBar } from '../../shared/nav-bar/nav-bar';
 import { NgbModal, NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { ModalCadastroTarefa } from '../../shared/modals/modal-cadastro-tarefa';
@@ -27,6 +28,7 @@ import { splitDateTime } from '../../util/DateUtil';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { TarefaDrawersComponent } from '../../shared/drawers/tarefa-drawers-component';
+import { tarefaDtoToCardData } from './planoGeral.mapper';
 
 @Component({
   selector: 'app-planoGeral',
@@ -56,7 +58,7 @@ export class Pedidos implements OnInit {
   private itemSelecionadoParaUpload: ChecklistItem | null = null;
 
   constructor(
-    private tarefaService: TarefaService,
+    private tarefaApi: TarefaApi,
     private cdr: ChangeDetectorRef,
     private modalService: NgbModal,
     private offcanvasService: NgbOffcanvas
@@ -67,28 +69,23 @@ export class Pedidos implements OnInit {
   }
 
   carregarTarefas(): void {
-    this.tarefaService.listar().subscribe({
-      next: (tarefas: Tarefa[]) => {
-        const cards = tarefas.map((t) => this.mapearParaCardData(t));
-
-        console.log(cards);
-
-        this.tarefasPendentes = cards.filter(
-          (c) => (c.status ?? '').toLowerCase() === 'pendente'
-        );
-
-        this.tarefasEmAndamento = cards.filter(
-          (c) => (c.status ?? '').toLowerCase() === 'em_andamento'
-        );
-
-        this.tarefasConcluidas = cards.filter(
-          (c) => (c.status ?? '').toLowerCase() === 'concluida'
-        );
-
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Erro ao carregar tarefas:', err),
-    });
+    // this.tarefaService.listar().subscribe({
+    //   next: (tarefas: Tarefa[]) => {
+    //     const cards = tarefas.map((t) => this.mapearParaCardData(t));
+    //     console.log(cards);
+    //     this.tarefasPendentes = cards.filter(
+    //       (c) => (c.status ?? '').toLowerCase() === 'pendente'
+    //     );
+    //     this.tarefasEmAndamento = cards.filter(
+    //       (c) => (c.status ?? '').toLowerCase() === 'em_andamento'
+    //     );
+    //     this.tarefasConcluidas = cards.filter(
+    //       (c) => (c.status ?? '').toLowerCase() === 'concluida'
+    //     );
+    //     this.cdr.detectChanges();
+    //   },
+    //   error: (err) => console.error('Erro ao carregar tarefas:', err),
+    // });
   }
 
   onNovaTarefa(): void {
@@ -100,9 +97,12 @@ export class Pedidos implements OnInit {
     modalRef.result.then(
       (novaTarefa) => {
         if (novaTarefa) {
-          this.tarefaService.criarTarefa(novaTarefa).subscribe({
-            next: () => this.carregarTarefas(),
-            error: (err) => console.error('Erro ao criar tarefa', err),
+          this.tarefaApi.criar(novaTarefa).subscribe({
+            next: (tarefaDto) => {
+              const card = tarefaDtoToCardData(tarefaDto);
+              this.tarefasPendentes.push(card);
+              this.cdr.detectChanges();
+            },
           });
         }
       },
@@ -137,35 +137,35 @@ export class Pedidos implements OnInit {
     tarefaMovida.status = novoStatus;
 
     if (tarefaMovida.id) {
-      this.tarefaService
-        .atualizar(tarefaMovida.id, { status: novoStatus }) // 👈 só isso
-        .subscribe({
-          error: () => this.carregarTarefas(),
-        });
+      // this.tarefaService
+      //   .atualizar(tarefaMovida.id, { status: novoStatus }) // 👈 só isso
+      //   .subscribe({
+      //     error: () => this.carregarTarefas(),
+      //   });
     }
   }
 
-  private mapearParaCardData(t: Tarefa): CardData {
-    const dt = splitDateTime(t.dataCriacao);
-    const dataCriacaoStr = dt
-      ? `${dt.date} ${dt.time}`
-      : new Date().toLocaleString();
-    return {
-      id: t.id,
-      titulo: t.titulo,
-      descricao: t.descricao ?? '',
-      badgeTexto: t.badgeTexto ?? 'Nova',
-      badgeClasseCor: t.badgeClasseCor ?? 'bg-secondary',
-      urlImagem: t.urlImagem ?? 'https://placehold.co/24x24/999/FFF?text=?',
-      dataCriacao: dataCriacaoStr,
-      status: t.status ?? 'pendente',
+  // private mapearParaCardData(t: Tarefa): CardData {
+  //   const dt = splitDateTime(t.dataCriacao);
+  //   const dataCriacaoStr = dt
+  //     ? `${dt.date} ${dt.time}`
+  //     : new Date().toLocaleString();
+  //   return {
+  //     id: t.id,
+  //     titulo: t.titulo,
+  //     descricao: t.descricao ?? '',
+  //     badgeTexto: t.badgeTexto ?? 'Nova',
+  //     badgeClasseCor: t.badgeClasseCor ?? 'bg-secondary',
+  //     urlImagem: t.urlImagem ?? 'https://placehold.co/24x24/999/FFF?text=?',
+  //     dataCriacao: dataCriacaoStr,
+  //     status: t.status ?? 'pendente',
 
-      checklist: (t.checklist ?? []).map((item: any) => ({
-        nome: item.nome,
-        status: item.concluido ? 'Concluído' : 'Pendente',
-      })),
-    };
-  }
+  //     checklist: (t.checklist ?? []).map((item: any) => ({
+  //       nome: item.nome,
+  //       status: item.concluido ? 'Concluído' : 'Pendente',
+  //     })),
+  //   };
+  // }
 
   abrirDetalheTarefa(tarefa: CardData): void {
     const ref = this.offcanvasService.open(TarefaDrawersComponent, {

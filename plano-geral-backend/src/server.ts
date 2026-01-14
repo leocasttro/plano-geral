@@ -1,21 +1,17 @@
-import express from "express";
-import cors from "cors";
-import { AppDataSource } from "./database/data-source";
-import tarefaRoutes from "./routes/tarefas.routes";
-import dotenv from "dotenv";
-
-dotenv.config();
+import cors from 'cors';
+import express from 'express';
+import tarefasRoutes from './infra/http/routes/tarefas.routes';
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-app.use("/tarefas", tarefaRoutes);
 
-AppDataSource.initialize()
-  .then(() => {
-    console.log("✅ Banco de dados conectado com sucesso!");
-    app.listen(process.env.PORT, () => {
-      console.log(`🚀 Servidor rodando em http://localhost:${process.env.PORT}`);
-    });
-  })
-  .catch((err) => console.error("Erro ao conectar ao banco:", err));
+app.use(cors({
+  origin: 'http://localhost:4200',
+}));
+
+app.use(express.json());
+app.use('/tarefas', tarefasRoutes);
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
