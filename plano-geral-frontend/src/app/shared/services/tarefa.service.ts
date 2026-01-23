@@ -19,4 +19,6 @@ export class TarefaService {
   criarTarefa(payload: { titulo: string; descricao?: string }): Observable<TarefaDTO> {
     return this.http.post<TarefaDTO>(this.apiUrl, payload);
   }
+
+
 }

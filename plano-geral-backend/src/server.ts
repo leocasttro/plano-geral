@@ -1,17 +1,31 @@
-import cors from 'cors';
-import express from 'express';
-import tarefasRoutes from './infra/http/routes/tarefas.routes';
+import cors from "cors";
+import express from "express";
+import "reflect-metadata";
+import tarefasRoutes from "./infra/http/routes/tarefas.routes";
+import { AppDataSource } from "./infra/database/data-source"; // ajuste esse caminho
 
-const app = express();
+async function bootstrap() {
+  await AppDataSource.initialize();
+  console.log("✅ Database connected");
 
-app.use(cors({
-  origin: 'http://localhost:4200',
-}));
+  const app = express();
 
-app.use(express.json());
-app.use('/tarefas', tarefasRoutes);
+  app.use(
+    cors({
+      origin: "http://localhost:4200",
+    })
+  );
 
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  app.use(express.json());
+  app.use("/tarefas", tarefasRoutes);
+
+  const PORT = 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
+
+bootstrap().catch((err) => {
+  console.error("❌ Failed to start server:", err);
+  process.exit(1);
 });

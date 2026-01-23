@@ -88,7 +88,7 @@
 
         <ul class="activity-timeline">
           <!-- ITEM SIMPLES -->
-          <li *ngFor="let log of tarefa?.atividades">
+          <li *ngFor="let log of tarefa?.atividades; trackBy: trackAtividade">
             <div class="timeline-dot"></div>
 
             <div class="activity-content">
@@ -122,12 +122,24 @@
         </ul>
 
         <!-- COMENTÁRIO (FAKE, só layout) -->
-        <div class="comment-box">
+        <div class="comment-box mt-3">
           <textarea
-            class="form-control"
+            class="form-control mb-2"
             rows="3"
-            placeholder="Escreva um comentário ou arraste seus arquivos aqui..."
+            placeholder="Escreva um comentário..."
+            [ngModel]="novoComentario"
+            (ngModelChange)="novoComentario = $event"
           ></textarea>
+
+          <div class="d-flex justify-content-end">
+            <button
+              class="btn btn-primary btn-sm"
+              [disabled]="!novoComentario.trim()"
+              (click)="adicionarComentario()"
+            >
+              Comentar
+            </button>
+          </div>
         </div>
       </section>
     </div>
@@ -140,7 +152,7 @@
       </div>
 
       <div class="sidebar-item">
-        <span class="label">Etiquetas</span>
+        <span class="label">Projeto</span>
 
         <div *ngIf="tarefa?.tags?.length; else semTags">
           <span *ngFor="let tag of tarefa.tags" class="badge bg-primary me-1">
@@ -156,7 +168,7 @@
       <div class="sidebar-item">
         <span class="label">Datas</span>
         <div class="text-muted">
-          Início: {{ '—' }} <br />
+          Início: {{ tarefa?.dataCriacao | date: 'dd/MM/yyyy' }} <br />
           Fim: {{ '—' }}
         </div>
       </div>

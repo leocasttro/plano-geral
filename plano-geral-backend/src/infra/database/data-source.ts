@@ -1,19 +1,15 @@
-// import "reflect-metadata";
-// import { DataSource } from "typeorm";
-// import { Tarefa } from "../entities/tarefa.entity";
-// import dotenv from "dotenv";
+import path from "path";
+import { DataSource } from "typeorm";
 
-// dotenv.config();
-
-// export const AppDataSource = new DataSource({
-//   type: "postgres",
-//   host: process.env.DB_HOST,
-//   port: Number(process.env.DB_PORT),
-//   username: process.env.DB_USER,
-//   password: process.env.DB_PASS,
-//   database: process.env.DB_NAME,
-//   synchronize: false, // muito importante: deve estar false!
-//   logging: true,
-//   entities: [Tarefa],
-//   migrations: ["src/database/migrations/*.ts"],
-// });
+export const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: 'localhost',
+  port: 5432,
+  username: 'postgres',
+  password: 'postgres',
+  database: 'plano_geral',
+  synchronize: false,
+  logging: true,
+  entities: [path.join(__dirname, 'typeorm/entities/**/*.{ts,js}')],
+  migrations: [path.join(__dirname, 'typeorm/migrations/**/*.{ts,js}')],
+})

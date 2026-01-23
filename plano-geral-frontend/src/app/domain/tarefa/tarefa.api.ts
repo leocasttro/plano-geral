@@ -22,4 +22,18 @@ export class TarefaApi {
   buscarPorId(id: string): Observable<TarefaDTO> {
     return this.http.get<TarefaDTO>(`${this.apiUrl}/${id}`);
   }
+
+  atualizarStatus(tarefaId: string, novoStatus: string, usuario: string): Observable<TarefaDTO> {
+    return this.http.post<TarefaDTO>(`${this.apiUrl}/${tarefaId}/status`, {
+      novoStatus,
+      usuario,
+    });
+  }
+
+  adicionarComentario(tarefaId: string, comentario: string, usuario: string): Observable<TarefaDTO> {
+    return this.http.post<TarefaDTO>(`${this.apiUrl}/${tarefaId}/comentarios`, {
+      comentario,
+      usuario,
+    });
+  }
 }

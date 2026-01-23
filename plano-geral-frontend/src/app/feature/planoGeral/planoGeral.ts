@@ -137,11 +137,18 @@ export class Pedidos implements OnInit {
     tarefaMovida.status = novoStatus;
 
     if (tarefaMovida.id) {
-      // this.tarefaService
-      //   .atualizar(tarefaMovida.id, { status: novoStatus }) // 👈 só isso
-      //   .subscribe({
-      //     error: () => this.carregarTarefas(),
-      //   });
+      this.tarefaApi
+        .atualizarStatus(
+          tarefaMovida.id!,
+          novoStatus.toUpperCase(),
+          'usuario-logado'
+        )
+        .subscribe({
+          next: (tarefaAtualizada) => {
+            tarefaMovida.status = tarefaAtualizada.status.toLowerCase();
+          },
+          error: () => this.carregarTarefas(),
+        });
     }
   }
 

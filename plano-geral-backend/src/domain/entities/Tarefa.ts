@@ -5,6 +5,16 @@ import { TipoAtividade } from '../value-objects/TipoAtividade';
 import { Atividade } from './Atividade';
 import { CheckListItem } from './ChecklistItem';
 
+type TarefaProps = {
+  id: string;
+  titulo: string;
+  descricao?: string;
+  status: StatusTarefa;
+  prioridade: Prioridade;
+  reponsavel?: string;
+  checklist?: CheckListItem[];
+  atividades?: Atividade[];
+}
 export class Tarefa {
   private status: StatusTarefa;
   private checklist: CheckListItem[] = [];
@@ -21,14 +31,21 @@ export class Tarefa {
       throw new Error('Tarefa precisa de um título válido');
     }
 
-    // estado inicial obrigatório
     this.status = StatusTarefa.PENDENTE;
     this.prioridade = Prioridade.BAIXA;
   }
 
-  // ======================
-  // STATUS
-  // ======================
+  static reconstituir(props: TarefaProps): Tarefa {
+    const tarefa = new Tarefa(props.id, props.titulo, props.descricao);
+
+    tarefa.status = props.status;
+    tarefa.prioridade = props.prioridade;
+    tarefa.responsavel = props.reponsavel;
+    tarefa.checklist = props.checklist ?? [];
+    tarefa.atividades = props.atividades ?? [];
+
+    return tarefa;
+  }
 
   iniciar(usuario: string) {
     if (this.status !== StatusTarefa.PENDENTE) {
@@ -70,10 +87,6 @@ export class Tarefa {
     );
   }
 
-  // ======================
-  // PRIORIDADE
-  // ======================
-
   alterarPrioridade(nova: Prioridade, usuario: string) {
     this.prioridade = nova;
 
@@ -86,10 +99,6 @@ export class Tarefa {
       )
     );
   }
-
-  // ======================
-  // RESPONSÁVEL
-  // ======================
 
   atribuirResponsavel(usuarioAlvo: string, usuarioAcao: string) {
     this.responsavel = usuarioAlvo;
@@ -104,29 +113,32 @@ export class Tarefa {
     );
   }
 
-  // ======================
-  // CHECKLIST
-  // ======================
-
   adicionarChecklist(item: CheckListItem) {
     this.checklist.push(item);
+  }
+
+  adicionarComentario(comentario: string, usuario: string) {
+    if (!comentario || comentario.trim().length === 0) {
+      throw new Error('Comentário não pode ser vazio');
+    }
+
+    this.registrarAtividade(
+      new Atividade(
+        randomUUID(),
+        TipoAtividade.COMENTARIO,
+        usuario,
+        comentario
+      )
+    );
   }
 
   private existeChecklistPendente(): boolean {
     return this.checklist.some(item => !item.isConcluido());
   }
 
-  // ======================
-  // ATIVIDADES (HISTÓRICO)
-  // ======================
-
   private registrarAtividade(atividade: Atividade) {
     this.atividades.push(atividade);
   }
-
-  // ======================
-  // GETTERS SEGUROS
-  // ======================
 
   obterStatus(): StatusTarefa {
     return this.status;
@@ -138,5 +150,13 @@ export class Tarefa {
 
   obterAtividades(): Atividade[] {
     return [...this.atividades];
+  }
+
+  obterPrioridade(): Prioridade {
+    return this.prioridade;
+  }
+
+  obterResponsavel(): string | undefined {
+    return this.responsavel;
   }
 }

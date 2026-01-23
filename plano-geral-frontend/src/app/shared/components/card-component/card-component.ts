@@ -7,11 +7,6 @@ import { FormsModule } from '@angular/forms';
 
 /* ================= MODELS ================= */
 
-export interface Atividade {
-  usuario: string;
-  data: string; // ou Date
-}
-
 export interface ChecklistItem {
   nome: string;
   status: 'Pendente' | 'Concluído';
@@ -21,15 +16,19 @@ export interface CardData {
   id?: string;
   titulo: string;
   descricao: string;
+
+  /* UI only */
   badgeTexto: string;
   badgeClasseCor: string;
   urlImagem: string;
-  dataCriacao: Date;
-  status?: string;
 
+  /* Datas */
+  dataCriacao: Date;
+
+  status?: string;
   checklist: ChecklistItem[];
 
-  atividades?: Atividade[];
+  /* Metadados simples */
   tags?: string[];
   responsavel?: string;
   dataInicio?: string;
@@ -62,15 +61,11 @@ export class CardComponent {
   collapseId!: string;
 
   ngOnInit(): void {
-    this.collapseId = 'cardID-' + this.data.id;
+    this.collapseId = `cardID-${this.data.id}`;
   }
 
   onChecklistItemClick(item: ChecklistItem): void {
     this.checklistItemselected.emit(item);
-  }
-
-  gerarIdUnico(titulo: string): string {
-    return 'cardID-' + titulo.replace(/\s+/g, '');
   }
 
   onTituloClick(): void {
