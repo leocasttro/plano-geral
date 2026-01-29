@@ -34,6 +34,9 @@ export class TarefaDrawersComponent implements OnInit {
   participantes: string[] = [];
   novoComentario = '';
 
+  novoChecklistItem = '';
+  mostrarFormChecklist = false;
+
   constructor(
     private offcanvas: NgbOffcanvas,
     private tarefaApi: TarefaApi,
@@ -115,4 +118,42 @@ export class TarefaDrawersComponent implements OnInit {
   fechar(): void {
     this.offcanvas.dismiss();
   }
+
+  abrirFormChecklist() {
+    this.isChecklistCollapsed = false;
+    this.mostrarFormChecklist = true;
+  }
+
+  fecharFormChecklist() {
+    this.mostrarFormChecklist = false;
+    this.novoChecklistItem = '';
+  }
+
+  salvarChecklistItem() {
+    const nome = this.novoChecklistItem.trim();
+    if (!nome) return;
+
+    const item = {
+      id: crypto.randomUUID(),
+      nome,
+      concluido: false,
+    };
+
+    this.tarefa.checklist = [...(this.tarefa.checklist ?? []), item];
+
+    this.fecharFormChecklist();
+    this.cdr.detectChanges();
+  }
+
+  toggleChecklistItem(itemId: string) {
+    this.tarefa.checklist = (this.tarefa.checklist ?? []).map((i) =>
+      i.id === itemId ? { ...i, concluido: !i.concluido } : i,
+    );
+    this.cdr.detectChanges();
+  }
+
+  trackChecklist(_: number, item: { id: string }) {
+    return item.id;
+  }
+
 }

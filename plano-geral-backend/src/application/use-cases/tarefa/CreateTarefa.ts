@@ -1,5 +1,5 @@
-import { Tarefa } from "../../domain/entities/Tarefa";
-import { TarefaRepository } from "../../domain/repositories/TarefaRepository";
+import { Tarefa } from "../../../domain/entities/Tarefa";
+import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 
 export class CreateTarefa {
   constructor(private readonly repo: TarefaRepository) {}

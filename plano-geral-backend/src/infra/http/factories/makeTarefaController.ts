@@ -1,9 +1,9 @@
-import { AdicionarComentario } from "../../../application/use-cases/AdicionarComentario";
-import { AlterarStatusTarefa } from "../../../application/use-cases/AlterarStatusTarefa";
-import { CreateTarefa } from "../../../application/use-cases/CreateTarefa";
-import { GetAllTarefas } from "../../../application/use-cases/GetAllTarefas";
-import { GetAtividadeByTarefa } from "../../../application/use-cases/GetAtividadeByTarefa";
-import { GetTarefaById } from "../../../application/use-cases/GetTarefaById";
+import { AdicionarComentario } from "../../../application/use-cases/tarefa/AdicionarComentario";
+import { AlterarStatusTarefa } from "../../../application/use-cases/tarefa/AlterarStatusTarefa";
+import { CreateTarefa } from "../../../application/use-cases/tarefa/CreateTarefa";
+import { GetAllTarefas } from "../../../application/use-cases/tarefa/GetAllTarefas";
+import { GetAtividadeByTarefa } from "../../../application/use-cases/tarefa/GetAtividadeByTarefa";
+import { GetTarefaById } from "../../../application/use-cases/tarefa/GetTarefaById";
 import { AtividadeTypeORMRepository } from "../../database/typeorm/entities/repositories/AtividadeTypeORMRepository";
 import { TarefaTypeORMRepository } from "../../database/typeorm/entities/repositories/TarefaTypeORMRepository";
 import { TarefasController } from "../controllers/TarefasController";

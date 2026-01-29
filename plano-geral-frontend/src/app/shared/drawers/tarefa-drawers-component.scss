@@ -230,3 +230,11 @@ section:last-child {
   color: #111827;
   white-space: pre-wrap;
 }
+
+.checklist-text {
+  display: block;                 // força ocupar a linha
+  max-width: 100%;                // respeita a coluna
+  word-break: break-word;         // quebra palavras longas
+  overflow-wrap: anywhere;        // quebra mesmo sem espaços
+  white-space: normal;            // permite múltiplas linhas
+}

@@ -1,6 +1,12 @@
 import { TarefaDTO } from '../../domain/tarefa/tarefa.model';
 import { CardData } from '../components/card-component/card-component';
 
+export interface ChecklistItemDrawer {
+  id: string;
+  nome: string;
+  concluido: boolean;
+}
+
 export interface AtividadeDrawer {
   id: string;
   tipo: 'acao' | 'comentario';
@@ -11,7 +17,7 @@ export interface AtividadeDrawer {
 }
 
 export type CardDataDrawer = CardData & {
-  checklist: { nome: string; status: 'Concluído' | 'Pendente' }[];
+  checklist: ChecklistItemDrawer[];
   atividades: AtividadeDrawer[];
   tags?: string[];
   dataCriacao: Date;
@@ -34,12 +40,15 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
 
     status: dto.status,
 
-    checklist: (dto.checklist ?? []).map(item => ({
-      nome: item.nome,
-      status: item.concluido ? 'Concluído' : 'Pendente',
-    })),
+    checklist: (dto.checklist ?? []).map((item) => {
+      return {
+        id: item.id,
+        nome: item.nome,
+        concluido: item.concluido,
+      };
+    }),
 
-    atividades: (dto.atividades ?? []).map(a => {
+    atividades: (dto.atividades ?? []).map((a) => {
       const tipo = String(a.tipo).toUpperCase();
 
       return {
@@ -56,9 +65,13 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
 
 function prioridadeToBadge(prioridade: string): string {
   switch (prioridade) {
-    case 'CRITICA': return 'bg-danger';
-    case 'ALTA': return 'bg-warning';
-    case 'NORMAL': return 'bg-primary';
-    default: return 'bg-secondary';
+    case 'CRITICA':
+      return 'bg-danger';
+    case 'ALTA':
+      return 'bg-warning';
+    case 'NORMAL':
+      return 'bg-primary';
+    default:
+      return 'bg-secondary';
   }
 }

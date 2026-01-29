@@ -19,8 +19,9 @@ export function tarefaDtoToCardData(t: TarefaDTO): CardData {
     dataCriacao: new Date(t.atividades?.[0]?.data ?? Date.now()),
 
     checklist: (t.checklist ?? []).map((item) => ({
+      id: item.id,
       nome: item.nome,
-      status: item.concluido ? 'Concluído' : 'Pendente',
+      concluido: item.concluido,
     })),
   };
 }

@@ -8,8 +8,9 @@ import { FormsModule } from '@angular/forms';
 /* ================= MODELS ================= */
 
 export interface ChecklistItem {
+  id: string;
   nome: string;
-  status: 'Pendente' | 'Concluído';
+  concluido: boolean;
 }
 
 export interface CardData {

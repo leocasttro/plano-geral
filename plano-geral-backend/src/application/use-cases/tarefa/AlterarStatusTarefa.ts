@@ -1,5 +1,5 @@
-import { TarefaRepository } from "../../domain/repositories/TarefaRepository";
-import { StatusTarefa } from "../../domain/value-objects/StatusTarefa";
+import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
+import { StatusTarefa } from "../../../domain/value-objects/StatusTarefa";
 
 export class AlterarStatusTarefa {
   constructor(private repo: TarefaRepository) {}

@@ -37,7 +37,7 @@
       <section class="mb-4">
         <div
           class="d-flex justify-content-between align-items-center checklist-header"
-          (click)="isChecklistCollapsed = !isChecklistCollapsed"
+          (click)="isChecklistCollapsed = !isChecklistCollapsed; abrirFormChecklist()"
         >
           <h6 class="section-title mb-0">
             Checklist ({{ tarefa?.checklist?.length || 0 }})
@@ -45,29 +45,60 @@
 
           <i
             class="bi"
-            [ngClass]="
-              isChecklistCollapsed
-                ? 'bi-chevron-down'
-                : 'bi-chevron-up'
-            "
+            [ngClass]="isChecklistCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"
           ></i>
         </div>
 
         <div [ngbCollapse]="isChecklistCollapsed">
-          <div *ngFor="let item of tarefa?.checklist" class="form-check mt-2">
+          <!-- FORM INLINE (aparece só quando clica) -->
+          <div *ngIf="mostrarFormChecklist" class="d-flex gap-2 mt-3">
             <input
-              class="form-check-input mb-5"
-              type="checkbox"
-              [checked]="item.status === 'Concluído'"
+              class="form-control form-control-sm"
+              type="text"
+              placeholder="Adicionar item..."
+              [(ngModel)]="novoChecklistItem"
+              name="novoChecklistItem"
+              (click)="$event.stopPropagation()"
+              (keydown.enter)="salvarChecklistItem()"
             />
-            <label class="form-check-label"> {{ item.nome }} </label>
-          </div>
 
+            <button
+              class="btn btn-sm btn-primary"
+              (click)="salvarChecklistItem(); $event.stopPropagation()"
+            >
+              Salvar
+            </button>
+
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              (click)="fecharFormChecklist(); $event.stopPropagation()"
+            >
+              Cancelar
+            </button>
+          </div>
           <div
-            *ngIf="!tarefa?.checklist?.length"
-            class="text-muted fst-italic mt-3 mb-5"
+            *ngFor="let item of tarefa?.checklist; trackBy: trackChecklist"
+            class="d-flex align-items-center gap-2 mt-3 w-100"
           >
-            Nenhum item no checklist.
+            <div
+              class="d-flex justify-content-between align-items-center w-100"
+            >
+              <span
+                class="checklist-text flex-grow-1 me-2"
+                [ngClass]="{ 'text-decoration-line-through text-muted': item.concluido }"
+              >
+                {{ item.nome }}
+              </span>
+
+              <button
+                type="button"
+                class="btn btn-sm p-1 btn-success flex-shrink-0"
+                (click)="toggleChecklistItem(item.id)"
+                [title]="item.concluido ? 'Marcar como pendente' : 'Marcar como concluído'"
+              >
+                Concluído
+              </button>
+            </div>
           </div>
         </div>
       </section>

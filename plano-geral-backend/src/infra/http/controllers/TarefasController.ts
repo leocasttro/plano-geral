@@ -1,13 +1,12 @@
 import { Request, Response } from "express";
 import { TarefaDTO } from "../../../application/dtos/TarefaDTO";
-import { AdicionarComentario } from "../../../application/use-cases/AdicionarComentario";
-import { AlterarStatusTarefa } from "../../../application/use-cases/AlterarStatusTarefa";
-import { CreateTarefa } from "../../../application/use-cases/CreateTarefa";
-import { GetTarefaById } from "../../../application/use-cases/GetTarefaById";
-import { TarefaORM } from "../../database/typeorm/entities/TarefaORM";
-import { GetAllTarefas } from "../../../application/use-cases/GetAllTarefas";
-import { GetAtividadeByTarefa } from "../../../application/use-cases/GetAtividadeByTarefa";
 import { AtividadeDTO } from "../../../application/dtos/AtividadeDTO";
+import { CreateTarefa } from "../../../application/use-cases/tarefa/CreateTarefa";
+import { GetTarefaById } from "../../../application/use-cases/tarefa/GetTarefaById";
+import { GetAllTarefas } from "../../../application/use-cases/tarefa/GetAllTarefas";
+import { AdicionarComentario } from "../../../application/use-cases/tarefa/AdicionarComentario";
+import { AlterarStatusTarefa } from "../../../application/use-cases/tarefa/AlterarStatusTarefa";
+import { GetAtividadeByTarefa } from "../../../application/use-cases/tarefa/GetAtividadeByTarefa";
 
 interface CriarTarefaBody {
   titulo: string;
