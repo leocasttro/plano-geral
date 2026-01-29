@@ -1,13 +1,13 @@
 <div class="drawer-header d-flex justify-content-between align-items-start">
   <div class="w-100">
-    <h3 class="fw-bold mb-1">{{ tarefa?.titulo }}</h3>
+    <h3 class="fw-bold mb-1">{{ tarefa.titulo }}</h3>
 
     <div class="d-flex justify-content-between align-items-center">
       <span class="badge" [ngClass]="tarefa.badgeClasseCor">
-        {{ tarefa?.badgeTexto }}
+        {{ tarefa.badgeTexto }}
       </span>
       <small class="text-muted">
-        Criado em {{ tarefa?.dataCriacao | date: 'dd/MM/yyyy' }}
+        Criado em {{ tarefa.dataCriacao | date: 'dd/MM/yyyy' }}
       </small>
     </div>
   </div>
@@ -29,7 +29,7 @@
       <section class="mb-4">
         <h6 class="section-title">Descrição</h6>
         <p class="text-muted">
-          {{ tarefa?.descricao || 'Nenhuma descrição informada.' }}
+          {{ tarefa.descricao || 'Nenhuma descrição informada.' }}
         </p>
       </section>
 
@@ -40,7 +40,7 @@
           (click)="isChecklistCollapsed = !isChecklistCollapsed; abrirFormChecklist()"
         >
           <h6 class="section-title mb-0">
-            Checklist ({{ tarefa?.checklist?.length || 0 }})
+            Checklist ({{ tarefa.checklist.length || 0 }})
           </h6>
 
           <i
@@ -77,7 +77,7 @@
             </button>
           </div>
           <div
-            *ngFor="let item of tarefa?.checklist; trackBy: trackChecklist"
+            *ngFor="let item of tarefa.checklist; trackBy: trackChecklist"
             class="d-flex align-items-center gap-2 mt-3 w-100"
           >
             <div
@@ -121,7 +121,7 @@
 
         <ul class="activity-timeline">
           <!-- ITEM SIMPLES -->
-          <li *ngFor="let log of tarefa?.atividades; trackBy: trackAtividade">
+          <li *ngFor="let log of tarefa.atividades; trackBy: trackAtividade">
             <div class="timeline-dot"></div>
 
             <div class="activity-content">
@@ -149,7 +149,7 @@
           </li>
 
           <!-- SEM ATIVIDADE -->
-          <li *ngIf="!tarefa?.atividades?.length" class="text-muted fst-italic">
+          <li *ngIf="!tarefa.atividades.length" class="text-muted fst-italic">
             Nenhuma atividade registrada.
           </li>
         </ul>
@@ -186,7 +186,7 @@
       <div class="sidebar-item">
         <span class="label">Projeto</span>
 
-        <div *ngIf="tarefa?.tags?.length; else semTags">
+        <div *ngIf="tarefa.tags?.length; else semTags">
           <span *ngFor="let tag of tarefa.tags" class="badge bg-primary me-1">
             {{ tag }}
           </span>
@@ -200,7 +200,7 @@
       <div class="sidebar-item">
         <span class="label">Datas</span>
         <div class="text-muted">
-          Início: {{ tarefa?.dataCriacao | date: 'dd/MM/yyyy' }} <br />
+          Início: {{ tarefa.dataCriacao | date: 'dd/MM/yyyy' }} <br />
           Fim: {{ '—' }}
         </div>
       </div>
@@ -209,7 +209,7 @@
 
         <div
           class="avatar-group"
-          *ngIf="participantes?.length; else semParticipantes"
+          *ngIf="participantes.length; else semParticipantes"
         >
           <div
             *ngFor="let p of participantes; let i = index"
