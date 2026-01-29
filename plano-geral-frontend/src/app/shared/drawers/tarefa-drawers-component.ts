@@ -50,8 +50,8 @@ export class TarefaDrawersComponent implements OnInit {
     ];
   }
 
-  trackAtividade(_: number, item: AtividadeDrawer) {
-    return item.id;
+  trackAtividade(index: number, item: AtividadeDrawer) {
+    return item?.id ?? index;
   }
 
   adicionarComentario(): void {
@@ -61,7 +61,7 @@ export class TarefaDrawersComponent implements OnInit {
       .adicionarComentario(
         this.tarefa.id!,
         this.novoComentario,
-        'usuario-logado',
+        'Leonardo Castro',
       )
       .subscribe({
         next: (dto) => {

@@ -42,6 +42,7 @@ export class TarefaApi {
   }
 
   buscarAtividades(tarefaId: string): Observable<AtividadeDTO[]> {
+    console.log(tarefaId)
     return this.http.get<AtividadeDTO[]>(`${this.apiUrl}/${tarefaId}/atividades`)
   }
 }

@@ -3,7 +3,9 @@
     <h3 class="fw-bold mb-1">{{ tarefa?.titulo }}</h3>
 
     <div class="d-flex justify-content-between align-items-center">
-      <span class="badge bg-success">Aberto</span>
+      <span class="badge" [ngClass]="tarefa.badgeClasseCor">
+        {{ tarefa?.badgeTexto }}
+      </span>
       <small class="text-muted">
         Criado em {{ tarefa?.dataCriacao | date: 'dd/MM/yyyy' }}
       </small>
