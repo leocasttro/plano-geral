@@ -127,14 +127,13 @@
             class="form-control mb-2"
             rows="3"
             placeholder="Escreva um comentário..."
-            [ngModel]="novoComentario"
-            (ngModelChange)="novoComentario = $event"
+            [(ngModel)]="novoComentario"
+            name="novoComentario"
           ></textarea>
 
           <div class="d-flex justify-content-end">
             <button
               class="btn btn-primary btn-sm"
-              [disabled]="!novoComentario.trim()"
               (click)="adicionarComentario()"
             >
               Comentar

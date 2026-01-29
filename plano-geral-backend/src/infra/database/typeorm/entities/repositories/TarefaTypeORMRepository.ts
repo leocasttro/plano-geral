@@ -27,7 +27,6 @@ export class TarefaTypeORMRepository implements TarefaRepository {
     const rows = await this.ormRepo.find({
       order: { createdAt: 'DESC' },
     });
-
     return rows.map(TarefaMapper.toDomain)
   }
 

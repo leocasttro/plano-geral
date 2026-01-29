@@ -1,15 +1,22 @@
-import { UUID } from "crypto";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { AtividadeORM } from './AtividadeORM';
 
-@Entity("tb_tarefas")
+@Entity('tb_tarefas')
 export class TarefaORM {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column({ length: 255 })
   titulo!: string;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: 'text', nullable: true })
   descricao?: string | null;
 
   @Column({ length: 30 })
@@ -18,12 +25,15 @@ export class TarefaORM {
   @Column({ length: 30 })
   prioridade!: string;
 
-  @Column({ type: "varchar", length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   responsavel?: string | null;
 
-  @CreateDateColumn({ name: "created_at" })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: "updated_at" })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert'] })
+  atividades!: AtividadeORM[];
 }

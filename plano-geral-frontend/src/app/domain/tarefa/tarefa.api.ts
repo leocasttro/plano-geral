@@ -19,6 +19,10 @@ export class TarefaApi {
     return this.http.post<TarefaDTO>(this.apiUrl, payload);
   }
 
+  buscarTodos(): Observable<TarefaDTO[]> {
+    return this.http.get<TarefaDTO[]>(this.apiUrl);
+  }
+
   buscarPorId(id: string): Observable<TarefaDTO> {
     return this.http.get<TarefaDTO>(`${this.apiUrl}/${id}`);
   }
@@ -35,5 +39,9 @@ export class TarefaApi {
       comentario,
       usuario,
     });
+  }
+
+  buscarComentarios(tarefaId: string): Observable<TarefaDTO> {
+    return this.http.get<TarefaDTO>(`${this.apiUrl}/${tarefaId}/atividades`)
   }
 }

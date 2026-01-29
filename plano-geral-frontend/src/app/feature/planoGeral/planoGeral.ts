@@ -61,7 +61,7 @@ export class Pedidos implements OnInit {
     private tarefaApi: TarefaApi,
     private cdr: ChangeDetectorRef,
     private modalService: NgbModal,
-    private offcanvasService: NgbOffcanvas
+    private offcanvasService: NgbOffcanvas,
   ) {}
 
   ngOnInit(): void {
@@ -69,23 +69,20 @@ export class Pedidos implements OnInit {
   }
 
   carregarTarefas(): void {
-    // this.tarefaService.listar().subscribe({
-    //   next: (tarefas: Tarefa[]) => {
-    //     const cards = tarefas.map((t) => this.mapearParaCardData(t));
-    //     console.log(cards);
-    //     this.tarefasPendentes = cards.filter(
-    //       (c) => (c.status ?? '').toLowerCase() === 'pendente'
-    //     );
-    //     this.tarefasEmAndamento = cards.filter(
-    //       (c) => (c.status ?? '').toLowerCase() === 'em_andamento'
-    //     );
-    //     this.tarefasConcluidas = cards.filter(
-    //       (c) => (c.status ?? '').toLowerCase() === 'concluida'
-    //     );
-    //     this.cdr.detectChanges();
-    //   },
-    //   error: (err) => console.error('Erro ao carregar tarefas:', err),
-    // });
+    this.tarefaApi.buscarTodos().subscribe({
+      next: (tarefasDto) => {
+        // limpa antes pra não duplicar
+        this.tarefasPendentes = [];
+
+        tarefasDto.forEach((t) => {
+          const card = tarefaDtoToCardData(t);
+          this.tarefasPendentes.push(card);
+        });
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err),
+    });
   }
 
   onNovaTarefa(): void {
@@ -106,7 +103,7 @@ export class Pedidos implements OnInit {
           });
         }
       },
-      () => console.log('Modal fechado sem salvar')
+      () => console.log('Modal fechado sem salvar'),
     );
   }
 
@@ -120,7 +117,7 @@ export class Pedidos implements OnInit {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
       return;
     }
@@ -131,7 +128,7 @@ export class Pedidos implements OnInit {
       event.previousContainer.data,
       event.container.data,
       event.previousIndex,
-      event.currentIndex
+      event.currentIndex,
     );
 
     tarefaMovida.status = novoStatus;
@@ -141,7 +138,7 @@ export class Pedidos implements OnInit {
         .atualizarStatus(
           tarefaMovida.id!,
           novoStatus.toUpperCase(),
-          'usuario-logado'
+          'usuario-logado',
         )
         .subscribe({
           next: (tarefaAtualizada) => {

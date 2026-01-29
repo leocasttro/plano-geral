@@ -32,8 +32,8 @@ export class TarefaDTO {
       titulo: tarefa.titulo,
       descricao: tarefa.descricao,
       status: tarefa.obterStatus(),
-      prioridade: tarefa['prioridade'], // acesso controlado via DTO
-      responsavel: tarefa['responsavel'],
+      prioridade: tarefa.obterPrioridade(), // acesso controlado via DTO
+      responsavel: tarefa.obterResponsavel(),
       checklist: tarefa.obterChecklist().map((item: CheckListItem) => ({
         id: item.id,
         nome: item.nome,

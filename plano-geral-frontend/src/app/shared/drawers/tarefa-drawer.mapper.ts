@@ -2,12 +2,14 @@ import { TarefaDTO } from '../../domain/tarefa/tarefa.model';
 import { CardData } from '../components/card-component/card-component';
 
 export interface AtividadeDrawer {
+  id: string;
   tipo: 'acao' | 'comentario';
   usuario: string;
   data: Date;
   acao?: string;
   comentario?: string;
 }
+
 
 export type CardDataDrawer = CardData & {
   atividades: AtividadeDrawer[];
@@ -19,7 +21,6 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
     titulo: dto.titulo,
     descricao: dto.descricao ?? '',
 
-    // UI-only
     badgeTexto: dto.prioridade,
     badgeClasseCor: prioridadeToBadge(dto.prioridade),
     urlImagem: 'https://placehold.co/32x32',
@@ -33,6 +34,7 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
     })),
 
     atividades: dto.atividades.map(a => ({
+      id: a.id,
       tipo: a.tipo === 'COMENTARIO' ? 'comentario' : 'acao',
       usuario: a.usuario,
       data: new Date(a.data),

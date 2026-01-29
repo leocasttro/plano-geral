@@ -1,7 +1,8 @@
+import { AtividadeRepository } from '../../domain/repositories/AtividadeRepository';
 import { TarefaRepository } from '../../domain/repositories/TarefaRepository';
 
 export class AdicionarComentario {
-  constructor(private repo: TarefaRepository) {}
+  constructor(private repo: AtividadeRepository) {}
 
   async execute(input: {
     tarefaId: string;

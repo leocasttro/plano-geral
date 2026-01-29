@@ -9,7 +9,7 @@ export function tarefaDtoToCardData(t: TarefaDTO): CardData {
     id: t.id,
     titulo: t.titulo,
     descricao: t.descricao ?? '',
-    status: t.status.toLowerCase(),
+    status: (t.status ?? 'PENDENTE').toLowerCase(),
 
     // UI-specific (temporário)
     badgeTexto: t.prioridade,
@@ -18,7 +18,7 @@ export function tarefaDtoToCardData(t: TarefaDTO): CardData {
 
     dataCriacao: new Date(t.atividades?.[0]?.data ?? Date.now()),
 
-    checklist: t.checklist.map((item) => ({
+    checklist: (t.checklist ?? []).map((item) => ({
       nome: item.nome,
       status: item.concluido ? 'Concluído' : 'Pendente',
     })),
