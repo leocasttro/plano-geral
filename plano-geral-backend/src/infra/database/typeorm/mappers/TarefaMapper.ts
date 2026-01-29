@@ -24,7 +24,6 @@ export class TarefaMapper {
       act.tipo = a.tipo;
       act.usuario = a.usuario;
       act.descricao = a.descricao;
-      act.tarefa = row;
       act.tarefa_id = row.id;
       return act;
     });

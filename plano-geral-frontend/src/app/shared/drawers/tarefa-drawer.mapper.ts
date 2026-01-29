@@ -10,9 +10,12 @@ export interface AtividadeDrawer {
   comentario?: string;
 }
 
-
 export type CardDataDrawer = CardData & {
+  checklist: { nome: string; status: 'Concluído' | 'Pendente' }[];
   atividades: AtividadeDrawer[];
+  tags?: string[];
+  dataCriacao: Date;
+  status: string;
 };
 
 export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
@@ -25,22 +28,29 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
     badgeClasseCor: prioridadeToBadge(dto.prioridade),
     urlImagem: 'https://placehold.co/32x32',
 
-    dataCriacao: new Date(dto.atividades?.[0]?.data ?? Date.now()),
+    dataCriacao: dto.atividades?.length
+      ? new Date(dto.atividades[0].data)
+      : new Date(),
+
     status: dto.status,
 
-    checklist: dto.checklist.map(item => ({
+    checklist: (dto.checklist ?? []).map(item => ({
       nome: item.nome,
       status: item.concluido ? 'Concluído' : 'Pendente',
     })),
 
-    atividades: dto.atividades.map(a => ({
-      id: a.id,
-      tipo: a.tipo === 'COMENTARIO' ? 'comentario' : 'acao',
-      usuario: a.usuario,
-      data: new Date(a.data),
-      comentario: a.tipo === 'COMENTARIO' ? a.descricao : undefined,
-      acao: a.tipo !== 'COMENTARIO' ? a.descricao : undefined,
-    })),
+    atividades: (dto.atividades ?? []).map(a => {
+      const tipo = String(a.tipo).toUpperCase();
+
+      return {
+        id: a.id,
+        tipo: tipo === 'COMENTARIO' ? 'comentario' : 'acao',
+        usuario: a.usuario,
+        data: new Date(a.data),
+        comentario: tipo === 'COMENTARIO' ? a.descricao : undefined,
+        acao: tipo !== 'COMENTARIO' ? a.descricao : undefined,
+      };
+    }),
   };
 }
 

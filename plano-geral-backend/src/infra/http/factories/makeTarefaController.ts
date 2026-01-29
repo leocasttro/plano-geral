@@ -16,7 +16,7 @@ export function makeTarefaController() {
     createTarefa: new CreateTarefa(repo),
     getById: new GetTarefaById(repo),
     getAllTarefas: new GetAllTarefas(repo),
-    addComentario: new AdicionarComentario(repoAtividade),
+    addComentario: new AdicionarComentario(repo),
     alterarStatus: new AlterarStatusTarefa(repo),
     getAtividadeByTarefa: new GetAtividadeByTarefa(repoAtividade)
   })
