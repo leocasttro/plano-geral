@@ -133,27 +133,46 @@ export class TarefaDrawersComponent implements OnInit {
     const nome = this.novoChecklistItem.trim();
     if (!nome) return;
 
-    const item = {
-      id: crypto.randomUUID(),
-      nome,
-      concluido: false,
-    };
+    this.tarefaApi.adicionarChecklistItem(this.tarefa.id!, nome).subscribe({
+      next: (dto) => {
+        const atualizada = tarefaDtoToDrawer(dto);
 
-    this.tarefa.checklist = [...(this.tarefa.checklist ?? []), item];
+        this.tarefa = {
+          ...this.tarefa,
+          ...atualizada,
+          checklist: [...(atualizada.checklist ?? [])],
+          atividades: [...(atualizada.atividades ?? [])],
+        };
 
-    this.fecharFormChecklist();
-    this.cdr.detectChanges();
+        this.participantes = [
+          ...new Set((this.tarefa.atividades ?? []).map((a) => a.usuario)),
+        ];
+
+        this.fecharFormChecklist();
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err),
+    });
   }
 
   toggleChecklistItem(itemId: string) {
-    this.tarefa.checklist = (this.tarefa.checklist ?? []).map((i) =>
-      i.id === itemId ? { ...i, concluido: !i.concluido } : i,
-    );
-    this.cdr.detectChanges();
+    this.tarefaApi.toggleChecklistItem(this.tarefa.id!, itemId).subscribe({
+      next: (dto) => {
+        const atualizada = tarefaDtoToDrawer(dto);
+
+        this.tarefa = {
+          ...this.tarefa,
+          checklist: [...(atualizada.checklist ?? [])],
+          atividades: [...(atualizada.atividades ?? [])],
+        };
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err),
+    });
   }
 
   trackChecklist(_: number, item: { id: string }) {
     return item.id;
   }
-
 }

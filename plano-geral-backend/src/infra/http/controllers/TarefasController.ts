@@ -1,3 +1,4 @@
+import { AdicionarChecklistLitem } from './../../../application/use-cases/tarefa/AdicionarChecklistItem';
 import { Request, Response } from "express";
 import { TarefaDTO } from "../../../application/dtos/TarefaDTO";
 import { AtividadeDTO } from "../../../application/dtos/AtividadeDTO";
@@ -7,6 +8,7 @@ import { GetAllTarefas } from "../../../application/use-cases/tarefa/GetAllTaref
 import { AdicionarComentario } from "../../../application/use-cases/tarefa/AdicionarComentario";
 import { AlterarStatusTarefa } from "../../../application/use-cases/tarefa/AlterarStatusTarefa";
 import { GetAtividadeByTarefa } from "../../../application/use-cases/tarefa/GetAtividadeByTarefa";
+import { ToggleChecklistItem } from '../../../application/use-cases/tarefa/ToggleChecklistItem';
 
 interface CriarTarefaBody {
   titulo: string;
@@ -20,6 +22,8 @@ type Deps = {
   addComentario: AdicionarComentario;
   alterarStatus: AlterarStatusTarefa;
   getAtividadeByTarefa: GetAtividadeByTarefa;
+  adicionarChecklistItem: AdicionarChecklistLitem;
+  toggleChecklistItem: ToggleChecklistItem;
 }
 
 export class TarefasController {
@@ -59,5 +63,23 @@ export class TarefasController {
     });
 
     return res.json(atividades.map(AtividadeDTO.fromDomain));
+  }
+
+  async AdicionarChecklistLitem(req: Request, res: Response) {
+    const tarefa = await this.deps.adicionarChecklistItem.execute({
+      tarefaId: req.params.id,
+      nome: req.body.nome,
+    })
+
+    return res.json(TarefaDTO.fromDomain(tarefa));
+  }
+
+  async toggleChecklistItem(req: Request, res: Response) {
+    const tarefa = await this.deps.toggleChecklistItem.execute({
+      tarefaId: req.params.id,
+      checklistItemId: req.params.itemId
+    })
+
+    return res.json(TarefaDTO.fromDomain(tarefa));
   }
 }

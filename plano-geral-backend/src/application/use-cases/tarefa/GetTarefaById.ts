@@ -1,4 +1,4 @@
-import { TarefaRepository } from '../../domain/repositories/TarefaRepository';
+import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 
 export class GetTarefaById {
   constructor(private repo: TarefaRepository) {}

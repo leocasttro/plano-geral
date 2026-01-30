@@ -14,7 +14,7 @@ type TarefaProps = {
   reponsavel?: string;
   checklist?: CheckListItem[];
   atividades?: Atividade[];
-}
+};
 export class Tarefa {
   private status: StatusTarefa;
   private checklist: CheckListItem[] = [];
@@ -25,7 +25,7 @@ export class Tarefa {
   constructor(
     public readonly id: string,
     public titulo: string,
-    public descricao?: string
+    public descricao?: string,
   ) {
     if (!titulo || titulo.trim().length === 0) {
       throw new Error('Tarefa precisa de um título válido');
@@ -59,8 +59,8 @@ export class Tarefa {
         randomUUID(),
         TipoAtividade.ALTERACAO_STATUS,
         usuario,
-        'Tarefa iniciada'
-      )
+        'Tarefa iniciada',
+      ),
     );
   }
 
@@ -71,7 +71,7 @@ export class Tarefa {
 
     if (this.existeChecklistPendente()) {
       throw new Error(
-        'Não é possível concluir a tarefa com itens pendentes no checklist'
+        'Não é possível concluir a tarefa com itens pendentes no checklist',
       );
     }
 
@@ -82,8 +82,8 @@ export class Tarefa {
         randomUUID(),
         TipoAtividade.ALTERACAO_STATUS,
         usuario,
-        'Tarefa concluída'
-      )
+        'Tarefa concluída',
+      ),
     );
   }
 
@@ -95,8 +95,8 @@ export class Tarefa {
         randomUUID(),
         TipoAtividade.ALTERACAO_PRIORIDADE,
         usuario,
-        `Prioridade alterada para ${nova}`
-      )
+        `Prioridade alterada para ${nova}`,
+      ),
     );
   }
 
@@ -108,8 +108,8 @@ export class Tarefa {
         randomUUID(),
         TipoAtividade.ATRIBUICAO_RESPONSAVEL,
         usuarioAcao,
-        `Responsável atribuído: ${usuarioAlvo}`
-      )
+        `Responsável atribuído: ${usuarioAlvo}`,
+      ),
     );
   }
 
@@ -127,13 +127,34 @@ export class Tarefa {
         randomUUID(),
         TipoAtividade.COMENTARIO,
         usuario,
-        comentario
-      )
+        comentario,
+      ),
     );
   }
 
   private existeChecklistPendente(): boolean {
-    return this.checklist.some(item => !item.isConcluido());
+    return this.checklist.some((item) => !item.isConcluido());
+  }
+
+  adicionarCheckListItem(nome: string) {
+    const clean = (nome ?? '').trim();
+
+    if (!clean) {
+      throw new Error('Check list do item não pode ser vazio');
+    }
+
+    if (clean.length > 250) {
+      throw new Error('Check list deve ter no máximo 250 caracteres');
+    }
+
+    this.checklist.push(new CheckListItem(randomUUID(), clean, false));
+  }
+
+  toggleChecklistItem(itemId: string) {
+    const item = this.checklist.find((i) => i.id === itemId);
+    if (!item) throw new Error('Item do checklist não encontrado');
+
+    item.toggle();
   }
 
   private registrarAtividade(atividade: Atividade) {

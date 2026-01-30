@@ -27,14 +27,22 @@ export class TarefaApi {
     return this.http.get<TarefaDTO>(`${this.apiUrl}/${id}`);
   }
 
-  atualizarStatus(tarefaId: string, novoStatus: string, usuario: string): Observable<TarefaDTO> {
+  atualizarStatus(
+    tarefaId: string,
+    novoStatus: string,
+    usuario: string,
+  ): Observable<TarefaDTO> {
     return this.http.post<TarefaDTO>(`${this.apiUrl}/${tarefaId}/status`, {
       novoStatus,
       usuario,
     });
   }
 
-  adicionarComentario(tarefaId: string, comentario: string, usuario: string): Observable<TarefaDTO> {
+  adicionarComentario(
+    tarefaId: string,
+    comentario: string,
+    usuario: string,
+  ): Observable<TarefaDTO> {
     return this.http.post<TarefaDTO>(`${this.apiUrl}/${tarefaId}/comentarios`, {
       comentario,
       usuario,
@@ -42,7 +50,25 @@ export class TarefaApi {
   }
 
   buscarAtividades(tarefaId: string): Observable<AtividadeDTO[]> {
-    console.log(tarefaId)
-    return this.http.get<AtividadeDTO[]>(`${this.apiUrl}/${tarefaId}/atividades`)
+    console.log(tarefaId);
+    return this.http.get<AtividadeDTO[]>(
+      `${this.apiUrl}/${tarefaId}/atividades`,
+    );
+  }
+
+  adicionarChecklistItem(
+    tarefaId: string,
+    nome: string,
+  ): Observable<TarefaDTO> {
+    return this.http.post<TarefaDTO>(`${this.apiUrl}/${tarefaId}/checklist`, {
+      nome,
+    });
+  }
+
+  toggleChecklistItem(id: string, itemId: string): Observable<TarefaDTO> {
+    return this.http.patch<TarefaDTO>(
+      `${this.apiUrl}/${id}/checklist/${itemId}/toggle`,
+      {},
+    );
   }
 }

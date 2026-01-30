@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AtividadeORM } from './AtividadeORM';
+import { ChecklistItemORM } from './ChecklistItemORM';
 
 @Entity('tb_tarefas')
 export class TarefaORM {
@@ -36,4 +37,9 @@ export class TarefaORM {
 
   @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert'] })
   atividades!: AtividadeORM[];
+
+  @OneToMany(() => ChecklistItemORM, (c) => c.tarefa, {
+    cascade: ['insert', 'update'],
+  })
+  checklist!: ChecklistItemORM[];
 }
