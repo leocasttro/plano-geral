@@ -1,5 +1,6 @@
-import { Atividade } from "../../domain/entities/Atividade";
-import { AtividadeRepository } from "../../domain/repositories/AtividadeRepository";
+import { Atividade } from "../../../domain/entities/Atividade";
+import { AtividadeRepository } from "../../../domain/repositories/AtividadeRepository";
+
 
 export class GetAllAtividades {
   constructor(private repo: AtividadeRepository) {}

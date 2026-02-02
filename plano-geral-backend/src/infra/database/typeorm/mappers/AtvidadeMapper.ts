@@ -11,6 +11,7 @@ export class AtividadeMapper {
       tipo: row.tipo as TipoAtividade,
       usuario: row.usuario,
       descricao: row.descricao,
+      data: row.createdAt,
     })
   }
 
