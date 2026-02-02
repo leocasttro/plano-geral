@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const makeTarefaController_1 = require("../factories/makeTarefaController");
+const router = (0, express_1.Router)();
+const controller = (0, makeTarefaController_1.makeTarefaController)();
+router.post("/", (req, res) => controller.criar(req, res));
+router.get("/", (req, res) => controller.buscarTodas(req, res));
+router.get("/:id", (req, res) => controller.buscarPorId(req, res));
+router.post("/:id/comentarios", (req, res) => controller.adicionarComentario(req, res));
+router.get("/:id/atividades", (req, res) => controller.buscarAtividades(req, res));
+router.post('/:id/checklist', (req, res) => controller.AdicionarChecklistLitem(req, res));
+router.patch('/:id/checklist/:itemId/toggle', (req, res) => controller.toggleChecklistItem(req, res));
+router.patch('/:id/prioridade', (req, res) => controller.alterarPrioridade(req, res));
+router.post('/:id/status', (req, res) => controller.alterarStatus(req, res));
+exports.default = router;
