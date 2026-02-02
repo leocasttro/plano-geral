@@ -71,4 +71,8 @@ export class TarefaApi {
       {},
     );
   }
+
+  alterarPrioridade(id: string, novaPrioridade: string, usuario: string): Observable<TarefaDTO> {
+    return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/prioridade`, {novaPrioridade, usuario},);
+  }
 }

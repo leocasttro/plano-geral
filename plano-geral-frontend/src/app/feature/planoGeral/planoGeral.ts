@@ -71,12 +71,20 @@ export class Pedidos implements OnInit {
   carregarTarefas(): void {
     this.tarefaApi.buscarTodos().subscribe({
       next: (tarefasDto) => {
-        // limpa antes pra não duplicar
         this.tarefasPendentes = [];
+        this.tarefasEmAndamento = [];
+        this.tarefasConcluidas = [];
+        this.tarefasTeste = [];
 
         tarefasDto.forEach((t) => {
           const card = tarefaDtoToCardData(t);
-          this.tarefasPendentes.push(card);
+          const status = String(card.status ?? '').toUpperCase();
+
+          if (status === 'PENDENTE') this.tarefasPendentes.push(card);
+          else if (status === 'EM_ANDAMENTO')
+            this.tarefasEmAndamento.push(card);
+          else if (status === 'CONCLUIDA') this.tarefasConcluidas.push(card);
+          else this.tarefasTeste.push(card);
         });
 
         this.cdr.detectChanges();
@@ -107,6 +115,20 @@ export class Pedidos implements OnInit {
     );
   }
 
+  onTarefaAtualizada(tarefaAtualizada: CardData) {
+    const patch = (list: CardData[]) =>
+      (list ?? []).map((t) =>
+        t.id === tarefaAtualizada.id ? { ...tarefaAtualizada } : t,
+      );
+
+    this.tarefasPendentes = patch(this.tarefasPendentes);
+    this.tarefasEmAndamento = patch(this.tarefasEmAndamento);
+    this.tarefasConcluidas = patch(this.tarefasConcluidas);
+    this.tarefasTeste = patch(this.tarefasTeste);
+
+    this.cdr.detectChanges();
+  }
+
   handleChecklistItemClick(item: ChecklistItem): void {
     this.itemSelecionadoParaUpload = item;
     this.fileInput.nativeElement.click();
@@ -123,6 +145,8 @@ export class Pedidos implements OnInit {
     }
 
     const tarefaMovida = event.previousContainer.data[event.previousIndex];
+    const statusNovo = String(novoStatus).toUpperCase();
+    const statusAnterior = tarefaMovida.status;
 
     transferArrayItem(
       event.previousContainer.data,
@@ -131,22 +155,31 @@ export class Pedidos implements OnInit {
       event.currentIndex,
     );
 
-    tarefaMovida.status = novoStatus;
+    tarefaMovida.status = statusNovo;
 
-    if (tarefaMovida.id) {
-      this.tarefaApi
-        .atualizarStatus(
-          tarefaMovida.id!,
-          novoStatus.toUpperCase(),
-          'usuario-logado',
-        )
-        .subscribe({
-          next: (tarefaAtualizada) => {
-            tarefaMovida.status = tarefaAtualizada.status.toLowerCase();
-          },
-          error: () => this.carregarTarefas(),
-        });
-    }
+    if (!tarefaMovida.id) return;
+
+    this.tarefaApi
+      .atualizarStatus(tarefaMovida.id, statusNovo, 'usuario-logado')
+      .subscribe({
+        next: (tarefaAtualizada) => {
+          tarefaMovida.status = String(tarefaAtualizada.status).toUpperCase();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+
+          transferArrayItem(
+            event.container.data,
+            event.previousContainer.data,
+            event.currentIndex,
+            event.previousIndex,
+          );
+
+          tarefaMovida.status = statusAnterior;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   // private mapearParaCardData(t: Tarefa): CardData {
@@ -173,12 +206,17 @@ export class Pedidos implements OnInit {
 
   abrirDetalheTarefa(tarefa: CardData): void {
     const ref = this.offcanvasService.open(TarefaDrawersComponent, {
-      position: 'end', // 👉 vem da direita
+      position: 'end',
       backdrop: true,
       scroll: true,
       panelClass: 'issue-offcanvas',
     });
 
-    ref.componentInstance.tarefa = tarefa;
+    ref.componentInstance.tarefa = { ...tarefa };
+    ref.componentInstance.tarefaAtualizada.subscribe(
+      (tarefaAtualizada: CardData) => {
+        this.onTarefaAtualizada(tarefaAtualizada);
+      },
+    );
   }
 }

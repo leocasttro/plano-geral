@@ -11,5 +11,8 @@ router.post("/:id/comentarios", (req, res) => controller.adicionarComentario(req
 router.get("/:id/atividades", (req, res) => controller.buscarAtividades(req, res));
 router.post('/:id/checklist', (req, res) => controller.AdicionarChecklistLitem(req, res));
 router.patch('/:id/checklist/:itemId/toggle', (req, res) => controller.toggleChecklistItem(req, res));
+router.patch('/:id/prioridade', (req, res) => controller.alterarPrioridade(req, res));
+router.post('/:id/status', (req, res) => controller.alterarStatus(req, res));
+
 
 export default router;

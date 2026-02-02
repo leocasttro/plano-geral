@@ -3,9 +3,29 @@
     <h3 class="fw-bold mb-1">{{ tarefa.titulo }}</h3>
 
     <div class="d-flex justify-content-between align-items-center">
-      <span class="badge" [ngClass]="tarefa.badgeClasseCor">
-        {{ tarefa.badgeTexto }}
-      </span>
+      <div class="sidebar-item">
+        <span class="label">Prioridade</span>
+        <div class="position-relative d-inline-block">
+          <span
+            class="badge cursor-pointer"
+            [ngClass]="tarefa.badgeClasseCor"
+            (click)="mostrarPrioridades = !mostrarPrioridades"
+          >
+            {{ tarefa.badgeTexto }}
+          </span>
+
+          <div *ngIf="mostrarPrioridades" class="priority-menu">
+            <div
+              *ngFor="let p of prioridades"
+              (click)="setPrioridade(p)"
+              class="priority-option"
+            >
+              {{ p }}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <small class="text-muted">
         Criado em {{ tarefa.dataCriacao | date: 'dd/MM/yyyy' }}
       </small>

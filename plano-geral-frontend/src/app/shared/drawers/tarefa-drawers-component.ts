@@ -6,6 +6,7 @@ import { NgbCollapseModule, NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
+import { EventEmitter, Output } from '@angular/core';
 
 import {
   AtividadeDrawer,
@@ -28,6 +29,7 @@ import {
 })
 export class TarefaDrawersComponent implements OnInit {
   @Input() tarefa!: CardDataDrawer;
+  @Output() tarefaAtualizada = new EventEmitter<CardDataDrawer>();
 
   faMinus = faMinus;
   isChecklistCollapsed = false;
@@ -36,6 +38,9 @@ export class TarefaDrawersComponent implements OnInit {
 
   novoChecklistItem = '';
   mostrarFormChecklist = false;
+
+  mostrarPrioridades = false;
+  prioridades = ['BAIXA', 'NORMAL', 'ALTA', 'CRITICA'];
 
   constructor(
     private offcanvas: NgbOffcanvas,
@@ -51,6 +56,8 @@ export class TarefaDrawersComponent implements OnInit {
     this.participantes = [
       ...new Set(this.tarefa.atividades.map((a) => a.usuario)),
     ];
+
+    this.cdr.detectChanges();
   }
 
   trackAtividade(index: number, item: AtividadeDrawer) {
@@ -162,9 +169,12 @@ export class TarefaDrawersComponent implements OnInit {
 
         this.tarefa = {
           ...this.tarefa,
+          ...atualizada,
           checklist: [...(atualizada.checklist ?? [])],
           atividades: [...(atualizada.atividades ?? [])],
         };
+
+        this.tarefaAtualizada.emit(this.tarefa); // ✅
 
         this.cdr.detectChanges();
       },
@@ -174,5 +184,60 @@ export class TarefaDrawersComponent implements OnInit {
 
   trackChecklist(_: number, item: { id: string }) {
     return item.id;
+  }
+
+  private prioridadeToBadge(prioridade: string): string {
+    switch (String(prioridade).toUpperCase()) {
+      case 'CRITICA':
+        return 'bg-danger';
+      case 'ALTA':
+        return 'bg-warning';
+      case 'NORMAL':
+        return 'bg-primary';
+      default:
+        return 'bg-secondary'; // BAIXA
+    }
+  }
+
+  setPrioridade(nova: string) {
+    if (!nova || nova === this.tarefa.badgeTexto) {
+      this.mostrarPrioridades = false;
+      return;
+    }
+
+    const prioridadeAnterior = this.tarefa.badgeTexto;
+
+    this.tarefa.badgeTexto = nova;
+    this.tarefa.badgeClasseCor = this.prioridadeToBadge(nova);
+    this.mostrarPrioridades = false;
+
+    this.tarefaApi
+      .alterarPrioridade(this.tarefa.id!, nova, 'Leonardo Castro')
+      .subscribe({
+        next: (dto) => {
+          const atualizada = tarefaDtoToDrawer(dto);
+
+          this.tarefa = {
+            ...this.tarefa,
+            ...atualizada,
+            checklist: [...(atualizada.checklist ?? [])],
+            atividades: [...(atualizada.atividades ?? [])],
+          };
+
+          this.tarefaAtualizada.emit(this.tarefa); // ✅ AVISA O BOARD
+
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.tarefa.badgeTexto = prioridadeAnterior;
+          this.tarefa.badgeClasseCor =
+            this.prioridadeToBadge(prioridadeAnterior);
+
+          this.tarefaAtualizada.emit(this.tarefa); // ✅ volta pro board também
+
+          this.cdr.detectChanges();
+        },
+      });
   }
 }

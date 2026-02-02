@@ -238,3 +238,23 @@ section:last-child {
   overflow-wrap: anywhere;        // quebra mesmo sem espaços
   white-space: normal;            // permite múltiplas linhas
 }
+
+.priority-menu {
+  position: absolute;
+  top: 110%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  z-index: 10;
+}
+
+.priority-option {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.priority-option:hover {
+  background: #f5f5f5;
+}

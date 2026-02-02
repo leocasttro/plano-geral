@@ -1,5 +1,6 @@
 import { AdicionarChecklistLitem } from "../../../application/use-cases/tarefa/AdicionarChecklistItem";
 import { AdicionarComentario } from "../../../application/use-cases/tarefa/AdicionarComentario";
+import { AlterarPrioridadeTarefa } from "../../../application/use-cases/tarefa/AlterarPrioridadeTarefa";
 import { AlterarStatusTarefa } from "../../../application/use-cases/tarefa/AlterarStatusTarefa";
 import { CreateTarefa } from "../../../application/use-cases/tarefa/CreateTarefa";
 import { GetAllTarefas } from "../../../application/use-cases/tarefa/GetAllTarefas";
@@ -23,5 +24,6 @@ export function makeTarefaController() {
     getAtividadeByTarefa: new GetAtividadeByTarefa(repoAtividade),
     adicionarChecklistItem: new AdicionarChecklistLitem(repo),
     toggleChecklistItem: new ToggleChecklistItem(repo),
+    alterarPrioridade: new AlterarPrioridadeTarefa(repo),
   })
 }
