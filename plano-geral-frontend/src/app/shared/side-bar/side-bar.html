@@ -12,13 +12,22 @@
 
   <div class="menu mt-5 w-100">
     <nav class="nav flex-column">
-      <a class="nav-link active" aria-current="page" href="#"
-        ><fa-icon class="fs-5 me-2" [icon]="faTable" /> Kanban</a
+      <a
+        class="nav-link"
+        routerLink="/planoGeral"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
       >
-      <a class="nav-link text-muted" href="#">
-        <fa-icon class="fs-5 me-2" [icon]="faPeople" />
-        Organograma</a
+        <fa-icon class="fs-5 me-2" [icon]="faTable" /> Kanban
+      </a>
+      <a
+        class="nav-link text-muted"
+        routerLink="/projetos"
+        routerLinkActive="active"
       >
+        <fa-icon class="fs-5 me-2" [icon]="faListCheck" />
+        Projetos
+      </a>
       <a class="nav-link text-muted" href="#">
         <fa-icon class="fs-5 me-2" [icon]="faCalender" /> Calendário</a
       >
