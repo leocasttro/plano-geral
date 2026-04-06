@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import "reflect-metadata";
 import tarefasRoutes from "./infra/http/routes/tarefas.routes";
+import usersRoutes from "./infra/http/routes/users.route";
 import { AppDataSource } from "./infra/database/data-source"; // ajuste esse caminho
 
 async function bootstrap() {
@@ -17,7 +18,8 @@ async function bootstrap() {
   );
 
   app.use(express.json());
-  app.use("/tarefas", tarefasRoutes);
+  app.use('/tarefas', tarefasRoutes);
+  app.use('/users', usersRoutes)
 
   const PORT = 3000;
   app.listen(PORT, () => {
