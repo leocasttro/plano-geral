@@ -9,7 +9,7 @@ export const AppDataSource = new DataSource({
   password: 'postgres',
   database: 'plano_geral',
   synchronize: false,
-  logging: true,
+  logging: false,
   entities: [path.join(__dirname, 'typeorm/entities/**/*.{ts,js}')],
   migrations: [path.join(__dirname, 'typeorm/migrations/**/*.{ts,js}')],
 })
