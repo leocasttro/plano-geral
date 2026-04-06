@@ -33,3 +33,11 @@ export interface TarefaDTO {
   checklist: ChecklistItemDTO[];
   atividades: AtividadeDTO[];
 }
+
+export interface Usuario {
+  id: string;
+  nome: string;
+  email: string;
+  perfil?: string;
+  ativo: boolean;
+}

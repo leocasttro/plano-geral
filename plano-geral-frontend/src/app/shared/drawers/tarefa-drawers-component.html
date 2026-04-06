@@ -200,7 +200,95 @@
     <div class="col-md-4 sidebar">
       <div class="sidebar-item">
         <span class="label">Responsável</span>
-        <strong> {{ 'Nenhum' }} </strong>
+        <div
+          *ngIf="responsavelSelecionado && !mostrarSelecaoResponsavel"
+          class="d-flex align-items-center justify-content-between mb-2"
+        >
+          <div class="d-flex align-items-center gap-2">
+            <div
+              class="avatar"
+              [style.backgroundColor]="getCorAvatar(responsavelSelecionado.nome)"
+            >
+              {{ responsavelSelecionado.nome | slice:0:2 | uppercase }}
+            </div>
+            <div>
+              <strong>{{ responsavelSelecionado.nome }}</strong>
+              <small class="text-muted d-block"
+                >{{ responsavelSelecionado.email }}</small
+              >
+            </div>
+          </div>
+          <button
+            class="btn btn-sm btn-outline-danger"
+            title="Remover responsável"
+          >
+            <i class="bi bi-person-x"></i> Remover
+          </button>
+        </div>
+
+        <!-- Botão para adicionar responsável -->
+        <div *ngIf="!responsavelSelecionado && !mostrarSelecaoResponsavel">
+          <button
+            class="btn btn-sm btn-outline-primary w-100"
+            (click)="abrirSelecaoResponsavel()"
+          >
+            <i class="bi bi-person-plus"></i> Atribuir responsável
+          </button>
+        </div>
+
+        <!-- Seletor de responsável -->
+        <div *ngIf="mostrarSelecaoResponsavel" class="mt-2">
+          <!-- Campo de busca -->
+          <div class="mb-2">
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              placeholder="Buscar usuário..."
+              [(ngModel)]="filtroUsuario"
+              (input)="filtrarUsuarios()"
+              autofocus
+            />
+          </div>
+
+          <div class="lista-usuarios">
+            <div
+              *ngIf="usuariosFiltrados.length === 0"
+              class="text-muted text-center p-2"
+            >
+              Nenhum usuário encontrado
+            </div>
+            <div
+              *ngFor="let usuario of usuariosFiltrados"
+              class="usuario-option"
+            >
+              <div class="d-flex align-items-center gap-2">
+                <div
+                  class="avatar"
+                  [style.backgroundColor]="getCorAvatar(usuario.nome)"
+                >
+                  {{ usuario.nome | slice:0:2 | uppercase }}
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-bold" style="font-size: small;">{{ usuario.nome }}</div>
+                </div>
+                <i
+                  class="bi bi-check-circle"
+                  *ngIf="usuario.id === responsavelSelecionado?.id"
+                ></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botão cancelar -->
+          <div class="mt-2">
+            <button
+              class="btn btn-sm btn-secondary w-100"
+              (click)="mostrarSelecaoResponsavel = false"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="sidebar-item">
