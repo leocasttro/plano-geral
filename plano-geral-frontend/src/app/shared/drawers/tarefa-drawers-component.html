@@ -213,16 +213,14 @@
             </div>
             <div>
               <strong>{{ responsavelSelecionado.nome }}</strong>
-              <small class="text-muted d-block"
-                >{{ responsavelSelecionado.email }}</small
-              >
             </div>
           </div>
           <button
-            class="btn btn-sm btn-outline-danger"
+            class="btn btn-link text-danger p-0"
             title="Remover responsável"
+            style="font-size: 0.8rem; text-decoration: none"
           >
-            <i class="bi bi-person-x"></i> Remover
+            <i class="bi bi-x"></i>
           </button>
         </div>
 
@@ -260,6 +258,7 @@
             <div
               *ngFor="let usuario of usuariosFiltrados"
               class="usuario-option"
+              (click)="selecionarResponsavel(usuario)"
             >
               <div class="d-flex align-items-center gap-2">
                 <div
@@ -269,7 +268,9 @@
                   {{ usuario.nome | slice:0:2 | uppercase }}
                 </div>
                 <div class="flex-grow-1">
-                  <div class="fw-bold" style="font-size: small;">{{ usuario.nome }}</div>
+                  <div class="fw-bold" style="font-size: small">
+                    {{ usuario.nome }}
+                  </div>
                 </div>
                 <i
                   class="bi bi-check-circle"

@@ -67,11 +67,19 @@ export class TarefaDrawersComponent implements OnInit {
     this.tarefa.checklist = this.tarefa.checklist ?? [];
     this.listarAtividades();
     this.listarUsuarios();
-
     this.participantes = [
       ...new Set(this.tarefa.atividades.map((a) => a.usuario)),
     ];
 
+    if (this.tarefa.responsavel) {
+      this.responsavelSelecionado = {
+        id: this.tarefa.responsavel, // ou um ID válido se tiver
+        nome: this.tarefa.responsavel,
+        email: '', // se não tiver email, deixa vazio
+        perfil: 'USER',
+        ativo: true,
+      };
+    }
     this.cdr.detectChanges();
   }
 
@@ -144,7 +152,6 @@ export class TarefaDrawersComponent implements OnInit {
   listarUsuarios() {
     this.usuarioApi.buscarTodos().subscribe({
       next: (usuarios: UsuarioDTO[]) => {
-        console.log('Usuários carregados:', usuarios);
         // Converter DTO para Usuario
         this.listaUsuarios = usuarios.map((user) => this.mapearUsuario(user));
         this.usuariosFiltrados = this.listaUsuarios;
@@ -274,33 +281,33 @@ export class TarefaDrawersComponent implements OnInit {
     }
   }
 
-  // selecionarResponsavel(usuario: Usuario) {
-  //   this.responsavelSelecionado = usuario;
-  //   this.mostrarSelecaoResponsavel = false;
+  selecionarResponsavel(usuario: Usuario) {
+    this.responsavelSelecionado = usuario;
+    this.mostrarSelecaoResponsavel = false;
 
-  //   // Chamar API para atribuir responsável
-  //   this.tarefaApi
-  //     .atribuirResponsavel(this.tarefa.id!, usuario.id, 'Leonardo Castro')
-  //     .subscribe({
-  //       next: (dto) => {
-  //         const atualizada = tarefaDtoToDrawer(dto);
-  //         this.tarefa = {
-  //           ...this.tarefa,
-  //           ...atualizada,
-  //           checklist: [...(atualizada.checklist ?? [])],
-  //           atividades: this.ordernarAtividade([
-  //             ...(atualizada.atividades ?? []),
-  //           ]),
-  //         };
-  //         this.tarefaAtualizada.emit(this.tarefa);
-  //         this.cdr.detectChanges();
-  //       },
-  //       error: (err) => {
-  //         console.error('Erro ao atribuir responsável:', err);
-  //         alert('Erro ao atribuir responsável');
-  //       },
-  //     });
-  // }
+    // Chamar API para atribuir responsável
+    this.tarefaApi
+      .atribuirResponsavel(this.tarefa.id!, usuario.nome, 'Leonardo Castro')
+      .subscribe({
+        next: (dto) => {
+          const atualizada = tarefaDtoToDrawer(dto);
+          this.tarefa = {
+            ...this.tarefa,
+            ...atualizada,
+            checklist: [...(atualizada.checklist ?? [])],
+            atividades: this.ordernarAtividade([
+              ...(atualizada.atividades ?? []),
+            ]),
+          };
+          this.tarefaAtualizada.emit(this.tarefa);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Erro ao atribuir responsável:', err);
+          alert('Erro ao atribuir responsável');
+        },
+      });
+  }
 
   setPrioridade(nova: string) {
     if (!nova || nova === this.tarefa.badgeTexto) {

@@ -20,11 +20,8 @@ import {
   ChecklistItem,
 } from '../../shared/components/card-component/card-component';
 import { TarefaApi } from '../../domain/tarefa/tarefa.api';
-import { TarefaDTO } from '../../domain/tarefa/tarefa.model';
-import { NavBar } from '../../shared/nav-bar/nav-bar';
 import { NgbModal, NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { ModalCadastroTarefa } from '../../shared/modals/modal-cadastro-tarefa';
-import { splitDateTime } from '../../util/DateUtil';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { TarefaDrawersComponent } from '../../shared/drawers/tarefa-drawers-component';
@@ -71,6 +68,7 @@ export class Pedidos implements OnInit {
   carregarTarefas(): void {
     this.tarefaApi.buscarTodos().subscribe({
       next: (tarefasDto) => {
+        console.log(tarefasDto)
         this.tarefasPendentes = [];
         this.tarefasEmAndamento = [];
         this.tarefasConcluidas = [];

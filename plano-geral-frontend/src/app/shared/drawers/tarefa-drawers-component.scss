@@ -100,7 +100,6 @@ section:last-child {
   --bs-gutter-x: 1rem;
 }
 
-
 .avatar-group {
   display: flex;
   align-items: center;
@@ -129,7 +128,6 @@ section:last-child {
   margin-left: 0;
 }
 
-
 /* ================= ATIVIDADE ================= */
 
 .activity-section {
@@ -153,10 +151,13 @@ section:last-child {
   padding-left: 0;
   margin: 0;
   position: relative;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
 }
 
 .activity-timeline::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 12px;
@@ -209,7 +210,6 @@ section:last-child {
   font-size: 0.85rem;
 }
 
-
 .comment-item {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
@@ -232,11 +232,11 @@ section:last-child {
 }
 
 .checklist-text {
-  display: block;                 // força ocupar a linha
-  max-width: 100%;                // respeita a coluna
-  word-break: break-word;         // quebra palavras longas
-  overflow-wrap: anywhere;        // quebra mesmo sem espaços
-  white-space: normal;            // permite múltiplas linhas
+  display: block; // força ocupar a linha
+  max-width: 100%; // respeita a coluna
+  word-break: break-word; // quebra palavras longas
+  overflow-wrap: anywhere; // quebra mesmo sem espaços
+  white-space: normal; // permite múltiplas linhas
 }
 
 .priority-menu {
@@ -246,12 +246,13 @@ section:last-child {
   background: white;
   border: 1px solid #ddd;
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10;
 }
 
 .priority-option {
   padding: 6px 12px;
+  font-size: smaller;
   cursor: pointer;
 }
 

@@ -10,7 +10,7 @@ export function tarefaDtoToCardData(t: TarefaDTO): CardData {
     titulo: t.titulo,
     descricao: t.descricao ?? '',
     status: (t.status ?? 'PENDENTE').toLowerCase(),
-
+    responsavel: t.responsavel,
     // UI-specific (temporário)
     badgeTexto: t.prioridade,
     badgeClasseCor: mapPrioridadeParaBadge(t.prioridade),

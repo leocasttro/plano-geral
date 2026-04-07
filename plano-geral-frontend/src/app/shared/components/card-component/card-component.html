@@ -3,9 +3,7 @@
   <div class="card-body d-flex flex-column" (click)="onTituloClick()">
     <div class="mt-3">
       <div class="d-flex justify-content-between align-items-start">
-        <h6 class="card-title fw-bold">
-          {{ data.titulo }}
-        </h6>
+        <h6 class="card-title fw-bold">{{ data.titulo }}</h6>
         <span class="badge" [ngClass]="data.badgeClasseCor"
           >{{ data.badgeTexto }}</span
         >
@@ -14,12 +12,12 @@
     </div>
 
     <div class="mt-auto d-flex justify-content-between align-items-center">
-      <img
-        [src]="data.urlImagem"
-        alt="Ícone da tarefa"
-        class="rounded-circle"
-        style="width: 24px; height: 24px"
-      />
+      <div
+        class="avatar"
+        [style.backgroundColor]="getCorAvatar(data.responsavel || '?')"
+      >
+        {{ (data.responsavel || '?') | slice:0:2 | uppercase }}
+      </div>
       <small class="text-muted"> {{ data.dataCriacao | date:'short' }} </small>
     </div>
   </div>

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe, NgClass, SlicePipe, UpperCasePipe } from '@angular/common';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
@@ -26,12 +26,12 @@ export interface CardData {
   /* Datas */
   dataCriacao: Date;
 
+  responsavel?: string;
   status?: string;
   checklist: ChecklistItem[];
 
   /* Metadados simples */
   tags?: string[];
-  responsavel?: string;
   dataInicio?: string;
   dataFim?: string;
 }
@@ -47,6 +47,8 @@ export interface CardData {
     FontAwesomeModule,
     FormsModule,
     DatePipe,
+    SlicePipe,      // ← Adicione aqui
+    UpperCasePipe,   // ← Adicione aqui
   ],
   templateUrl: './card-component.html',
   styleUrls: ['./card-component.scss'],
@@ -62,6 +64,7 @@ export class CardComponent {
   collapseId!: string;
 
   ngOnInit(): void {
+    console.log(this.data);
     this.collapseId = `cardID-${this.data.id}`;
   }
 
@@ -71,5 +74,33 @@ export class CardComponent {
 
   onTituloClick(): void {
     this.tituloClick.emit(this.data);
+  }
+
+  getCorAvatar(nome: string | ''): string {
+    const cores = [
+      '#4361ee',
+      '#3a0ca3',
+      '#7209b7',
+      '#f72585',
+      '#4cc9f0',
+      '#4895ef',
+      '#560bad',
+      '#b5179e',
+      '#f8961e',
+      '#f3722c',
+      '#f94144',
+      '#90be6d',
+      '#43aa8b',
+      '#4d908e',
+      '#577590',
+      '#9c89b8',
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < nome.length; i++) {
+      hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    return cores[Math.abs(hash) % cores.length];
   }
 }
