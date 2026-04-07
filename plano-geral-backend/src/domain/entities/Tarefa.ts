@@ -101,6 +101,11 @@ export class Tarefa {
   }
 
   atribuirResponsavel(usuarioAlvo: string, usuarioAcao: string) {
+
+    if (!usuarioAlvo || usuarioAlvo.trim().length === 0) {
+      throw new Error('Responsável inválido');
+    }
+
     this.responsavel = usuarioAlvo;
 
     this.registrarAtividade(

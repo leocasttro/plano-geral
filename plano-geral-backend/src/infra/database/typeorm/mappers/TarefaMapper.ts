@@ -72,6 +72,7 @@ export class TarefaMapper {
       id: row.id,
       titulo: row.titulo,
       descricao: row.descricao ?? (null as any),
+      reponsavel: row.responsavel ?? (null as any),
       status: row.status as StatusTarefa,
       prioridade: row.prioridade as Prioridade,
       checklist,

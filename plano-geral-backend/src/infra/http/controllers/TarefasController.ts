@@ -12,6 +12,7 @@ import { ToggleChecklistItem } from '../../../application/use-cases/tarefa/Toggl
 import { AlterarPrioridadeTarefa } from '../../../application/use-cases/tarefa/AlterarPrioridadeTarefa';
 import { Prioridade } from '../../../domain/value-objects/Prioridade';
 import { StatusTarefa } from '../../../domain/value-objects/StatusTarefa';
+import { ResponsavelTarefa } from '../../../application/use-cases/tarefa/ResponsavelTarefa';
 
 interface CriarTarefaBody {
   titulo: string;
@@ -28,6 +29,7 @@ type Deps = {
   adicionarChecklistItem: AdicionarChecklistLitem;
   toggleChecklistItem: ToggleChecklistItem;
   alterarPrioridade: AlterarPrioridadeTarefa;
+  responsavelTarefa: ResponsavelTarefa;
 };
 
 function isPrioridade(valor: any): valor is Prioridade {
@@ -141,5 +143,21 @@ export class TarefasController {
     });
 
     return res.json(TarefaDTO.fromDomain(tarefa));
+  }
+
+  async atribuirResponsavel(req: Request, res: Response) {
+    try {
+      const { responsavel, usuario } = req.body;
+
+      const result = await this.deps.responsavelTarefa.execute({
+        tarefaId: req.params.id,
+        responsavel,
+        usuario,
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
   }
 }

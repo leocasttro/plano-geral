@@ -6,6 +6,7 @@ import { CreateTarefa } from "../../../application/use-cases/tarefa/CreateTarefa
 import { GetAllTarefas } from "../../../application/use-cases/tarefa/GetAllTarefas";
 import { GetAtividadeByTarefa } from "../../../application/use-cases/tarefa/GetAtividadeByTarefa";
 import { GetTarefaById } from "../../../application/use-cases/tarefa/GetTarefaById";
+import { ResponsavelTarefa } from "../../../application/use-cases/tarefa/ResponsavelTarefa";
 import { ToggleChecklistItem } from "../../../application/use-cases/tarefa/ToggleChecklistItem";
 import { AtividadeTypeORMRepository } from "../../database/typeorm/entities/repositories/AtividadeTypeORMRepository";
 import { TarefaTypeORMRepository } from "../../database/typeorm/entities/repositories/TarefaTypeORMRepository";
@@ -25,5 +26,6 @@ export function makeTarefaController() {
     adicionarChecklistItem: new AdicionarChecklistLitem(repo),
     toggleChecklistItem: new ToggleChecklistItem(repo),
     alterarPrioridade: new AlterarPrioridadeTarefa(repo),
+    responsavelTarefa: new ResponsavelTarefa(repo),
   })
 }
