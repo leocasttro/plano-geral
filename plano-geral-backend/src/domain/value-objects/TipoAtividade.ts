@@ -2,6 +2,7 @@ export type TipoAtividade =
   | 'CRIACAO'
   | 'COMENTARIO'
   | 'ALTERACAO_STATUS'
+  | 'ALTERACAO_DATAS'
   | 'ALTERACAO_PRIORIDADE'
   | 'ATRIBUICAO_RESPONSAVEL';
 
@@ -9,6 +10,7 @@ export const TipoAtividade = {
   CRIACAO: 'CRIACAO' as TipoAtividade,
   COMENTARIO: 'COMENTARIO' as TipoAtividade,
   ALTERACAO_STATUS: 'ALTERACAO_STATUS' as TipoAtividade,
+  ALTERACAO_DATAS: 'ALTERACAO_DATAS' as TipoAtividade,
   ALTERACAO_PRIORIDADE: 'ALTERACAO_PRIORIDADE' as TipoAtividade,
   ATRIBUICAO_RESPONSAVEL: 'ATRIBUICAO_RESPONSAVEL' as TipoAtividade,
 };

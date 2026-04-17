@@ -13,6 +13,8 @@ import { AlterarPrioridadeTarefa } from '../../../application/use-cases/tarefa/A
 import { Prioridade } from '../../../domain/value-objects/Prioridade';
 import { StatusTarefa } from '../../../domain/value-objects/StatusTarefa';
 import { ResponsavelTarefa } from '../../../application/use-cases/tarefa/ResponsavelTarefa';
+import { TarefaComPrazo } from '../../../domain/entities/TarefaComPrazo'; // NOVO
+import { AlterarDatasTarefaUseCase } from '../../../application/use-cases/tarefa/AlterarDatasTarefaUseCase';
 
 interface CriarTarefaBody {
   titulo: string;
@@ -30,6 +32,7 @@ type Deps = {
   toggleChecklistItem: ToggleChecklistItem;
   alterarPrioridade: AlterarPrioridadeTarefa;
   responsavelTarefa: ResponsavelTarefa;
+  alterarDatas: AlterarDatasTarefaUseCase; // NOVO
 };
 
 function isPrioridade(valor: any): valor is Prioridade {
@@ -158,6 +161,42 @@ export class TarefasController {
       res.json(result);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  }
+
+  async alterarDatas(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      const { dataInicio, dataFim, usuario } = req.body;
+
+      if (!usuario || !String(usuario).trim()) {
+        return res.status(400).json({ error: 'Usuário é obrigatório' });
+      }
+
+      if (dataInicio === undefined && dataFim === undefined) {
+        return res.status(400).json({
+          error: 'Forneça pelo menos uma data (dataInicio ou dataFim)'
+        });
+      }
+
+      const tarefa = await this.deps.alterarDatas.execute({
+        tarefaId: id,
+        dataInicio: dataInicio ? new Date(dataInicio) : undefined,
+        dataFim: dataFim ? new Date(dataFim) : undefined,
+        usuario,
+      });
+
+      return res.status(200).json({
+        message: 'Datas alteradas com sucesso',
+        tarefa: {
+          id: tarefa.id,
+          titulo: tarefa.titulo,
+          dataInicio: tarefa instanceof TarefaComPrazo ? tarefa.getPeriodo().getInicio() : null,
+          dataFim: tarefa instanceof TarefaComPrazo ? tarefa.getPeriodo().getFim() : null,
+        },
+      });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
     }
   }
 }

@@ -35,6 +35,12 @@ export class TarefaORM {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
+  @Column({ name: 'data_inicio', type: 'date', nullable: true })
+  dataInicio!: Date | null;
+
+  @Column({ name: 'data_fim', type: 'date', nullable: true })
+  dataFim!: Date | null;
+
   @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert'] })
   atividades!: AtividadeORM[];
 

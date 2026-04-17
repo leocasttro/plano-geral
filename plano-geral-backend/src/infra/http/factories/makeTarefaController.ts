@@ -1,16 +1,17 @@
-import { AdicionarChecklistLitem } from "../../../application/use-cases/tarefa/AdicionarChecklistItem";
-import { AdicionarComentario } from "../../../application/use-cases/tarefa/AdicionarComentario";
-import { AlterarPrioridadeTarefa } from "../../../application/use-cases/tarefa/AlterarPrioridadeTarefa";
-import { AlterarStatusTarefa } from "../../../application/use-cases/tarefa/AlterarStatusTarefa";
-import { CreateTarefa } from "../../../application/use-cases/tarefa/CreateTarefa";
-import { GetAllTarefas } from "../../../application/use-cases/tarefa/GetAllTarefas";
-import { GetAtividadeByTarefa } from "../../../application/use-cases/tarefa/GetAtividadeByTarefa";
-import { GetTarefaById } from "../../../application/use-cases/tarefa/GetTarefaById";
-import { ResponsavelTarefa } from "../../../application/use-cases/tarefa/ResponsavelTarefa";
-import { ToggleChecklistItem } from "../../../application/use-cases/tarefa/ToggleChecklistItem";
-import { AtividadeTypeORMRepository } from "../../database/typeorm/entities/repositories/AtividadeTypeORMRepository";
-import { TarefaTypeORMRepository } from "../../database/typeorm/entities/repositories/TarefaTypeORMRepository";
-import { TarefasController } from "../controllers/TarefasController";
+import { AdicionarChecklistLitem } from '../../../application/use-cases/tarefa/AdicionarChecklistItem';
+import { AdicionarComentario } from '../../../application/use-cases/tarefa/AdicionarComentario';
+import { AlterarDatasTarefaUseCase } from '../../../application/use-cases/tarefa/AlterarDatasTarefaUseCase';
+import { AlterarPrioridadeTarefa } from '../../../application/use-cases/tarefa/AlterarPrioridadeTarefa';
+import { AlterarStatusTarefa } from '../../../application/use-cases/tarefa/AlterarStatusTarefa';
+import { CreateTarefa } from '../../../application/use-cases/tarefa/CreateTarefa';
+import { GetAllTarefas } from '../../../application/use-cases/tarefa/GetAllTarefas';
+import { GetAtividadeByTarefa } from '../../../application/use-cases/tarefa/GetAtividadeByTarefa';
+import { GetTarefaById } from '../../../application/use-cases/tarefa/GetTarefaById';
+import { ResponsavelTarefa } from '../../../application/use-cases/tarefa/ResponsavelTarefa';
+import { ToggleChecklistItem } from '../../../application/use-cases/tarefa/ToggleChecklistItem';
+import { AtividadeTypeORMRepository } from '../../database/typeorm/entities/repositories/AtividadeTypeORMRepository';
+import { TarefaTypeORMRepository } from '../../database/typeorm/entities/repositories/TarefaTypeORMRepository';
+import { TarefasController } from '../controllers/TarefasController';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
@@ -27,5 +28,6 @@ export function makeTarefaController() {
     toggleChecklistItem: new ToggleChecklistItem(repo),
     alterarPrioridade: new AlterarPrioridadeTarefa(repo),
     responsavelTarefa: new ResponsavelTarefa(repo),
-  })
+    alterarDatas: new AlterarDatasTarefaUseCase(repo),
+  });
 }

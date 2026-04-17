@@ -4,6 +4,8 @@ import { StatusTarefa } from '../value-objects/StatusTarefa';
 import { TipoAtividade } from '../value-objects/TipoAtividade';
 import { Atividade } from './Atividade';
 import { CheckListItem } from './ChecklistItem';
+import { TarefaComPrazo } from './TarefaComPrazo';
+import { Periodo } from '../value-objects/Periodo';
 
 type TarefaProps = {
   id: string;
@@ -101,7 +103,6 @@ export class Tarefa {
   }
 
   atribuirResponsavel(usuarioAlvo: string, usuarioAcao: string) {
-
     if (!usuarioAlvo || usuarioAlvo.trim().length === 0) {
       throw new Error('Responsável inválido');
     }
@@ -162,8 +163,30 @@ export class Tarefa {
     item.toggle();
   }
 
-  private registrarAtividade(atividade: Atividade) {
+  protected registrarAtividade(atividade: Atividade) {
     this.atividades.push(atividade);
+  }
+
+  converterParaPrazo(dataInicio?: Date, dataFim?: Date): TarefaComPrazo {
+    const periodo = new Periodo(dataInicio, dataFim);
+
+    const tarefaComPrazo = new TarefaComPrazo(
+      this.id,
+      this.titulo,
+      this.descricao,
+      periodo,
+    );
+
+    // Copiar os dados
+    Object.assign(tarefaComPrazo, {
+      status: this.status,
+      prioridade: this.prioridade,
+      responsavel: this.responsavel,
+      checklist: [...this.checklist],
+      atividades: [...this.atividades],
+    });
+
+    return tarefaComPrazo;
   }
 
   obterStatus(): StatusTarefa {

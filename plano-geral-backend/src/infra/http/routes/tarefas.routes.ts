@@ -14,5 +14,6 @@ router.patch('/:id/checklist/:itemId/toggle', (req, res) => controller.toggleChe
 router.patch('/:id/prioridade', (req, res) => controller.alterarPrioridade(req, res));
 router.post('/:id/status', (req, res) => controller.alterarStatus(req, res));
 router.post('/:id/atribuirResponsavel', (req, res) => controller.atribuirResponsavel(req, res));
+router.patch('/:id/datas', (req, res) => controller.alterarDatas(req, res));
 
 export default router;

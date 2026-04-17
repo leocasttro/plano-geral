@@ -1,9 +1,12 @@
+// src/infra/database/typeorm/mappers/TarefaMapper.ts
 import { Atividade } from '../../../../domain/entities/Atividade';
 import { Tarefa } from '../../../../domain/entities/Tarefa';
+import { TarefaComPrazo } from '../../../../domain/entities/TarefaComPrazo';
 import { CheckListItem } from '../../../../domain/entities/ChecklistItem';
 import { Prioridade } from '../../../../domain/value-objects/Prioridade';
 import { StatusTarefa } from '../../../../domain/value-objects/StatusTarefa';
 import { TipoAtividade } from '../../../../domain/value-objects/TipoAtividade';
+import { Periodo } from '../../../../domain/value-objects/Periodo';
 
 import { AtividadeORM } from '../entities/AtividadeORM';
 import { ChecklistItemORM } from '../entities/ChecklistItemORM';
@@ -20,6 +23,16 @@ export class TarefaMapper {
     row.prioridade = tarefa.obterPrioridade();
     row.responsavel = tarefa.obterResponsavel() ?? (null as any);
 
+    // Se for TarefaComPrazo, adiciona as datas
+    if (tarefa instanceof TarefaComPrazo) {
+      const periodo = tarefa.getPeriodo();
+      row.dataInicio = periodo.getInicio() ?? null;
+      row.dataFim = periodo.getFim() ?? null;
+    } else {
+      row.dataInicio = null;
+      row.dataFim = null;
+    }
+
     // ✅ atividades
     row.atividades = tarefa.obterAtividades().map((a) => {
       const act = new AtividadeORM();
@@ -28,6 +41,7 @@ export class TarefaMapper {
       act.usuario = a.usuario;
       act.descricao = a.descricao;
       act.tarefa_id = row.id;
+      act.createdAt = a.data;
       return act;
     });
 
@@ -36,10 +50,8 @@ export class TarefaMapper {
       item.id = c.id;
       item.nome = c.nome;
       item.concluido = c.isConcluido();
-
       item.tarefa = row;
       item.tarefa_id = row.id;
-
       return item;
     });
 
@@ -68,6 +80,29 @@ export class TarefaMapper {
         : new CheckListItem(c.id, c.nome, c.concluido),
     );
 
+    // Verifica se tem datas para criar TarefaComPrazo
+    const temDatas = row.dataInicio !== null || row.dataFim !== null;
+
+    if (temDatas) {
+      const periodo = new Periodo(
+        row.dataInicio ?? undefined,
+        row.dataFim ?? undefined
+      );
+
+      return TarefaComPrazo.reconstituir({
+        id: row.id,
+        titulo: row.titulo,
+        descricao: row.descricao ?? undefined,
+        reponsavel: row.responsavel ?? undefined,
+        status: row.status as StatusTarefa,
+        prioridade: row.prioridade as Prioridade,
+        periodo: periodo,
+        checklist: checklist,
+        atividades: atividades,
+      });
+    }
+
+    // Tarefa normal sem prazo
     return Tarefa.reconstituir({
       id: row.id,
       titulo: row.titulo,
