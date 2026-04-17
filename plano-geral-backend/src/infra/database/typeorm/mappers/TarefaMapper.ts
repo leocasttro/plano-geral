@@ -80,38 +80,29 @@ export class TarefaMapper {
         : new CheckListItem(c.id, c.nome, c.concluido),
     );
 
-    // Verifica se tem datas para criar TarefaComPrazo
-    const temDatas = row.dataInicio !== null || row.dataFim !== null;
-
-    if (temDatas) {
-      const periodo = new Periodo(
-        row.dataInicio ?? undefined,
-        row.dataFim ?? undefined
-      );
-
-      return TarefaComPrazo.reconstituir({
-        id: row.id,
-        titulo: row.titulo,
-        descricao: row.descricao ?? undefined,
-        reponsavel: row.responsavel ?? undefined,
-        status: row.status as StatusTarefa,
-        prioridade: row.prioridade as Prioridade,
-        periodo: periodo,
-        checklist: checklist,
-        atividades: atividades,
-      });
-    }
-
-    // Tarefa normal sem prazo
-    return Tarefa.reconstituir({
+    // Primeiro, reconstitui a tarefa base
+    const tarefaBase = Tarefa.reconstituir({
       id: row.id,
       titulo: row.titulo,
-      descricao: row.descricao ?? (null as any),
-      reponsavel: row.responsavel ?? (null as any),
+      descricao: row.descricao ?? undefined,
+      reponsavel: row.responsavel ?? undefined,
       status: row.status as StatusTarefa,
       prioridade: row.prioridade as Prioridade,
       checklist,
       atividades,
     });
+
+    // Verifica se tem datas para criar TarefaComPrazo
+    const temDatas = row.dataInicio !== null || row.dataFim !== null;
+
+    if (temDatas) {
+      // ✅ USA O MÉTODO DE CONVERSÃO
+      return tarefaBase.converterParaPrazo(
+        row.dataInicio ?? undefined,
+        row.dataFim ?? undefined
+      );
+    }
+
+    return tarefaBase;
   }
 }
