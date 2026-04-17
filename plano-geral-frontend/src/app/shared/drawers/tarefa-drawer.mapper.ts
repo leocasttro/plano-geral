@@ -39,6 +39,9 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
       ? new Date(dto.atividades[0].data)
       : new Date(),
 
+    dataInicio: dto.dataInicio ? formatarDataParaString(dto.dataInicio) : undefined,
+    dataFim: dto.dataFim ? formatarDataParaString(dto.dataFim) : undefined,
+
     status: dto.status,
 
     checklist: (dto.checklist ?? []).map((item) => {
@@ -75,4 +78,9 @@ function prioridadeToBadge(prioridade: string): string {
     default:
       return 'bg-secondary';
   }
+}
+
+function formatarDataParaString(data: Date): string {
+  // Retorna no formato YYYY-MM-DD para o input date
+  return data.toISOString().split('T')[0];
 }

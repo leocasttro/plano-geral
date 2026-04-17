@@ -27,6 +27,8 @@ export interface TarefaDTO {
   id: string;
   titulo: string;
   descricao?: string;
+  dataInicio?: Date;
+  dataFim?: Date;
   status: StatusTarefa;
   prioridade: Prioridade;
   responsavel?: string;

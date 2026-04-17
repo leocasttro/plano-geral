@@ -306,11 +306,73 @@
         </ng-template>
       </div>
 
+      <!-- DATAS -->
       <div class="sidebar-item">
-        <span class="label">Datas</span>
-        <div class="text-muted">
-          Início: {{ tarefa.dataCriacao | date: 'dd/MM/yyyy' }} <br />
-          Fim: {{ '—' }}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="label">Datas</span>
+          <fa-icon
+            [icon]="faCalendar"
+            (click)="toggleCalendario($event)"
+            style="font-size: 1.1rem; color: #6c757d; cursor: pointer"
+          />
+        </div>
+
+        <!-- Visualização normal -->
+        <div
+          *ngIf="!mostrandoCalendario"
+          class="text-muted"
+          style="font-size: 0.9rem"
+        >
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span>Início:</span>
+            <strong>{{ formatarDataExibicao(tarefa.dataInicio) }}</strong>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span>Fim:</span>
+            <strong>{{ formatarDataExibicao(tarefa.dataFim) }}</strong>
+          </div>
+        </div>
+
+        <!-- Editor de datas -->
+        <div *ngIf="mostrandoCalendario" class="data-editor">
+          <div class="mb-2">
+            <label class="form-label form-label-sm">Início</label>
+            <input
+              type="date"
+              class="form-control form-control-sm"
+              [(ngModel)]="dataInicioTemp"
+              (change)="validarDatas()"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label form-label-sm">Fim</label>
+            <input
+              type="date"
+              class="form-control form-control-sm"
+              [(ngModel)]="dataFimTemp"
+              (change)="validarDatas()"
+            />
+          </div>
+
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-sm btn-primary w-100"
+              [disabled]="salvandoDatas"
+            >
+              <span
+                *ngIf="salvandoDatas"
+                class="spinner-border spinner-border-sm me-1"
+              ></span>
+              Salvar
+            </button>
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              (click)="cancelarEdicao()"
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
       </div>
       <div class="sidebar-item">

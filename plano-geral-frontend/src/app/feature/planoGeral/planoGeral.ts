@@ -68,7 +68,6 @@ export class Pedidos implements OnInit {
   carregarTarefas(): void {
     this.tarefaApi.buscarTodos().subscribe({
       next: (tarefasDto) => {
-        console.log(tarefasDto)
         this.tarefasPendentes = [];
         this.tarefasEmAndamento = [];
         this.tarefasConcluidas = [];

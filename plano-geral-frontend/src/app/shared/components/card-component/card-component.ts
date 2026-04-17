@@ -64,7 +64,6 @@ export class CardComponent {
   collapseId!: string;
 
   ngOnInit(): void {
-    console.log(this.data);
     this.collapseId = `cardID-${this.data.id}`;
   }
 

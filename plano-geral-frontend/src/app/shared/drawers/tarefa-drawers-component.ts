@@ -8,7 +8,7 @@ import {
   NgbTypeaheadModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 import { EventEmitter, Output } from '@angular/core';
 
@@ -39,6 +39,8 @@ export class TarefaDrawersComponent implements OnInit {
   @Output() tarefaAtualizada = new EventEmitter<CardDataDrawer>();
 
   faMinus = faMinus;
+  faCalendar = faCalendar;
+
   isChecklistCollapsed = false;
   participantes: string[] = [];
   novoComentario = '';
@@ -54,6 +56,12 @@ export class TarefaDrawersComponent implements OnInit {
   listaUsuarios: Usuario[] = [];
   filtroUsuario = '';
   usuariosFiltrados: Usuario[] = [];
+
+  mostrandoCalendario = false;
+  dataInicioTemp: string = '';
+  dataFimTemp: string = '';
+
+  salvandoDatas = false;
 
   constructor(
     private offcanvas: NgbOffcanvas,
@@ -81,6 +89,8 @@ export class TarefaDrawersComponent implements OnInit {
       };
     }
     this.cdr.detectChanges();
+
+    console.log(this.tarefa)
   }
 
   trackAtividade(index: number, item: AtividadeDrawer) {
@@ -349,6 +359,53 @@ export class TarefaDrawersComponent implements OnInit {
           this.cdr.detectChanges();
         },
       });
+  }
+
+  toggleCalendario(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (!this.mostrandoCalendario) {
+      this.dataInicioTemp = this.tarefa.dataInicio || '';
+      this.dataFimTemp = this.tarefa.dataFim || '';
+    }
+
+    this.mostrandoCalendario = !this.mostrandoCalendario;
+  }
+
+  // Método para cancelar edição
+  cancelarEdicao() {
+    this.mostrandoCalendario = false;
+    this.dataInicioTemp = '';
+    this.dataFimTemp = '';
+  }
+
+  // Formatar data para API (YYYY-MM-DD)
+  formatarDataParaAPI(data: string): string {
+    if (!data) return '';
+    const date = new Date(data);
+    return date.toISOString().split('T')[0];
+  }
+
+  // Formatar data para exibição (DD/MM/YYYY)
+  formatarDataExibicao(data: string | undefined): string {
+    if (!data) return '—';
+    const date = new Date(data);
+    return date.toLocaleDateString('pt-BR');
+  }
+
+  // Validação básica das datas
+  validarDatas(): boolean {
+    if (this.dataInicioTemp && this.dataFimTemp) {
+      const inicio = new Date(this.dataInicioTemp);
+      const fim = new Date(this.dataFimTemp);
+
+      if (inicio > fim) {
+        return false;
+      }
+    }
+    return true;
   }
 
   getCorAvatar(nome: string): string {
