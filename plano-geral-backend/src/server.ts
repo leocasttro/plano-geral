@@ -3,13 +3,17 @@ import express from "express";
 import "reflect-metadata";
 import tarefasRoutes from "./infra/http/routes/tarefas.routes";
 import usersRoutes from "./infra/http/routes/users.route";
-import { AppDataSource } from "./infra/database/data-source"; // ajuste esse caminho
+import { AppDataSource } from "./infra/database/data-source";
+import authRoutes from './infra/http/routes/auth.routes';
+import {ensureAuthenticated} from './infra/http/middlewares/ensureAuthenticated';
+import projetosRoutes from './infra/http/routes/projetos.routes';
 
 async function bootstrap() {
   await AppDataSource.initialize();
   console.log("✅ Database connected");
 
   const app = express();
+  app.use(express.json());
 
   app.use(
     cors({
@@ -17,9 +21,13 @@ async function bootstrap() {
     })
   );
 
-  app.use(express.json());
+  app.use('/auth', authRoutes);
+
+  app.use(ensureAuthenticated);
+
   app.use('/tarefas', tarefasRoutes);
-  app.use('/users', usersRoutes)
+  app.use('/projetos', projetosRoutes);
+  app.use('/users', usersRoutes);
 
   const PORT = 3000;
   app.listen(PORT, () => {
