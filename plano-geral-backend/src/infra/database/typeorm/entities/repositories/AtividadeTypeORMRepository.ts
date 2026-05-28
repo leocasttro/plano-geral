@@ -3,7 +3,7 @@ import { AtividadeRepository } from '../../../../../domain/repositories/Atividad
 import { AtividadeORM } from '../AtividadeORM';
 import { AppDataSource } from '../../../data-source';
 import { Atividade } from '../../../../../domain/entities/Atividade';
-import { AtividadeMapper } from '../../mappers/AtvidadeMapper';
+import { AtividadeMapper } from '../../mappers/AtividadeMapper';
 
 export class AtividadeTypeORMRepository implements AtividadeRepository {
   private ormRepo: Repository<AtividadeORM>;
