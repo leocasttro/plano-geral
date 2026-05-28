@@ -2,12 +2,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { AtividadeORM } from './AtividadeORM';
 import { ChecklistItemORM } from './ChecklistItemORM';
+import { ProjetoORM } from './ProjetoORM';
 
 @Entity('tb_tarefas')
 export class TarefaORM {
@@ -48,4 +51,8 @@ export class TarefaORM {
     cascade: ['insert', 'update'],
   })
   checklist!: ChecklistItemORM[];
+
+  @ManyToOne(() => ProjetoORM, (projeto) => projeto.tarefas, { nullable: false, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'projeto_id' })
+  projeto!: ProjetoORM | null
 }

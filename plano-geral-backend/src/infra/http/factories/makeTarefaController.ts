@@ -1,4 +1,4 @@
-import { AdicionarChecklistLitem } from '../../../application/use-cases/tarefa/AdicionarChecklistItem';
+import { AdicionarChecklistItem } from '../../../application/use-cases/tarefa/AdicionarChecklistItem';
 import { AdicionarComentario } from '../../../application/use-cases/tarefa/AdicionarComentario';
 import { AlterarDatasTarefaUseCase } from '../../../application/use-cases/tarefa/AlterarDatasTarefaUseCase';
 import { AlterarPrioridadeTarefa } from '../../../application/use-cases/tarefa/AlterarPrioridadeTarefa';
@@ -12,19 +12,21 @@ import { ToggleChecklistItem } from '../../../application/use-cases/tarefa/Toggl
 import { AtividadeTypeORMRepository } from '../../database/typeorm/entities/repositories/AtividadeTypeORMRepository';
 import { TarefaTypeORMRepository } from '../../database/typeorm/entities/repositories/TarefaTypeORMRepository';
 import { TarefasController } from '../controllers/TarefasController';
+import {ProjetoTypeORMRepository} from '../../database/typeorm/entities/repositories/ProjetoTypeORMRepository';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
+  const projetoRepo = new ProjetoTypeORMRepository();
   const repoAtividade = new AtividadeTypeORMRepository();
 
   return new TarefasController({
-    createTarefa: new CreateTarefa(repo),
+    createTarefa: new CreateTarefa(repo, projetoRepo),
     getById: new GetTarefaById(repo),
     getAllTarefas: new GetAllTarefas(repo),
     addComentario: new AdicionarComentario(repo),
     alterarStatus: new AlterarStatusTarefa(repo),
     getAtividadeByTarefa: new GetAtividadeByTarefa(repoAtividade),
-    adicionarChecklistItem: new AdicionarChecklistLitem(repo),
+    adicionarChecklistItem: new AdicionarChecklistItem(repo),
     toggleChecklistItem: new ToggleChecklistItem(repo),
     alterarPrioridade: new AlterarPrioridadeTarefa(repo),
     responsavelTarefa: new ResponsavelTarefa(repo),

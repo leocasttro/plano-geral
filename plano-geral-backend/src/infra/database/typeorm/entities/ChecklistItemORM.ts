@@ -17,7 +17,7 @@ export class ChecklistItemORM {
   @Column({ type: 'uuid' })
   tarefa_id!: string;
 
-  @Column()
+  @Column({ name: 'nome', default: '' })
   nome!: string;
 
   @Column()

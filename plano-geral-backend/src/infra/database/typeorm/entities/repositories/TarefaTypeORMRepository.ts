@@ -18,14 +18,14 @@ export class TarefaTypeORMRepository implements TarefaRepository {
   }
 
   async findById(id: string): Promise<Tarefa | null> {
-    const row = await this.ormRepo.findOne({ where: { id }, relations: { atividades: true, checklist: true }, });
+    const row = await this.ormRepo.findOne({ where: { id }, relations: { atividades: true, checklist: true,  projeto: true }, });
     if (!row) return null;
     return TarefaMapper.toDomain(row);
   }
 
   async list(): Promise<Tarefa[]> {
     const rows = await this.ormRepo.find({
-      relations: { atividades: true, checklist: true },
+      relations: { atividades: true, checklist: true,  projeto: true },
       order: { createdAt: 'DESC' },
     });
     return rows.map(TarefaMapper.toDomain)

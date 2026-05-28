@@ -11,9 +11,10 @@ export class TarefaComPrazo extends Tarefa {
     id: string,
     titulo: string,
     descricao: string | undefined,
+    projetoId: string,
     private periodo: Periodo  // Agora é mutável (remova o readonly)
   ) {
-    super(id, titulo, descricao);
+    super(id, titulo, descricao, projetoId);
   }
 
   // Método para alterar as datas de uma tarefa existente

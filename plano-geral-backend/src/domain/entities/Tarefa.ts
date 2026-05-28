@@ -13,7 +13,8 @@ type TarefaProps = {
   descricao?: string;
   status: StatusTarefa;
   prioridade: Prioridade;
-  reponsavel?: string;
+  responsavel?: string;
+  projetoId: string;
   checklist?: CheckListItem[];
   atividades?: Atividade[];
 };
@@ -22,12 +23,14 @@ export class Tarefa {
   private checklist: CheckListItem[] = [];
   private atividades: Atividade[] = [];
   private responsavel?: string;
+  private projetoId: string;
   private prioridade: Prioridade;
 
   constructor(
     public readonly id: string,
     public titulo: string,
-    public descricao?: string,
+    public descricao: string | undefined,
+    projetoId: string
   ) {
     if (!titulo || titulo.trim().length === 0) {
       throw new Error('Tarefa precisa de um título válido');
@@ -35,14 +38,16 @@ export class Tarefa {
 
     this.status = StatusTarefa.PENDENTE;
     this.prioridade = Prioridade.BAIXA;
+    this.projetoId = projetoId;
   }
 
   static reconstituir(props: TarefaProps): Tarefa {
-    const tarefa = new Tarefa(props.id, props.titulo, props.descricao);
+    const tarefa = new Tarefa(props.id, props.titulo, props.descricao, props.projetoId);
 
     tarefa.status = props.status;
     tarefa.prioridade = props.prioridade;
-    tarefa.responsavel = props.reponsavel;
+    tarefa.responsavel = props.responsavel;
+    tarefa.projetoId = props.projetoId;
     tarefa.checklist = props.checklist ?? [];
     tarefa.atividades = props.atividades ?? [];
 
@@ -174,6 +179,7 @@ export class Tarefa {
       this.id,
       this.titulo,
       this.descricao,
+      this.projetoId,
       periodo,
     );
 
@@ -187,6 +193,14 @@ export class Tarefa {
     });
 
     return tarefaComPrazo;
+  }
+
+  associarAoProjeto(projetoId: string): void {
+    this.projetoId = projetoId;
+  }
+
+  obterProjetoId(): string {
+    return this.projetoId
   }
 
   obterStatus(): StatusTarefa {

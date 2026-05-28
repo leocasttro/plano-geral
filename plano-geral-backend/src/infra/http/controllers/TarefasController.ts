@@ -1,4 +1,4 @@
-import { AdicionarChecklistLitem } from './../../../application/use-cases/tarefa/AdicionarChecklistItem';
+import { AdicionarChecklistItem } from './../../../application/use-cases/tarefa/AdicionarChecklistItem';
 import { Request, Response } from 'express';
 import { TarefaDTO } from '../../../application/dtos/TarefaDTO';
 import { AtividadeDTO } from '../../../application/dtos/AtividadeDTO';
@@ -19,6 +19,7 @@ import { AlterarDatasTarefaUseCase } from '../../../application/use-cases/tarefa
 interface CriarTarefaBody {
   titulo: string;
   descricao?: string;
+  projetoId: string;
 }
 
 type Deps = {
@@ -28,7 +29,7 @@ type Deps = {
   addComentario: AdicionarComentario;
   alterarStatus: AlterarStatusTarefa;
   getAtividadeByTarefa: GetAtividadeByTarefa;
-  adicionarChecklistItem: AdicionarChecklistLitem;
+  adicionarChecklistItem: AdicionarChecklistItem;
   toggleChecklistItem: ToggleChecklistItem;
   alterarPrioridade: AlterarPrioridadeTarefa;
   responsavelTarefa: ResponsavelTarefa;
@@ -56,9 +57,9 @@ export class TarefasController {
   constructor(private deps: Deps) {}
 
   async criar(req: Request<{}, {}, CriarTarefaBody>, res: Response) {
-    const { titulo, descricao } = req.body;
+    const { titulo, descricao, projetoId } = req.body;
 
-    const tarefa = await this.deps.createTarefa.execute({ titulo, descricao });
+    const tarefa = await this.deps.createTarefa.execute({ titulo, descricao, projetoId });
 
     return res.status(201).json(TarefaDTO.fromDomain(tarefa));
   }

@@ -14,6 +14,7 @@ export interface TarefaDTOProps {
   status: StatusTarefa;
   prioridade: Prioridade;
   responsavel?: string;
+  projetoId: string | null;
   checklist: {
     id: string;
     nome: string;
@@ -47,6 +48,7 @@ export class TarefaDTO {
       status: tarefa.obterStatus(),
       prioridade: tarefa.obterPrioridade(),
       responsavel: tarefa.obterResponsavel(),
+      projetoId: tarefa.obterProjetoId(),
       checklist: tarefa.obterChecklist().map((item: CheckListItem) => ({
         id: item.id,
         nome: item.nome,
