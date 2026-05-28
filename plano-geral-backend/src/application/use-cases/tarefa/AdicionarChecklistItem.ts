@@ -1,6 +1,6 @@
 import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 
-export class AdicionarChecklistLitem {
+export class AdicionarChecklistItem {
   constructor(private tarefarepo: TarefaRepository) {}
 
   async execute(input: { tarefaId: string; nome: string}) {

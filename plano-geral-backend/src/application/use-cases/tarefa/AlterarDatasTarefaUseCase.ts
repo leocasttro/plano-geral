@@ -36,6 +36,7 @@ export class AlterarDatasTarefaUseCase {
       tarefa.id,
       tarefa.titulo,
       tarefa.descricao,
+      tarefa.obterProjetoId(),
       periodo
     );
 

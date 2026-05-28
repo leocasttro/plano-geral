@@ -34,6 +34,7 @@ export class ConverterTarefaParaPrazoUseCase {
       tarefaExistente.id,
       tarefaExistente.titulo,
       tarefaExistente.descricao,
+      tarefaExistente.obterProjetoId(),
       periodo
     );
 

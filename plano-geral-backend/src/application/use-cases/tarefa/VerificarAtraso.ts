@@ -13,7 +13,7 @@ export class VerificarAtraso {
 
     return {
       atrasada: tarefa.estaAtrasada(),
-      dias: tarefa.diasParaVencer()
+      dias: tarefa.diasRestantes()
     }
   }
 }
