@@ -5,14 +5,14 @@ export class UserORM {
   @PrimaryColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ name: 'nome', default: '' })
   nome!: string;
 
   @Column({ unique: true })
   email!: string;
 
-  @Column({ nullable: true })
-  senha_hash?: string;
+  @Column()
+  senha_hash!: string;
 
   @Column({ default: 'USER' })
   perfil_id?: string;

@@ -1,10 +1,12 @@
 import { UserType } from '../value-objects/UserType';
+import {PerfilUsuario} from '../value-objects/PerfilUsuario';
 
 type UserProps = {
   id: string;
   nome: string;
   email: string;
-  perfil?: string;
+  senha: string;
+  perfil?: PerfilUsuario;
   ativo: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -19,6 +21,7 @@ export class User {
     public readonly id: string,
     private _nome: string,
     private _email: string,
+    private _senhaHash: string,
     perfil?: string,
     ativo?: boolean,
   ) {
@@ -34,12 +37,7 @@ export class User {
       throw new Error('Email inválido');
     }
 
-    const perfisValidos = ['ADMIN', 'USER', 'MANAGER', 'VIEWER'];
-    const perfilUpper = (perfil || 'USER').toUpperCase();
-
-    if (!perfisValidos.includes(perfilUpper)) {
-      throw new Error('Perfil inválido');
-    }
+    const perfilUpper = (perfil || PerfilUsuario.USUARIO).toUpperCase();
 
     this._perfil = perfilUpper;
     this._ativo = ativo ?? true;
@@ -51,6 +49,7 @@ export class User {
       props.id,
       props.nome,
       props.email,
+      props.senha,
       props.perfil,
       props.ativo,
     );
@@ -63,6 +62,10 @@ export class User {
 
   get email(): string {
     return this._email;
+  }
+
+  get senhaHash(): string {
+    return this._senhaHash;
   }
 
   get perfil(): string {

@@ -1,13 +1,16 @@
 import { User } from '../../../../domain/entities/User';
 import { UserORM } from '../entities/UserOrm';
+import {PerfilUsuario} from '../../../../domain/value-objects/PerfilUsuario';
 
+//Melhor ainda, depois você pode validar antes do cast, mas por hora o cast resolve.
 export class UserMapper {
   static toDomain(orm: UserORM): User {
     return User.reconstituir({
       id: orm.id,
       nome: orm.nome,
       email: orm.email,
-      perfil: orm.perfil,
+      senha: orm.senha_hash,
+      perfil: orm.perfil_id as PerfilUsuario,
       ativo: orm.ativo,
       createdAt: orm.created_at,
       updatedAt: orm.updated_at,
@@ -19,7 +22,8 @@ export class UserMapper {
     orm.id = domain.id;
     orm.nome = domain.nome;
     orm.email = domain.email;
-    orm.perfil = domain.perfil;
+    orm.senha_hash = domain.senhaHash;
+    orm.perfil_id = domain.perfil;
     orm.ativo = domain.ativo;
     return orm;
   }
