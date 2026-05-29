@@ -79,4 +79,8 @@ export class TarefaApi {
   atribuirResponsavel(id: string, responsavel: string, usuario: string): Observable<TarefaDTO> {
     return this.http.post<TarefaDTO>(`${this.apiUrl}/${id}/atribuirResponsavel`, {responsavel, usuario})
   }
+
+  alterarDatas(id: string, payload: { dataInicio?: string; dataFim?: string; usuario: string},): Observable<TarefaDTO> {
+    return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/datas`, payload);
+  }
 }
