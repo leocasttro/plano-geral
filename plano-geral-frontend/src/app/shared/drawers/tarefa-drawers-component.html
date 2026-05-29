@@ -358,7 +358,8 @@
           <div class="d-flex gap-2">
             <button
               class="btn btn-sm btn-primary w-100"
-              [disabled]="salvandoDatas"
+              [disabled]="salvandoDatas || !validarDatas()"
+              (click)="salvarDatas()"
             >
               <span
                 *ngIf="salvandoDatas"

@@ -223,6 +223,52 @@ export class TarefaDrawersComponent implements OnInit {
     });
   }
 
+  salvarDatas() {
+    if (!this.tarefa.id) return;
+
+    if (!this.validarDatas()) {
+      alert('A data de incio não pode ser maior que a data de fim.');
+      return;
+    }
+
+    this.salvandoDatas = true;
+
+    this.tarefaApi.alterarDatas(this.tarefa.id, {
+      dataInicio: this.dataInicioTemp || undefined,
+      dataFim: this.dataFimTemp || undefined,
+      usuario: UsuarioApi.name,
+    }).subscribe({
+      next: (dto) => {
+        const atualizada = tarefaDtoToDrawer(dto);
+
+        this.tarefa = {
+          ...this.tarefa,
+          ...atualizada,
+          dataInicio: atualizada.dataInicio,
+          dataFim: atualizada.dataFim,
+          checklist: [...(atualizada.checklist ?? [])],
+          atividades: this.ordernarAtividade([
+            ...(atualizada.atividades ?? []),
+          ]),
+        };
+
+        this.dataInicioTemp = this.tarefa.dataInicio || '';
+        this.dataFimTemp = this.tarefa.dataFim || '';
+
+        this.mostrandoCalendario = false;
+        this.salvandoDatas = false;
+
+        this.tarefaAtualizada.emit(this.tarefa);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.salvandoDatas = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   toggleChecklistItem(itemId: string) {
     this.tarefaApi.toggleChecklistItem(this.tarefa.id!, itemId).subscribe({
       next: (dto) => {

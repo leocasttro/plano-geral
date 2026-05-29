@@ -80,7 +80,7 @@ function prioridadeToBadge(prioridade: string): string {
   }
 }
 
-function formatarDataParaString(data: Date): string {
-  // Retorna no formato YYYY-MM-DD para o input date
-  return data.toISOString().split('T')[0];
+function formatarDataParaString(data: string | Date): string {
+  const date = new Date(data);
+  return date.toISOString().split('T')[0];
 }
