@@ -1,10 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<div class="login-page">
+  <main class="login-content">
+    <form class="login-card" (ngSubmit)="entrar()">
+      <div class="brand">
+        <img src="/prosul_logo.jpeg" alt="Prosul" class="brand-logo" />
+        <div>
+          <h1>Prosul</h1>
+          <p>Gestão que conecta equipes e projetos</p>
+        </div>
+      </div>
 
-</body>
-</html>
+      <div class="intro">
+        <h2>Bem-vindo <span>de volta</span></h2>
+        <p>Acesse sua conta para continuar</p>
+      </div>
+
+      <label class="field">
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="email"
+          placeholder="E-mail ou usuário"
+          required
+        />
+      </label>
+
+      <label class="field">
+        <input
+          type="password"
+          name="senha"
+          [(ngModel)]="senha"
+          placeholder="Senha"
+          required
+        />
+      </label>
+
+      <div class="login-options">
+        <label class="remember">
+          <input type="checkbox" />
+          <span>Lembrar-me</span>
+        </label>
+
+        <a href="#" aria-disabled="true">Esqueci minha senha</a>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <button class="login-button" type="submit" [disabled]="loading">
+        <span>{{ loading ? 'Entrando...' : 'Entrar' }}</span>
+        <span class="arrow">→</span>
+      </button>
+
+      <p class="security-note">
+        <span>◇</span>
+        Seus dados estão protegidos conosco.
+      </p>
+    </form>
+  </main>
+
+  <section class="login-visual" aria-hidden="true">
+    <div class="blue-panel"></div>
+  </section>
+</div>
