@@ -8,6 +8,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { CommonModule } from '@angular/common';
 import { filter, Subscription } from 'rxjs';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import {AuthService} from '../../domain/auth/auth.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -18,6 +19,9 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 export class NavBar {
   @Input() mostrarBotaoNovaTarefa: boolean = true;
   @Output() novaTarefa = new EventEmitter<void>();
+  @Output() novoProjeto = new EventEmitter<void>();
+
+  isProjetosRoute = false;
 
   faSearch = faMagnifyingGlass;
   faNotification = faBell;
@@ -65,12 +69,18 @@ export class NavBar {
 
     const urlBase = '/' + url.split('/')[1];
 
+    this.isProjetosRoute = urlBase === '/projetos';
+
     if (this.routeConfig[urlBase]) {
       this.titulo = this.routeConfig[urlBase].titulo;
       this.subtitulo = this.routeConfig[urlBase].subtitulo;
     } else {
       this.extrairTituloDaRota();
     }
+  }
+
+  onNovoProjetoClick() {
+    this.novoProjeto.emit();
   }
 
   private extrairTituloDaRota() {
