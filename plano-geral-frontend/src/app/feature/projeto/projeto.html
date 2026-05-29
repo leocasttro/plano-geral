@@ -1,58 +1,133 @@
 <div class="container-fluid py-3">
-  <!-- Cards -->
+  <div class="alert alert-danger" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <div class="text-muted small mb-3" *ngIf="loading">
+    Carregando projetos...
+  </div>
+
+  <!-- Cards de projetos -->
   <div class="row g-3">
-    <div class="col-md-4" *ngFor="let c of cards">
-      <div class="card card-click h-100" (click)="abrirModal(c)">
+    <div class="col-md-4" *ngFor="let projeto of projetos">
+      <div
+        class="card card-click h-100"
+        [class.border-primary]="projetoSelecionado?.id === projeto.id"
+        (click)="selecionarProjeto(projeto); abrirModalTarefas(projeto)"
+      >
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start">
             <div>
-              <div class="fw-bold">{{ c.titulo }}</div>
-              <div class="small text-muted">{{ c.subtitulo }}</div>
+              <div class="fw-bold">{{ projeto.nome }}</div>
+              <div class="small text-muted">
+                {{ projeto.descricao || 'Sem descrição' }}
+              </div>
             </div>
 
-            <span class="badge bg-dark">{{ countCard(c.id) }}</span>
+            <span class="badge bg-dark">
+              {{ totalTarefas(projeto) }}
+            </span>
+          </div>
+
+          <div class="mt-3 d-flex justify-content-between align-items-center">
+            <span class="small text-muted">
+              {{ projeto.status }}
+            </span>
+
+            <span class="small text-muted">
+              {{ projeto.progresso | number:'1.0-0' }}%
+            </span>
+          </div>
+
+          <div class="progress mt-2" style="height: 6px;">
+            <div
+              class="progress-bar"
+              role="progressbar"
+              [style.width.%]="projeto.progresso || 0"
+            ></div>
           </div>
 
           <div class="mt-3 small text-muted">
-            Clique para abrir o kanban completo
+            Clique para abrir as tarefas do projeto
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal (Bootstrap style, controlado via Angular) -->
-  <div class="modal fade show" *ngIf="modalAberto" style="display: block;" (click)="fecharModal()">
-    <div class="modal-dialog modal-xl modal-dialog-centered" (click)="$event.stopPropagation()">
+  <div class="card mt-3" *ngIf="!loading && projetos.length === 0">
+    <div class="card-body text-muted">
+      Nenhum projeto cadastrado.
+    </div>
+  </div>
+
+  <!-- Modal de tarefas do projeto -->
+  <div
+    class="modal fade show"
+    *ngIf="modalTarefasProjetoAberto"
+    style="display: block;"
+    (click)="fecharModalTarefas()"
+  >
+    <div
+      class="modal-dialog modal-xl modal-dialog-centered"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <div>
-            <h5 class="modal-title mb-0">{{ cardSelecionado?.titulo }}</h5>
-            <div class="small text-muted">{{ cardSelecionado?.subtitulo }}</div>
+            <h5 class="modal-title mb-0">
+              {{ projetoModalSelecionado?.nome }}
+            </h5>
+
+            <div class="small text-muted">
+              {{ projetoModalSelecionado?.descricao || 'Sem descrição' }}
+            </div>
           </div>
 
-          <button type="button" class="btn-close" aria-label="Close" (click)="fecharModal()"></button>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            (click)="fecharModalTarefas()"
+          ></button>
         </div>
 
         <div class="modal-body">
-          <!-- Kanban -->
           <div class="row g-3">
             <div class="col-md-4">
               <div class="card h-100">
                 <div class="card-header fw-bold d-flex justify-content-between">
                   <span>Pendente</span>
-                  <span class="badge bg-secondary">{{ pendentesModal.length }}</span>
+                  <span class="badge bg-secondary">
+                    {{ pendentesModal().length }}
+                  </span>
                 </div>
-                <div class="card-body kanban-col">
-                  <div *ngIf="pendentesModal.length === 0" class="text-muted small">Sem itens</div>
 
-                  <div class="task" *ngFor="let t of pendentesModal">
+                <div class="card-body kanban-col">
+                  <div
+                    *ngIf="pendentesModal().length === 0"
+                    class="text-muted small"
+                  >
+                    Sem itens
+                  </div>
+
+                  <div class="task" *ngFor="let t of pendentesModal()">
                     <div class="fw-bold">{{ t.titulo }}</div>
-                    <div class="small text-muted" *ngIf="t.descricao">{{ t.descricao }}</div>
+                    <div class="small text-muted" *ngIf="t.descricao">
+                      {{ t.descricao }}
+                    </div>
+
                     <div class="d-flex gap-2 mt-2 align-items-center">
-                      <span class="badge" [class]="prioridadeBadgeClass(t.prioridade)">{{ t.prioridade }}</span>
-                      <span class="small text-muted" *ngIf="t.responsavel">{{ t.responsavel }}</span>
-                      <span class="small text-muted" *ngIf="t.prazo">• {{ t.prazo }}</span>
+                      <span
+                        class="badge"
+                        [class]="prioridadeBadgeClass(t.prioridade)"
+                      >
+                        {{ t.prioridade }}
+                      </span>
+
+                      <span class="small text-muted" *ngIf="t.responsavel">
+                        {{ t.responsavel }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -63,18 +138,36 @@
               <div class="card h-100">
                 <div class="card-header fw-bold d-flex justify-content-between">
                   <span>Em andamento</span>
-                  <span class="badge bg-warning text-dark">{{ andamentoModal.length }}</span>
+                  <span class="badge bg-warning text-dark">
+                    {{ andamentoModal().length }}
+                  </span>
                 </div>
-                <div class="card-body kanban-col">
-                  <div *ngIf="andamentoModal.length === 0" class="text-muted small">Sem itens</div>
 
-                  <div class="task" *ngFor="let t of andamentoModal">
+                <div class="card-body kanban-col">
+                  <div
+                    *ngIf="andamentoModal().length === 0"
+                    class="text-muted small"
+                  >
+                    Sem itens
+                  </div>
+
+                  <div class="task" *ngFor="let t of andamentoModal()">
                     <div class="fw-bold">{{ t.titulo }}</div>
-                    <div class="small text-muted" *ngIf="t.descricao">{{ t.descricao }}</div>
+                    <div class="small text-muted" *ngIf="t.descricao">
+                      {{ t.descricao }}
+                    </div>
+
                     <div class="d-flex gap-2 mt-2 align-items-center">
-                      <span class="badge" [class]="prioridadeBadgeClass(t.prioridade)">{{ t.prioridade }}</span>
-                      <span class="small text-muted" *ngIf="t.responsavel">{{ t.responsavel }}</span>
-                      <span class="small text-muted" *ngIf="t.prazo">• {{ t.prazo }}</span>
+                      <span
+                        class="badge"
+                        [class]="prioridadeBadgeClass(t.prioridade)"
+                      >
+                        {{ t.prioridade }}
+                      </span>
+
+                      <span class="small text-muted" *ngIf="t.responsavel">
+                        {{ t.responsavel }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -85,34 +178,122 @@
               <div class="card h-100">
                 <div class="card-header fw-bold d-flex justify-content-between">
                   <span>Concluído</span>
-                  <span class="badge bg-success">{{ concluidasModal.length }}</span>
+                  <span class="badge bg-success">
+                    {{ concluidasModal().length }}
+                  </span>
                 </div>
-                <div class="card-body kanban-col">
-                  <div *ngIf="concluidasModal.length === 0" class="text-muted small">Sem itens</div>
 
-                  <div class="task" *ngFor="let t of concluidasModal">
+                <div class="card-body kanban-col">
+                  <div
+                    *ngIf="concluidasModal().length === 0"
+                    class="text-muted small"
+                  >
+                    Sem itens
+                  </div>
+
+                  <div class="task" *ngFor="let t of concluidasModal()">
                     <div class="fw-bold">{{ t.titulo }}</div>
-                    <div class="small text-muted" *ngIf="t.descricao">{{ t.descricao }}</div>
+                    <div class="small text-muted" *ngIf="t.descricao">
+                      {{ t.descricao }}
+                    </div>
+
                     <div class="d-flex gap-2 mt-2 align-items-center">
-                      <span class="badge" [class]="prioridadeBadgeClass(t.prioridade)">{{ t.prioridade }}</span>
-                      <span class="small text-muted" *ngIf="t.responsavel">{{ t.responsavel }}</span>
-                      <span class="small text-muted" *ngIf="t.prazo">• {{ t.prazo }}</span>
+                      <span
+                        class="badge"
+                        [class]="prioridadeBadgeClass(t.prioridade)"
+                      >
+                        {{ t.prioridade }}
+                      </span>
+
+                      <span class="small text-muted" *ngIf="t.responsavel">
+                        {{ t.responsavel }}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <!-- /Kanban -->
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="fecharModalTarefas()"
+          >
+            Fechar
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Backdrop -->
-  <div class="modal-backdrop fade show" *ngIf="modalAberto"></div>
+  <!-- Modal novo projeto -->
+  <div
+    class="modal fade show"
+    *ngIf="modalNovoProjetoAberto"
+    style="display: block;"
+    (click)="fecharModalNovoProjeto()"
+  >
+    <div
+      class="modal-dialog modal-dialog-centered"
+      (click)="$event.stopPropagation()"
+    >
+      <form class="modal-content" (ngSubmit)="criarProjeto()">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title mb-0">Novo projeto</h5>
+            <div class="small text-muted">
+              Cadastre um projeto para organizar tarefas
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            (click)="fecharModalNovoProjeto()"
+          ></button>
+        </div>
+
+        <div class="modal-body">
+          <label class="form-label">Nome</label>
+          <input
+            class="form-control"
+            name="nome"
+            [(ngModel)]="novoProjeto.nome"
+            required
+          />
+
+          <label class="form-label mt-3">Descrição</label>
+          <textarea
+            class="form-control"
+            name="descricao"
+            rows="3"
+            [(ngModel)]="novoProjeto.descricao"
+          ></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="fecharModalNovoProjeto()"
+          >
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-primary">
+            Criar projeto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div
+    class="modal-backdrop fade show"
+    *ngIf="modalTarefasProjetoAberto || modalNovoProjetoAberto"
+  ></div>
 </div>
