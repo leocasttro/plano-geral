@@ -5,6 +5,7 @@ import { SideBar } from './shared/side-bar/side-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { filter } from 'rxjs';
 import { ModalCadastroTarefa } from './shared/modals/modal-cadastro-tarefa';
+import {ProjetoEventsService} from './domain/projeto/projeto-events.service';
 
 @Component({
   selector: 'app-root',
@@ -15,11 +16,13 @@ import { ModalCadastroTarefa } from './shared/modals/modal-cadastro-tarefa';
 export class App {
   protected title = 'crm';
   mostrarBotaoNovaTarefa = true;
+  isLoginRoute = false;
 
-  constructor(private router: Router, private modalService: NgbModal) {
+  constructor(private router: Router, private modalService: NgbModal,   private projetoEvents: ProjetoEventsService) {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
+        this.isLoginRoute = event.urlAfterRedirects.startsWith('/login');
         this.atualizarBotaoPorRota(event.urlAfterRedirects);
       });
   }
@@ -43,5 +46,9 @@ export class App {
       },
       () => console.log('Modal fechado sem salvar')
     );
+  }
+
+  onNovoProjeto() {
+    this.projetoEvents.abrirNovoProjeto();
   }
 }

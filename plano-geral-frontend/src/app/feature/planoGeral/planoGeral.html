@@ -1,22 +1,22 @@
 <div class="container-fluid">
   <div class="kanban-board mt-4 ms-1" cdkDropListGroup>
     <!-- ======================= PENDENTE ======================= -->
-    <div class="kanban-column shadow-sm border-start border-warning-subtle">
+    <div class="kanban-column shadow-sm border-start border-danger-subtle">
       <div
-        class="kanban-column-header d-flex justify-content-between align-items-center bg-warning-subtle p-2 rounded-top"
+        class="kanban-column-header d-flex justify-content-between align-items-center bg-danger-subtle p-2 rounded-top"
       >
         <h6 class="fw-bold text-dark mb-0">
           <i class="fas fa-hourglass-start me-2 text-warning"></i>Pendente
         </h6>
 
         <div class="d-flex align-items-center gap-2">
-          <span class="count badge bg-warning text-dark">
+          <span class="count badge bg-danger text-light">
             {{ tarefasPendentes.length }}
           </span>
 
           <button
             type="button"
-            class="btn btn-warning kanban-add-btn"
+            class="btn btn-danger kanban-add-btn"
             (click)="onNovaTarefa()"
             title="Adicionar atividade"
           >
@@ -47,20 +47,20 @@
     <!-- ======================= EM ANDAMENTO ======================= -->
     <div class="kanban-column shadow-sm border-start border-warning-subtle">
       <div
-        class="kanban-column-header d-flex justify-content-between align-items-center bg-info-subtle p-2 rounded-top"
+        class="kanban-column-header d-flex justify-content-between align-items-center bg-warning-subtle p-2 rounded-top"
       >
         <h6 class="fw-bold text-dark mb-0">
           <i class="fas fa-hourglass-start me-2 text-primary"></i>Em andamento
         </h6>
 
         <div class="d-flex align-items-center gap-2">
-          <span class="count badge bg-primary">
+          <span class="count badge bg-warning">
             {{ tarefasEmAndamento.length }}
           </span>
 
           <button
             type="button"
-            class="btn btn-sm btn-primary kanban-add-btn"
+            class="btn btn-sm btn-warning text-light kanban-add-btn"
             (click)="onNovaTarefa()"
             title="Adicionar atividade"
           >

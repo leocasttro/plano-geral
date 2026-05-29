@@ -1,12 +1,17 @@
-<div class="layout-principal">
-  <app-side-bar></app-side-bar>
+@if (isLoginRoute) {
+  <router-outlet></router-outlet>
+} @else {
+  <div class="layout-principal">
+    <app-side-bar></app-side-bar>
 
-  <main class="conteudo-principal">
-    <app-nav-bar
-      [mostrarBotaoNovaTarefa]="mostrarBotaoNovaTarefa"
-      (novaTarefa)="onNovaTarefa()"
-    ></app-nav-bar>
+    <main class="conteudo-principal">
+      <app-nav-bar
+        [mostrarBotaoNovaTarefa]="mostrarBotaoNovaTarefa"
+        (novaTarefa)="onNovaTarefa()"
+        (novoProjeto)="onNovoProjeto()"
+      ></app-nav-bar>
 
-    <router-outlet></router-outlet>
-  </main>
-</div>
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+}
