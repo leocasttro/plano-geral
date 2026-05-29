@@ -39,10 +39,10 @@ export class TarefaORM {
   updatedAt!: Date;
 
   @Column({ name: 'data_inicio', type: 'date', nullable: true })
-  dataInicio!: Date | null;
+  dataInicio!: Date | string | null;
 
   @Column({ name: 'data_fim', type: 'date', nullable: true })
-  dataFim!: Date | null;
+  dataFim!: Date | string | null;
 
   @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert'] })
   atividades!: AtividadeORM[];

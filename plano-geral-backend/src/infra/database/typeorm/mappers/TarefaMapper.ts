@@ -1,4 +1,3 @@
-// src/infra/database/typeorm/mappers/TarefaMapper.ts
 import { Atividade } from '../../../../domain/entities/Atividade';
 import { Tarefa } from '../../../../domain/entities/Tarefa';
 import { TarefaComPrazo } from '../../../../domain/entities/TarefaComPrazo';
@@ -11,6 +10,7 @@ import { Periodo } from '../../../../domain/value-objects/Periodo';
 import { AtividadeORM } from '../entities/AtividadeORM';
 import { ChecklistItemORM } from '../entities/ChecklistItemORM';
 import { TarefaORM } from '../entities/TarefaORM';
+import {ProjetoORM} from '../entities/ProjetoORM';
 
 export class TarefaMapper {
   static toORM(tarefa: Tarefa): TarefaORM {
@@ -22,6 +22,11 @@ export class TarefaMapper {
     row.status = tarefa.obterStatus();
     row.prioridade = tarefa.obterPrioridade();
     row.responsavel = tarefa.obterResponsavel() ?? (null as any);
+    row.projeto = { id: tarefa.obterProjetoId() } as any;
+
+    const projeto = new ProjetoORM();
+    projeto.id = tarefa.obterProjetoId();
+    row.projeto = projeto;
 
     // Se for TarefaComPrazo, adiciona as datas
     if (tarefa instanceof TarefaComPrazo) {
@@ -99,8 +104,8 @@ export class TarefaMapper {
     if (temDatas) {
       // ✅ USA O MÉTODO DE CONVERSÃO
       return tarefaBase.converterParaPrazo(
-        row.dataInicio ?? undefined,
-        row.dataFim ?? undefined
+        row.dataInicio ? new Date(row.dataInicio) : undefined,
+        row.dataFim ? new Date(row.dataFim) : undefined
       );
     }
 

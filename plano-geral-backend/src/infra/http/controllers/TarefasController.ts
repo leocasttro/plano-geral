@@ -187,15 +187,7 @@ export class TarefasController {
         usuario,
       });
 
-      return res.status(200).json({
-        message: 'Datas alteradas com sucesso',
-        tarefa: {
-          id: tarefa.id,
-          titulo: tarefa.titulo,
-          dataInicio: tarefa instanceof TarefaComPrazo ? tarefa.getPeriodo().getInicio() : null,
-          dataFim: tarefa instanceof TarefaComPrazo ? tarefa.getPeriodo().getFim() : null,
-        },
-      });
+      return res.status(200).json(TarefaDTO.fromDomain(tarefa));
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
