@@ -11,6 +11,7 @@ import {
 import { AtividadeORM } from './AtividadeORM';
 import { ChecklistItemORM } from './ChecklistItemORM';
 import { ProjetoORM } from './ProjetoORM';
+import {UserORM} from './UserOrm';
 
 @Entity('tb_tarefas')
 export class TarefaORM {
@@ -29,8 +30,12 @@ export class TarefaORM {
   @Column({ length: 30 })
   prioridade!: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'responsavel_id', type: 'uuid', nullable: true })
   responsavel?: string | null;
+
+  @ManyToOne(() => UserORM, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'responsavel_id' })
+  responsavelUsuario?: UserORM | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

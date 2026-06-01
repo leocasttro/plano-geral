@@ -7,10 +7,10 @@ import { AppDataSource } from "./infra/database/data-source";
 import authRoutes from './infra/http/routes/auth.routes';
 import {ensureAuthenticated} from './infra/http/middlewares/ensureAuthenticated';
 import projetosRoutes from './infra/http/routes/projetos.routes';
+import relatoriosRoutes from './infra/http/routes/relatorios.routes';
 
 async function bootstrap() {
   await AppDataSource.initialize();
-  console.log("✅ Database connected");
 
   const app = express();
   app.use(express.json());
@@ -28,6 +28,7 @@ async function bootstrap() {
   app.use('/tarefas', tarefasRoutes);
   app.use('/projetos', projetosRoutes);
   app.use('/users', usersRoutes);
+  app.use('/relatorios', relatoriosRoutes);
 
   const PORT = 3000;
   app.listen(PORT, () => {

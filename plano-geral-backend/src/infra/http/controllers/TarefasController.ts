@@ -66,12 +66,12 @@ export class TarefasController {
 
   async buscarTodas(req: Request, res: Response) {
     const tarefas = await this.deps.getAllTarefas.execute();
-    return res.json(tarefas.map(TarefaDTO.fromDomain));
+    return res.json(tarefas);
   }
 
   async buscarPorId(req: Request, res: Response) {
     const tarefa = await this.deps.getById.execute(req.params.id);
-    return res.json(TarefaDTO.fromDomain(tarefa));
+    return res.json(tarefa);
   }
 
   async adicionarComentario(req: Request, res: Response) {
@@ -151,15 +151,21 @@ export class TarefasController {
 
   async atribuirResponsavel(req: Request, res: Response) {
     try {
-      const { responsavel, usuario } = req.body;
+      const { responsavelId } = req.body;
+
+      if (!responsavelId || !String(responsavelId).trim()) {
+        return res.status(400).json({
+          error: 'Responsável é obrigatório',
+        });
+      }
 
       const result = await this.deps.responsavelTarefa.execute({
         tarefaId: req.params.id,
-        responsavel,
-        usuario,
+        responsavelId,
+        usuario: req.user.id,
       });
 
-      res.json(result);
+      return res.json(TarefaDTO.fromDomain(result));
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }

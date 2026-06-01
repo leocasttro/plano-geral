@@ -13,23 +13,25 @@ import { AtividadeTypeORMRepository } from '../../database/typeorm/entities/repo
 import { TarefaTypeORMRepository } from '../../database/typeorm/entities/repositories/TarefaTypeORMRepository';
 import { TarefasController } from '../controllers/TarefasController';
 import {ProjetoTypeORMRepository} from '../../database/typeorm/entities/repositories/ProjetoTypeORMRepository';
+import {UserTypeORMRepository} from '../../database/typeorm/entities/repositories/UserTypeORMRepository';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
   const projetoRepo = new ProjetoTypeORMRepository();
   const repoAtividade = new AtividadeTypeORMRepository();
+  const userRepo = new UserTypeORMRepository();
 
   return new TarefasController({
     createTarefa: new CreateTarefa(repo, projetoRepo),
-    getById: new GetTarefaById(repo),
-    getAllTarefas: new GetAllTarefas(repo),
+    getById: new GetTarefaById(repo, userRepo),
+    getAllTarefas: new GetAllTarefas(repo, userRepo),
     addComentario: new AdicionarComentario(repo),
     alterarStatus: new AlterarStatusTarefa(repo),
     getAtividadeByTarefa: new GetAtividadeByTarefa(repoAtividade),
     adicionarChecklistItem: new AdicionarChecklistItem(repo),
     toggleChecklistItem: new ToggleChecklistItem(repo),
     alterarPrioridade: new AlterarPrioridadeTarefa(repo),
-    responsavelTarefa: new ResponsavelTarefa(repo),
+    responsavelTarefa: new ResponsavelTarefa(repo, userRepo),
     alterarDatas: new AlterarDatasTarefaUseCase(repo),
   });
 }

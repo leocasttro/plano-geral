@@ -5,6 +5,12 @@ import { TarefaComPrazo } from '../../domain/entities/TarefaComPrazo';
 import { Prioridade } from '../../domain/value-objects/Prioridade';
 import { StatusTarefa } from '../../domain/value-objects/StatusTarefa';
 
+type ResponsavelDTO = {
+  id: string;
+  nome: string;
+  email: string;
+};
+
 export interface TarefaDTOProps {
   id: string;
   titulo: string;
@@ -13,7 +19,8 @@ export interface TarefaDTOProps {
   dataFim?: Date | null;
   status: StatusTarefa;
   prioridade: Prioridade;
-  responsavel?: string;
+  responsavelId?: string | null;
+  responsavel?: ResponsavelDTO | null;
   projetoId: string | null;
   checklist: {
     id: string;
@@ -30,7 +37,10 @@ export interface TarefaDTOProps {
 }
 
 export class TarefaDTO {
-  static fromDomain(tarefa: Tarefa): TarefaDTOProps {
+  static fromDomain(
+    tarefa: Tarefa,
+    responsavel?: ResponsavelDTO | null,
+  ): TarefaDTOProps {
     let dataInicio: Date | null = null;
     let dataFim: Date | null = null;
 
@@ -39,15 +49,18 @@ export class TarefaDTO {
       dataFim = tarefa.getPeriodo().getFim();
     }
 
+    const responsavelId = tarefa.obterResponsavel() ?? null;
+
     return {
       id: tarefa.id,
       titulo: tarefa.titulo,
       descricao: tarefa.descricao,
-      dataInicio: dataInicio,
-      dataFim: dataFim,
+      dataInicio,
+      dataFim,
       status: tarefa.obterStatus(),
       prioridade: tarefa.obterPrioridade(),
-      responsavel: tarefa.obterResponsavel(),
+      responsavelId,
+      responsavel: responsavel ?? null,
       projetoId: tarefa.obterProjetoId(),
       checklist: tarefa.obterChecklist().map((item: CheckListItem) => ({
         id: item.id,
