@@ -26,7 +26,12 @@ export interface CardData {
   /* Datas */
   dataCriacao: Date;
 
-  responsavel?: string;
+  responsavelId?: string | null;
+  responsavel?: {
+    id: string;
+    nome: string;
+    email: string;
+  } | null;
   status?: string;
   checklist: ChecklistItem[];
 

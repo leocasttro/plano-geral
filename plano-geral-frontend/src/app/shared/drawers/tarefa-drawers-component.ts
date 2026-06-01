@@ -81,9 +81,9 @@ export class TarefaDrawersComponent implements OnInit {
 
     if (this.tarefa.responsavel) {
       this.responsavelSelecionado = {
-        id: this.tarefa.responsavel, // ou um ID válido se tiver
-        nome: this.tarefa.responsavel,
-        email: '', // se não tiver email, deixa vazio
+        id: this.tarefa.responsavel.id,
+        nome: this.tarefa.responsavel.nome,
+        email: this.tarefa.responsavel.email,
         perfil: 'USER',
         ativo: true,
       };
@@ -341,12 +341,12 @@ export class TarefaDrawersComponent implements OnInit {
     this.responsavelSelecionado = usuario;
     this.mostrarSelecaoResponsavel = false;
 
-    // Chamar API para atribuir responsável
     this.tarefaApi
-      .atribuirResponsavel(this.tarefa.id!, usuario.nome, 'Leonardo Castro')
+      .atribuirResponsavel(this.tarefa.id!, usuario.id)
       .subscribe({
         next: (dto) => {
           const atualizada = tarefaDtoToDrawer(dto);
+
           this.tarefa = {
             ...this.tarefa,
             ...atualizada,
@@ -355,6 +355,17 @@ export class TarefaDrawersComponent implements OnInit {
               ...(atualizada.atividades ?? []),
             ]),
           };
+
+          this.responsavelSelecionado = this.tarefa.responsavel
+            ? {
+              id: this.tarefa.responsavel.id,
+              nome: this.tarefa.responsavel.nome,
+              email: this.tarefa.responsavel.email,
+              perfil: 'USER',
+              ativo: true,
+            }
+            : null;
+
           this.tarefaAtualizada.emit(this.tarefa);
           this.cdr.detectChanges();
         },
