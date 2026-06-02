@@ -43,6 +43,10 @@ export class NavBar {
       titulo: 'Projetos',
       subtitulo: 'Gerencie os projetos e seus ocupantes',
     },
+    '/relatorios': {
+      titulo: 'Relatórios',
+      subtitulo: 'Acompanhe indicadores dos projetos, tarefas e usuários',
+    },
   };
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
