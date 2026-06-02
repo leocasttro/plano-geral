@@ -93,6 +93,9 @@ export interface TarefaUsuarioDetalhe {
   prioridade: string;
   dataInicio?: string | null;
   dataFim?: string | null;
+  dataInicioFormatada: string;
+  dataFimFormatada: string;
   totalAlteracoesDatas: number;
   tempoComUsuarioHoras: number;
+  tempoComUsuarioFormatado: string;
 }

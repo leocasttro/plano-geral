@@ -293,10 +293,10 @@
             </div>
 
             <div class="tarefa-detalhe-grid">
-              <span>Início: {{ tarefa.dataInicio || 'sem data' }}</span>
-              <span>Fim: {{ tarefa.dataFim || 'sem data' }}</span>
+              <span>Início: {{ tarefa.dataInicioFormatada }}</span>
+              <span>Fim: {{ tarefa.dataFimFormatada }}</span>
               <span>Alterações: {{ tarefa.totalAlteracoesDatas }}</span>
-              <span>Tempo: {{ tarefa.tempoComUsuarioHoras }}h</span>
+              <span>Tempo: {{ tarefa.tempoComUsuarioFormatado }}</span>
             </div>
           </div>
 

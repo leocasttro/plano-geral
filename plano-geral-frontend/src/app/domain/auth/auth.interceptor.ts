@@ -1,20 +1,33 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import {inject} from '@angular/core';
-import {AuthService} from './auth.service';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
+import { AuthService } from './auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authServive = inject(AuthService);
-  const token = authServive.getToken();
+  const authService = inject(AuthService);
+  const token = authService.getToken();
 
-  if (!token) {
-    return next(req);
+  if (token && authService.isTokenExpired(token)) {
+    authService.logout();
+
+    return throwError(() => new Error('Token expirado'));
   }
 
-  const authReq = req.clone({
-    setHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const authReq = token
+    ? req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    : req;
 
-  return next(authReq)
-}
+  return next(authReq).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401 && token) {
+        authService.logout();
+      }
+
+      return throwError(() => error);
+    }),
+  );
+};

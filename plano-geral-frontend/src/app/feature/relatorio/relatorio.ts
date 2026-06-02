@@ -143,6 +143,8 @@ export class Relatorio implements OnInit {
                     .filter((tempo) => tempo.responsavel === usuario.usuarioId)
                     .reduce((total, tempo) => total + tempo.duracaoHoras, 0);
 
+                  const tempoComUsuarioHoras = Number(tempoDoUsuario.toFixed(2));
+
                   return {
                     id: tarefa.id,
                     titulo: tarefa.titulo,
@@ -150,8 +152,11 @@ export class Relatorio implements OnInit {
                     prioridade: tarefa.prioridade,
                     dataInicio: tarefa.dataInicio,
                     dataFim: tarefa.dataFim,
+                    dataInicioFormatada: this.formatarDataBrasil(tarefa.dataInicio),
+                    dataFimFormatada: this.formatarDataBrasil(tarefa.dataFim),
                     totalAlteracoesDatas: alteracoes?.totalAlteracoes ?? 0,
-                    tempoComUsuarioHoras: Number(tempoDoUsuario.toFixed(2)),
+                    tempoComUsuarioHoras,
+                    tempoComUsuarioFormatado: this.formatarHorasBrasil(tempoComUsuarioHoras),
                   };
                 }),
               ),
@@ -172,5 +177,40 @@ export class Relatorio implements OnInit {
           this.tarefasUsuario = [];
         },
       });
+  }
+
+  formatarDataBrasil(data?: string | null): string {
+    if (!data) {
+      return 'sem data';
+    }
+
+    const date = new Date(data);
+
+    if (Number.isNaN(date.getTime())) {
+      return 'sem data';
+    }
+
+    return date.toLocaleDateString('pt-BR', {
+      timeZone: 'UTC',
+    });
+  }
+
+  formatarHorasBrasil(horas: number): string {
+    if (!horas || horas <= 0) {
+      return '0h';
+    }
+
+    const horasInteiras = Math.floor(horas);
+    const minutos = Math.round((horas - horasInteiras) * 60);
+
+    if (horasInteiras === 0) {
+      return `${minutos}min`;
+    }
+
+    if (minutos === 0) {
+      return `${horasInteiras}h`;
+    }
+
+    return `${horasInteiras}h ${minutos}min`;
   }
 }
