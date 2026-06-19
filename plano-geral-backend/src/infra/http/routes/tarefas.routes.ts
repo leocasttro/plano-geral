@@ -5,6 +5,8 @@ import { ensureAuthenticated } from '../middlewares/ensureAuthenticated';
 const router = Router();
 const controller = makeTarefaController();
 
+router.use(ensureAuthenticated);
+
 router.post("/", ensureAuthenticated, (req, res) => controller.criar(req, res));
 router.get("/", (req, res) => controller.buscarTodas(req, res));
 router.get("/:id", (req, res) => controller.buscarPorId(req, res));

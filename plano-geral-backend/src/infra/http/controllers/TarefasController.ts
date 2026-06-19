@@ -13,8 +13,9 @@ import { AlterarPrioridadeTarefa } from '../../../application/use-cases/tarefa/A
 import { Prioridade } from '../../../domain/value-objects/Prioridade';
 import { StatusTarefa } from '../../../domain/value-objects/StatusTarefa';
 import { ResponsavelTarefa } from '../../../application/use-cases/tarefa/ResponsavelTarefa';
-import { TarefaComPrazo } from '../../../domain/entities/TarefaComPrazo'; // NOVO
 import { AlterarDatasTarefaUseCase } from '../../../application/use-cases/tarefa/AlterarDatasTarefaUseCase';
+import {getAuthenticatedUser, getAuthenticatedUserId} from '../helpers/getAuthenticatedUser';
+
 
 interface CriarTarefaBody {
   titulo: string;
@@ -71,8 +72,8 @@ export class TarefasController {
       titulo,
       descricao,
       projetoId,
-      usuario: req.user.id,
-      usuarioNome: req.user.nome ?? req.user.id,
+      usuario: getAuthenticatedUserId(req),
+      usuarioNome: getAuthenticatedUser(req),
     });
 
     return res.status(201).json(TarefaDTO.fromDomain(tarefa));
@@ -149,39 +150,32 @@ export class TarefasController {
   }
 
   async alterarPrioridade(req: Request, res: Response) {
-    const { novaPrioridade, usuario } = req.body;
+    const { novaPrioridade } = req.body;
 
     if (!isPrioridade(novaPrioridade)) {
       return res.status(400).json({ message: 'Prioridade inválida' });
-    }
-    if (!usuario || !String(usuario).trim()) {
-      return res.status(400).json({ message: 'Usuário é obrigatório' });
     }
 
     const tarefa = await this.deps.alterarPrioridade.execute({
       tarefaId: req.params.id,
       novaPrioridade,
-      usuario,
+      usuario: getAuthenticatedUser(req),
     });
 
     return res.json(TarefaDTO.fromDomain(tarefa));
   }
 
   async alterarStatus(req: Request, res: Response) {
-    const { novoStatus, usuario } = req.body;
+    const { novoStatus } = req.body;
 
     if (!isStatusTarefa(novoStatus)) {
       return res.status(400).json({ message: 'Status inválido' });
     }
 
-    if (!usuario || !String(usuario).trim()) {
-      return res.status(400).json({ message: 'Usuário é obrigatório' });
-    }
-
     const tarefa = await this.deps.alterarStatus.execute({
       tarefaId: req.params.id,
       novoStatus,
-      usuario,
+      usuario: getAuthenticatedUser(req),
     });
 
     return res.json(TarefaDTO.fromDomain(tarefa));
@@ -200,7 +194,7 @@ export class TarefasController {
       const result = await this.deps.responsavelTarefa.execute({
         tarefaId: req.params.id,
         responsavelId,
-        usuario: req.user.id,
+        usuario: getAuthenticatedUserId(req),
       });
 
       return res.json(TarefaDTO.fromDomain(result.tarefa, result.responsavel));
@@ -211,24 +205,19 @@ export class TarefasController {
 
   async alterarDatas(req: Request, res: Response): Promise<Response> {
     try {
-      const { id } = req.params;
-      const { dataInicio, dataFim, usuario } = req.body;
-
-      if (!usuario || !String(usuario).trim()) {
-        return res.status(400).json({ error: 'Usuário é obrigatório' });
-      }
+      const { dataInicio, dataFim } = req.body;
 
       if (dataInicio === undefined && dataFim === undefined) {
         return res.status(400).json({
-          error: 'Forneça pelo menos uma data (dataInicio ou dataFim)'
+          error: 'Forneça pelo menos uma data (dataInicio ou dataFim)',
         });
       }
 
       const tarefa = await this.deps.alterarDatas.execute({
-        tarefaId: id,
+        tarefaId: req.params.id,
         dataInicio: parseDateOnly(dataInicio),
         dataFim: parseDateOnly(dataFim),
-        usuario,
+        usuario: getAuthenticatedUser(req),
       });
 
       return res.status(200).json(TarefaDTO.fromDomain(tarefa));

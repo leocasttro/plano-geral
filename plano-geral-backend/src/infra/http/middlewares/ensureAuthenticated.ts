@@ -34,8 +34,6 @@ export function ensureAuthenticated(
       perfil: decoded.perfil,
     };
 
-    console.log(req.user);
-
     return next();
   } catch {
     return res.status(401).json({ error: 'Token inválido ou expirado' });

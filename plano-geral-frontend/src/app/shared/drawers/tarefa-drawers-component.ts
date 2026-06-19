@@ -8,7 +8,7 @@ import {
   NgbTypeaheadModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faCalendar, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 import { EventEmitter, Output } from '@angular/core';
 
@@ -235,7 +235,6 @@ export class TarefaDrawersComponent implements OnInit {
     this.tarefaApi.alterarDatas(this.tarefa.id, {
       dataInicio: this.dataInicioTemp || undefined,
       dataFim: this.dataFimTemp || undefined,
-      usuario: UsuarioApi.name,
     }).subscribe({
       next: (dto) => {
         const atualizada = tarefaDtoToDrawer(dto);

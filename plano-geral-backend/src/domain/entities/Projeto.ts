@@ -1,4 +1,3 @@
-import e from "cors";
 import { StatusProjeto } from "../value-objects/StatusProjeto";
 import { Tarefa } from "./Tarefa";
 

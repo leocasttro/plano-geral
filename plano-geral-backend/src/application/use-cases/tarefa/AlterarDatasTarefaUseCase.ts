@@ -2,7 +2,6 @@
 import { TarefaRepository } from '../../../domain/repositories/TarefaRepository';
 import { TarefaComPrazo } from '../../../domain/entities/TarefaComPrazo';
 import { Tarefa } from '../../../domain/entities/Tarefa';
-import { Periodo } from '../../../domain/value-objects/Periodo';
 
 interface AlterarDatasInput {
   tarefaId: string;
@@ -28,26 +27,17 @@ export class AlterarDatasTarefaUseCase {
       return tarefa;
     }
 
-    // Se não é, cria um período e converte (apenas isso!)
-    const periodo = new Periodo(input.dataInicio, input.dataFim);
-
     // Criar TarefaComPrazo com os mesmos dados
-    const tarefaComPrazo = new TarefaComPrazo(
-      tarefa.id,
-      tarefa.titulo,
-      tarefa.descricao,
-      tarefa.obterProjetoId(),
-      periodo
+    const tarefaComPrazo = tarefa.converterParaPrazo(
+      input.dataInicio,
+      input.dataFim,
     );
 
-    // Copiar status, prioridade, etc (usando os getters)
-    Object.assign(tarefaComPrazo, {
-      status: tarefa.obterStatus(),
-      prioridade: tarefa.obterPrioridade(),
-      responsavel: tarefa.obterResponsavel(),
-      checklist: tarefa.obterChecklist(),
-      atividades: tarefa.obterAtividades()
-    });
+    tarefaComPrazo.alterarDatas(
+      input.dataInicio,
+      input.dataFim,
+      input.usuario,
+    );
 
     await this.tarefaRepository.save(tarefaComPrazo);
 
