@@ -59,6 +59,7 @@ export class TarefaDrawersComponent implements OnInit {
   mostrandoCalendario = false;
   dataInicioTemp: string = '';
   dataFimTemp: string = '';
+  justificativaDatasTemp = '';
 
   salvandoDatas = false;
 
@@ -230,11 +231,22 @@ export class TarefaDrawersComponent implements OnInit {
       return;
     }
 
+    if (
+      this.deveInformarJustificativaDatas() &&
+      !this.justificativaDatasTemp.trim()
+    ) {
+      alert('Informe uma justificativa para alterar as datas.');
+      return;
+    }
+
     this.salvandoDatas = true;
 
     this.tarefaApi.alterarDatas(this.tarefa.id, {
       dataInicio: this.dataInicioTemp || undefined,
       dataFim: this.dataFimTemp || undefined,
+      justificativa: this.deveInformarJustificativaDatas()
+        ? this.justificativaDatasTemp.trim()
+        : undefined,
     }).subscribe({
       next: (dto) => {
         const atualizada = tarefaDtoToDrawer(dto);
@@ -252,6 +264,7 @@ export class TarefaDrawersComponent implements OnInit {
 
         this.dataInicioTemp = this.tarefa.dataInicio || '';
         this.dataFimTemp = this.tarefa.dataFim || '';
+        this.justificativaDatasTemp = '';
 
         this.mostrandoCalendario = false;
         this.salvandoDatas = false;
@@ -433,6 +446,7 @@ export class TarefaDrawersComponent implements OnInit {
     this.mostrandoCalendario = false;
     this.dataInicioTemp = '';
     this.dataFimTemp = '';
+    this.justificativaDatasTemp = '';
   }
 
   // Formatar data para exibição (DD/MM/YYYY)
@@ -457,6 +471,10 @@ export class TarefaDrawersComponent implements OnInit {
       }
     }
     return true;
+  }
+
+  deveInformarJustificativaDatas(): boolean {
+    return !!(this.tarefa.dataInicio || this.tarefa.dataFim);
   }
 
   getCorAvatar(nome: string): string {

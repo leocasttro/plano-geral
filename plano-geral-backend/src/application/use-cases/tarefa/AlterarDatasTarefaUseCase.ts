@@ -8,6 +8,7 @@ interface AlterarDatasInput {
   dataInicio?: Date;
   dataFim?: Date;
   usuario: string;
+  justificativa?: string;
 }
 
 export class AlterarDatasTarefaUseCase {
@@ -20,23 +21,15 @@ export class AlterarDatasTarefaUseCase {
       throw new Error('Tarefa não encontrada');
     }
 
-    // Se já é TarefaComPrazo, altera as datas
     if (tarefa instanceof TarefaComPrazo) {
-      tarefa.alterarDatas(input.dataInicio, input.dataFim, input.usuario);
+      tarefa.alterarDatas(input.dataInicio, input.dataFim, input.usuario, input.justificativa,);
       await this.tarefaRepository.save(tarefa);
       return tarefa;
     }
 
-    // Criar TarefaComPrazo com os mesmos dados
     const tarefaComPrazo = tarefa.converterParaPrazo(
       input.dataInicio,
       input.dataFim,
-    );
-
-    tarefaComPrazo.alterarDatas(
-      input.dataInicio,
-      input.dataFim,
-      input.usuario,
     );
 
     await this.tarefaRepository.save(tarefaComPrazo);

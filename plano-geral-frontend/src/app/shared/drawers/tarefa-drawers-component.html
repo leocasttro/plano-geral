@@ -351,12 +351,26 @@
               [(ngModel)]="dataFimTemp"
               (change)="validarDatas()"
             />
+            <div class="mb-3" *ngIf="deveInformarJustificativaDatas()">
+              <label class="form-label form-label-sm">Justificativa</label>
+              <textarea
+                class="form-control form-control-sm"
+                rows="3"
+                placeholder="Informe o motivo da alteração das datas"
+                [(ngModel)]="justificativaDatasTemp"
+                name="justificativaDatasTemp"
+              ></textarea>
+            </div>
           </div>
 
           <div class="d-flex gap-2">
             <button
               class="btn btn-sm btn-primary w-100"
-              [disabled]="salvandoDatas || !validarDatas()"
+              [disabled]="
+                  salvandoDatas ||
+                  !validarDatas() ||
+                  (deveInformarJustificativaDatas() && !justificativaDatasTemp.trim())
+                "
               (click)="salvarDatas()"
             >
               <span

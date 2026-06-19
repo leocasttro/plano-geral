@@ -6,6 +6,8 @@ import { ProjetoDTO } from '../../domain/projeto/projetoModel';
 import { ProjetoApi } from '../../domain/projeto/projeto.api';
 import { ProjetoEventsService } from '../../domain/projeto/projeto-events.service';
 import { TarefaDTO } from '../../domain/tarefa/tarefa.model';
+import { UsuarioApi } from '../../domain/usuario/usuario.api';
+import { UsuarioDTO } from '../../domain/usuario/usuario.model';
 
 @Component({
   selector: 'app-projeto',
@@ -15,6 +17,7 @@ import { TarefaDTO } from '../../domain/tarefa/tarefa.model';
 })
 export class Projeto implements OnInit, OnDestroy {
   projetos: ProjetoDTO[] = [];
+  usuarios: UsuarioDTO[] = [];
 
   projetoSelecionado: ProjetoDTO | null = null;
   projetoModalSelecionado: ProjetoDTO | null = null;
@@ -25,21 +28,29 @@ export class Projeto implements OnInit, OnDestroy {
   novoProjeto = {
     nome: '',
     descricao: '',
+    centroCusto: '',
+    coordenadorId: '',
   };
 
   loading = false;
   error = '';
+
+  statusMenuProjetoId: string | null = null;
+
+  statusOptions = ['ATIVO', 'PAUSADO', 'CONCLUIDO', 'CANCELADO'];
 
   private sub?: Subscription;
 
   constructor(
     private projetoApi: ProjetoApi,
     private projetoEvents: ProjetoEventsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private usuarioApi: UsuarioApi,
   ) {}
 
   ngOnInit() {
     this.carregarProjetos();
+    this.carregarUsuarios();
 
     this.sub = this.projetoEvents.novoProjeto$.subscribe(() => {
       this.abrirModalNovoProjeto();
@@ -72,6 +83,16 @@ export class Projeto implements OnInit, OnDestroy {
     });
   }
 
+  carregarUsuarios() {
+    this.usuarioApi.buscarTodos().subscribe({
+      next: (usuarios) => {
+        this.usuarios = usuarios;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
   selecionarProjeto(projeto: ProjetoDTO) {
     this.projetoSelecionado = projeto;
   }
@@ -92,6 +113,8 @@ export class Projeto implements OnInit, OnDestroy {
     this.novoProjeto = {
       nome: '',
       descricao: '',
+      centroCusto: '',
+      coordenadorId: '',
     };
 
     this.modalNovoProjetoAberto = true;
@@ -154,6 +177,73 @@ export class Projeto implements OnInit, OnDestroy {
       case 'ALTA':
         return 'bg-warning text-dark';
       case 'CRITICA':
+        return 'bg-danger';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
+  toggleStatusMenu(projetoId: string) {
+    this.statusMenuProjetoId =
+      this.statusMenuProjetoId === projetoId ? null : projetoId;
+  }
+
+  alterarStatusProjeto(projeto: ProjetoDTO, status: string) {
+    if (projeto.status === status) {
+      this.statusMenuProjetoId = null;
+      return;
+    }
+
+    this.projetoApi.atualizarStatus(projeto.id, status).subscribe({
+      next: (projetoAtualizado) => {
+        this.projetos = this.projetos.map((item) =>
+          item.id === projetoAtualizado.id ? projetoAtualizado : item,
+        );
+
+        if (this.projetoSelecionado?.id === projetoAtualizado.id) {
+          this.projetoSelecionado = projetoAtualizado;
+        }
+
+        if (this.projetoModalSelecionado?.id === projetoAtualizado.id) {
+          this.projetoModalSelecionado = projetoAtualizado;
+        }
+
+        this.statusMenuProjetoId = null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.error = 'Erro ao alterar status do projeto';
+        this.statusMenuProjetoId = null;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  statusLabel(status: string): string {
+    switch (status) {
+      case 'ATIVO':
+        return 'Ativo';
+      case 'PAUSADO':
+        return 'Pausado';
+      case 'CONCLUIDO':
+        return 'Concluído';
+      case 'CANCELADO':
+        return 'Cancelado';
+      default:
+        return status;
+    }
+  }
+
+  statusBadgeClass(status: string): string {
+    switch (status) {
+      case 'ATIVO':
+        return 'bg-success';
+      case 'PAUSADO':
+        return 'bg-warning text-dark';
+      case 'CONCLUIDO':
+        return 'bg-primary';
+      case 'CANCELADO':
         return 'bg-danger';
       default:
         return 'bg-secondary';

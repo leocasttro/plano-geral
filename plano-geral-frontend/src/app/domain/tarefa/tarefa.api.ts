@@ -85,7 +85,11 @@ export class TarefaApi {
 
   alterarDatas(
     id: string,
-    payload: { dataInicio?: string; dataFim?: string },
+    payload: {
+      dataInicio?: string;
+      dataFim?: string;
+      justificativa?: string;
+    },
   ): Observable<TarefaDTO> {
     return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/datas`, payload);
   }

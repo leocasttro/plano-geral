@@ -18,7 +18,7 @@ export class TarefaComPrazo extends Tarefa {
   }
 
   // Método para alterar as datas de uma tarefa existente
-  alterarDatas(novaDataInicio?: Date, novaDataFim?: Date, usuario?: string): void {
+  alterarDatas(novaDataInicio?: Date, novaDataFim?: Date, usuario?: string, justificativa?: string,): void {
     // Validações
     if (this.obterStatus() === StatusTarefa.CONCLUIDA) {
       throw new Error('Não é possível alterar datas de uma tarefa concluída');
@@ -26,26 +26,32 @@ export class TarefaComPrazo extends Tarefa {
 
     const periodoAntigo = this.periodo;
 
-    // Criar novo período com as novas datas (ou manter as antigas)
     const novoPeriodo = new Periodo(
       novaDataInicio ?? periodoAntigo.getInicioOptional(),
       novaDataFim ?? periodoAntigo.getFimOptional()
     );
 
-    // Validar o novo período
-    novoPeriodo.validar(); // Adicione este método no Periodo
+    const houveAlteracao =
+      periodoAntigo.getInicioOptional()?.getTime() !== novoPeriodo.getInicioOptional()?.getTime() ||
+      periodoAntigo.getFimOptional()?.getTime() !== novoPeriodo.getFimOptional()?.getTime();
 
-    // Atualizar
+    if (!houveAlteracao) {
+      return;
+    }
+
+    if (!justificativa || !justificativa.trim()) {
+      throw new Error('Justificativa é obrigatória para alterar datas');
+    }
+
     this.periodo = novoPeriodo;
 
-    // Registrar atividade se tiver usuário
     if (usuario) {
       this.registrarAtividade(
         new Atividade(
           randomUUID(),
           TipoAtividade.ALTERACAO_DATAS,
           usuario,
-          `Datas alteradas: ${this.formatarPeriodo(periodoAntigo)} -> ${this.formatarPeriodo(novoPeriodo)}`
+          `Datas alteradas: ${this.formatarPeriodo(periodoAntigo)} -> ${this.formatarPeriodo(novoPeriodo)}. Justificativa: ${justificativa.trim()}`
         )
       );
     }

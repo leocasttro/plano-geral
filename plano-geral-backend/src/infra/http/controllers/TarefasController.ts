@@ -205,7 +205,7 @@ export class TarefasController {
 
   async alterarDatas(req: Request, res: Response): Promise<Response> {
     try {
-      const { dataInicio, dataFim } = req.body;
+      const { dataInicio, dataFim, justificativa } = req.body;
 
       if (dataInicio === undefined && dataFim === undefined) {
         return res.status(400).json({
@@ -218,6 +218,7 @@ export class TarefasController {
         dataInicio: parseDateOnly(dataInicio),
         dataFim: parseDateOnly(dataFim),
         usuario: getAuthenticatedUser(req),
+        justificativa,
       });
 
       return res.status(200).json(TarefaDTO.fromDomain(tarefa));

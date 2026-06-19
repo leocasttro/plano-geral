@@ -3,6 +3,8 @@ import { Tarefa } from "./Tarefa";
 
 export interface ProjetoProps {
   id: string;
+  centroCusto?:  string | null;
+  coordenadorId?: string | null;
   nome: string;
   descricao?: string;
   status: StatusProjeto;
@@ -14,19 +16,25 @@ export interface ProjetoProps {
 export class Projeto {
   private tarefas: Tarefa[] = [];
   private status: StatusProjeto;
+  private centroCusto?: string | null;
+  private coordenadorId?: string | null;
   private createdAt: Date;
   private updatedAt: Date;
 
   constructor(
     public readonly id: string,
     public nome: string,
-    public descricao?: string
+    public descricao?: string,
+    centroCusto?: string | null,
+    coordenadorId?: string | null,
   ) {
     if (!nome || nome.trim().length === 0) {
       throw new Error('Projeto precisa de um nome válido');
     }
 
     this.status = StatusProjeto.ATIVO;
+    this.centroCusto = centroCusto ?? null;
+    this.coordenadorId = coordenadorId ?? null;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
@@ -36,6 +44,8 @@ export class Projeto {
 
     projeto.status = props.status;
     projeto.tarefas = props.tarefas ?? [];
+    projeto.centroCusto = props.centroCusto ?? null;
+    projeto.coordenadorId = props.coordenadorId ?? null;
     projeto.createdAt = props.createdAt ?? new Date();
     projeto.updatedAt = props.updatedAt ?? new Date();
 
@@ -77,6 +87,19 @@ export class Projeto {
     this.updatedAt = new Date();
   }
 
+  cancelar(usuario: string): void {
+    if (this.status === StatusProjeto.CONCLUIDO) {
+      throw new Error('Não é possível cancelar um projeto concluído');
+    }
+
+    if (this.status === StatusProjeto.CANCELADO) {
+      throw new Error('Projeto já está cancelado');
+    }
+
+    this.status = StatusProjeto.CANCELADO;
+    this.updatedAt = new Date();
+  }
+
   adicionarTarefa(tarefa: Tarefa): void {
     if (this.status === StatusProjeto.CONCLUIDO) {
       throw new Error('Não é possível adicionar tarefas em projetos concluídos');
@@ -101,6 +124,14 @@ export class Projeto {
 
   obterTarefas(): Tarefa[] {
     return [...this.tarefas];
+  }
+
+  obterCentroCusto(): string | null {
+    return this.centroCusto ?? null;
+  }
+
+  obterCoordenadorId(): string | null {
+    return this.coordenadorId ?? null;
   }
 
   obterCreatedAt(): Date {

@@ -7,6 +7,8 @@ export interface ProjetoDTOProps {
   descricao?: string;
   status: string;
   progresso: number;
+  centroCusto?: string | null;
+  coordenadorId?: string | null;
   totalTarefas: number;
   tarefasConcluidas: number;
   tarefas?: TarefaDTO[];
@@ -28,6 +30,8 @@ export class ProjetoDTO {
       descricao: projeto.descricao,
       status: projeto.obterStatus(),
       progresso: projeto.calcularProgresso(),
+      centroCusto: projeto.obterCentroCusto(),
+      coordenadorId: projeto.obterCoordenadorId(),
       totalTarefas,
       tarefasConcluidas,
       tarefas: tarefas.map(t => TarefaDTO.fromDomain(t)),

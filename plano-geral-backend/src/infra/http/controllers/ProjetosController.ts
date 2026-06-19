@@ -1,24 +1,17 @@
 import { Request, Response } from 'express';
 import { ProjetoDTO } from '../../../application/dtos/ProjetoDTO';
 import { CreateProjeto } from '../../../application/use-cases/projeto/CreateProjeto';
-import { StatusProjeto } from '../../../domain/value-objects/StatusProjeto';
 import {GetAllProjetos} from '../../../application/use-cases/projeto/GetAllProjetos';
 import {GetProjetoById} from '../../../application/use-cases/projeto/GetProjetoById';
 import {UpdateProjetoStatus} from '../../../application/use-cases/projeto/UpdateProjetoStatus';
+import {isStatusProjeto} from '../validators/projetoValidators';
+import {getAuthenticatedUser} from '../helpers/getAuthenticatedUser';
 
 interface CriarProjetoBody {
   nome: string;
   descricao?: string;
-}
-
-interface AtualizarStatus {
-  status: string;
-  usuario: string;
-}
-
-interface AdicionarTarefaBody {
-  tarefaId: string;
-  usuario: string;
+  centroCusto?: string;
+  coordenadorId?: string;
 }
 
 type Deps = {
@@ -28,29 +21,16 @@ type Deps = {
   updateProjetoStatus: UpdateProjetoStatus;
 };
 
-function isStatusProjeto(valor: any): valor is StatusProjeto {
-  return (
-    valor === 'ATIVO' ||
-    valor === 'PAUSADO' ||
-    valor === 'CONCLUIDO' ||
-    valor === 'CANCELADO'
-  );
-}
-
 export class ProjetosController {
   constructor(private deps: Deps) {}
 
   async criar(req: Request<{}, {}, CriarProjetoBody>, res: Response) {
     try {
-      const { nome, descricao } = req.body;
-
-      if (!nome || nome.trim().length === 0) {
-        return res.status(400).json({ error: 'Nome do projeto é obrigatório' });
-      }
-
       const projeto = await this.deps.createProjeto.execute({
-        nome,
-        descricao,
+        nome: req.body.nome,
+        descricao: req.body.descricao,
+        centroCusto: req.body.centroCusto,
+        coordenadorId: req.body.coordenadorId,
       });
 
       return res.status(201).json(ProjetoDTO.fromDomain(projeto));
@@ -70,18 +50,47 @@ export class ProjetosController {
   }
 
   async atualizarStatus(req: Request, res: Response) {
-    const { status } = req.body;
+    try {
+      const { status } = req.body;
 
-    if (!isStatusProjeto(status)) {
-      return res.status(400).json({ error: 'Status inválido' });
+      if (!isStatusProjeto(status)) {
+        return res.status(400).json({ error: 'Status inválido' });
+      }
+
+      const projeto = await this.deps.updateProjetoStatus.execute({
+        projetoId: req.params.id,
+        status,
+        usuario: getAuthenticatedUser(req),
+      });
+
+      return res.json(ProjetoDTO.fromDomain(projeto));
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
     }
+  }
 
-    const projeto = await this.deps.updateProjetoStatus.execute({
-      projetoId: req.params.id,
-      status,
-      usuario: req.user!.id,
-    });
+  async criarVarios(req: Request, res: Response) {
+    try {
+      if (!Array.isArray(req.body)) {
+        return res.status(400).json({ error: 'Envie uma lista de projetos' });
+      }
 
-    return res.json(ProjetoDTO.fromDomain(projeto));
+      const projetos = [];
+
+      for (const item of req.body) {
+        const projeto = await this.deps.createProjeto.execute({
+          nome: item.nome,
+          descricao: item.descricao,
+          centroCusto: item.centroCusto,
+          coordenadorId: item.coordenadorId,
+        });
+
+        projetos.push(ProjetoDTO.fromDomain(projeto));
+      }
+
+      return res.status(201).json(projetos);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
   }
 }

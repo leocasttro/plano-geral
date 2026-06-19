@@ -13,6 +13,8 @@ export class ProjetoMapper {
     row.tarefas = projeto
       .obterTarefas()
       .map((tarefa) => TarefaMapper.toORM(tarefa));
+    row.centroCusto = projeto.obterCentroCusto();
+    row.coordenadorId = projeto.obterCoordenadorId();
     row.createdAt = projeto.obterCreatedAt();
     row.updatedAt = projeto.obterUpdatedAt();
 
@@ -30,6 +32,8 @@ export class ProjetoMapper {
       descricao: row.descricao ?? undefined,
       status: row.status as any,
       tarefas: tarefas,
+      centroCusto: row.centroCusto,
+      coordenadorId: row.coordenadorId,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });

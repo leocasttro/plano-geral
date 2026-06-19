@@ -4,6 +4,7 @@ import { ProjetoORM } from "../ProjetoORM";
 import { AppDataSource } from "../../../data-source";
 import { Projeto } from "../../../../../domain/entities/Projeto";
 import { ProjetoMapper } from "../../mappers/ProjetoMapper";
+import {StatusProjeto} from '../../../../../domain/value-objects/StatusProjeto';
 
 export class ProjetoTypeORMRepository implements ProjetoRepository {
   private ormRepo: Repository<ProjetoORM>;
@@ -29,7 +30,7 @@ export class ProjetoTypeORMRepository implements ProjetoRepository {
     return ProjetoMapper.toDomain(row);
   }
 
-  async findAll(): Promise<any> {
+  async findAll(): Promise<Projeto[]> {
     const rows = await this.ormRepo.find({
       relations: { tarefas: true },
       order: { createdAt: 'DESC' }
@@ -41,7 +42,7 @@ export class ProjetoTypeORMRepository implements ProjetoRepository {
     await this.ormRepo.delete({ id });
   }
 
-  async findByStatus(status: string): Promise<Projeto[]> {
+  async findByStatus(status: StatusProjeto): Promise<Projeto[]> {
     const rows = await this.ormRepo.find({
       where: { status },
       relations: { tarefas: true },

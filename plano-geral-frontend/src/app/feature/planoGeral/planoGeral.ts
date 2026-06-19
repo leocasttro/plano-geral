@@ -94,7 +94,7 @@ export class Pedidos implements OnInit {
   onNovaTarefa(): void {
     const modalRef = this.modalService.open(ModalCadastroTarefa, {
       centered: true,
-      size: 'md',
+      size: 'lg',
     });
 
     modalRef.result.then(

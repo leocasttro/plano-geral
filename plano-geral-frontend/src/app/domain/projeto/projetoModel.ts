@@ -4,6 +4,8 @@ export interface ProjetoDTO {
   id: string;
   nome: string;
   descricao?: string;
+  centroCusto?: string | null;
+  coordenadorId?: string | null;
   status: string;
   progresso: number;
   totalTarefas: number;
@@ -16,4 +18,6 @@ export interface ProjetoDTO {
 export interface CriarProjetoRequest {
   nome: string;
   descricao?: string;
+  centroCusto?: string;
+  coordenadorId?: string;
 }

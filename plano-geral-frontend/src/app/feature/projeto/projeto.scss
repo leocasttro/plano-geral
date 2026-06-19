@@ -35,3 +35,31 @@
 .card.border-primary {
   border-width: 2px;
 }
+
+.status-menu {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: 0;
+  min-width: 140px;
+  padding: 4px;
+}
+
+.status-option {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+.status-option:hover:not(:disabled) {
+  background: #f1f3f5;
+}
+
+.status-option:disabled {
+  color: #adb5bd;
+  cursor: not-allowed;
+}

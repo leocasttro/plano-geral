@@ -33,6 +33,10 @@
         </option>
         <option *ngFor="let projeto of projetos" [value]="projeto.id">
           {{ projeto.nome }}
+          <ng-container *ngIf="projeto.centroCusto">
+            - {{ projeto.centroCusto }}
+          </ng-container>
+        </option>
       </select>
 
     </div>
