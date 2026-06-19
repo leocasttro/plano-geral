@@ -21,9 +21,23 @@ export class ResponsavelTarefa {
       throw new Error('Usuário responsável está inativo');
     }
 
-    tarefa.atribuirResponsavel(input.responsavelId, input.usuario);
+    const usuarioAcao = await this.userRepository.findById(input.usuario);
+    const nomeUsuarioAcao = usuarioAcao?.nome ?? input.usuario;
+
+    tarefa.atribuirResponsavel(
+      input.responsavelId,
+      nomeUsuarioAcao,
+      responsavel.nome,
+    );
 
     await this.repo.save(tarefa);
-    return tarefa;
+    return {
+      tarefa,
+      responsavel: {
+        id: responsavel.id,
+        nome: responsavel.nome,
+        email: responsavel.email,
+      },
+    };
   }
 }

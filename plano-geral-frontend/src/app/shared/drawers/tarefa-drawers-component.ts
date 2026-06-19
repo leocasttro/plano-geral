@@ -38,7 +38,6 @@ export class TarefaDrawersComponent implements OnInit {
   @Input() tarefa!: CardDataDrawer;
   @Output() tarefaAtualizada = new EventEmitter<CardDataDrawer>();
 
-  faMinus = faMinus;
   faCalendar = faCalendar;
 
   isChecklistCollapsed = false;
@@ -340,7 +339,6 @@ export class TarefaDrawersComponent implements OnInit {
   selecionarResponsavel(usuario: Usuario) {
     this.responsavelSelecionado = usuario;
     this.mostrarSelecaoResponsavel = false;
-
     this.tarefaApi
       .atribuirResponsavel(this.tarefa.id!, usuario.id)
       .subscribe({
@@ -438,27 +436,24 @@ export class TarefaDrawersComponent implements OnInit {
     this.dataFimTemp = '';
   }
 
-  // Formatar data para API (YYYY-MM-DD)
-  formatarDataParaAPI(data: string): string {
-    if (!data) return '';
-    const date = new Date(data);
-    return date.toISOString().split('T')[0];
-  }
-
   // Formatar data para exibição (DD/MM/YYYY)
   formatarDataExibicao(data: string | undefined): string {
     if (!data) return '—';
-    const date = new Date(data);
-    return date.toLocaleDateString('pt-BR');
+
+    const [ano, mes, dia] = data.split('T')[0].split('-');
+
+    if (!ano || !mes || !dia) {
+      return '-';
+    }
+
+    return `${dia}/${mes}/${ano}`;
   }
 
   // Validação básica das datas
   validarDatas(): boolean {
     if (this.dataInicioTemp && this.dataFimTemp) {
-      const inicio = new Date(this.dataInicioTemp);
-      const fim = new Date(this.dataFimTemp);
 
-      if (inicio > fim) {
+      if (this.dataInicioTemp > this.dataFimTemp) {
         return false;
       }
     }

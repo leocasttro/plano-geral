@@ -8,11 +8,29 @@ export class GetTarefaById {
     private userRepository: UserRepository,
   ) {}
 
-  async execute(id: string): Promise<TarefaDTOProps> {
-    const tarefa = await this.tarefaRepository.findById(id);
+  async execute(input: { id: string; usuarioId: string; usuarioNome?: string; perfil: string }): Promise<TarefaDTOProps> {
+    const tarefa = await this.tarefaRepository.findById(input.id);
 
     if (!tarefa) {
       throw new Error('Tarefa não encontrada');
+    }
+
+    const usuarioPodeVisualizar =
+      input.perfil === 'ADMIN' ||
+      tarefa.obterCriador() === input.usuarioId ||
+      tarefa.obterResponsavel() === input.usuarioId ||
+      tarefa.obterAtividades().some((atividade) => {
+        return (
+          atividade.tipo === 'CRIACAO' &&
+          (
+            atividade.usuario === input.usuarioId ||
+            atividade.usuario === input.usuarioNome
+          )
+        );
+      });
+
+    if (!usuarioPodeVisualizar) {
+      throw new Error('Acesso não permitido para esta tarefa');
     }
 
     const responsavelId = tarefa.obterResponsavel();

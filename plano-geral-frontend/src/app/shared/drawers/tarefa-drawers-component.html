@@ -295,14 +295,12 @@
       <div class="sidebar-item">
         <span class="label">Projeto</span>
 
-        <div *ngIf="tarefa.tags?.length; else semTags">
-          <span *ngFor="let tag of tarefa.tags" class="badge bg-primary me-1">
-            {{ tag }}
-          </span>
-        </div>
+        <span *ngIf="tarefa.projeto?.nome; else semProjeto" class="badge bg-primary">
+          {{ tarefa.projeto?.nome }}
+        </span>
 
-        <ng-template #semTags>
-          <span class="text-muted fst-italic">Nenhuma</span>
+        <ng-template #semProjeto>
+          <span class="text-muted fst-italic">Nenhum</span>
         </ng-template>
       </div>
 
@@ -387,6 +385,7 @@
             *ngFor="let p of participantes; let i = index"
             class="avatar"
             [style.zIndex]="50 - i"
+            [style.backgroundColor]="getCorAvatar(p + i)"
             [title]="p"
           >
             {{ p | slice:0:2 | uppercase }}

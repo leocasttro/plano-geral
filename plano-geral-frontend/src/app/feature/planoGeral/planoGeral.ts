@@ -68,6 +68,7 @@ export class Pedidos implements OnInit {
   carregarTarefas(): void {
     this.tarefaApi.buscarTodos().subscribe({
       next: (tarefasDto) => {
+        console.log(tarefasDto)
         this.tarefasPendentes = [];
         this.tarefasEmAndamento = [];
         this.tarefasConcluidas = [];
@@ -178,28 +179,6 @@ export class Pedidos implements OnInit {
         },
       });
   }
-
-  // private mapearParaCardData(t: Tarefa): CardData {
-  //   const dt = splitDateTime(t.dataCriacao);
-  //   const dataCriacaoStr = dt
-  //     ? `${dt.date} ${dt.time}`
-  //     : new Date().toLocaleString();
-  //   return {
-  //     id: t.id,
-  //     titulo: t.titulo,
-  //     descricao: t.descricao ?? '',
-  //     badgeTexto: t.badgeTexto ?? 'Nova',
-  //     badgeClasseCor: t.badgeClasseCor ?? 'bg-secondary',
-  //     urlImagem: t.urlImagem ?? 'https://placehold.co/24x24/999/FFF?text=?',
-  //     dataCriacao: dataCriacaoStr,
-  //     status: t.status ?? 'pendente',
-
-  //     checklist: (t.checklist ?? []).map((item: any) => ({
-  //       nome: item.nome,
-  //       status: item.concluido ? 'Concluído' : 'Pendente',
-  //     })),
-  //   };
-  // }
 
   abrirDetalheTarefa(tarefa: CardData): void {
     const ref = this.offcanvasService.open(TarefaDrawersComponent, {

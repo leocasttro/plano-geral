@@ -7,6 +7,7 @@ import { TarefaDTO, AtividadeDTO } from './tarefa.model';
 export interface CriarTarefaRequest {
   titulo: string;
   descricao?: string;
+  projetoId: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -50,7 +51,6 @@ export class TarefaApi {
   }
 
   buscarAtividades(tarefaId: string): Observable<AtividadeDTO[]> {
-    console.log(tarefaId);
     return this.http.get<AtividadeDTO[]>(
       `${this.apiUrl}/${tarefaId}/atividades`,
     );

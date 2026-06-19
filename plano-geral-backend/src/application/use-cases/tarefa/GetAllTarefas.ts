@@ -15,8 +15,30 @@ export class GetAllTarefas {
     private userRepository: UserRepository,
   ) {}
 
-  async execute(): Promise<TarefaDTOProps[]> {
-    const tarefas = await this.tarefaRepository.list();
+  async execute(input: { usuarioId: string; usuarioNome?: string; perfil: string }): Promise<TarefaDTOProps[]> {
+    const todasTarefas = await this.tarefaRepository.list();
+    const tarefas =
+      input.perfil === 'ADMIN'
+        ? todasTarefas
+        : todasTarefas.filter((tarefa) => {
+          const criadaPorUsuario = tarefa
+            .obterAtividades()
+            .some((atividade) => {
+              return (
+                atividade.tipo === 'CRIACAO' &&
+                (
+                  atividade.usuario === input.usuarioId ||
+                  atividade.usuario === input.usuarioNome
+                )
+              );
+            });
+
+          return (
+            tarefa.obterCriador() === input.usuarioId ||
+            tarefa.obterResponsavel() === input.usuarioId ||
+            criadaPorUsuario
+          );
+        });
 
     const responsaveisIds = Array.from(
       new Set(

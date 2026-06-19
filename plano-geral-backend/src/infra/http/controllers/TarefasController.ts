@@ -36,6 +36,14 @@ type Deps = {
   alterarDatas: AlterarDatasTarefaUseCase; // NOVO
 };
 
+function parseDateOnly(value?: string): Date | undefined {
+  if (!value) return undefined;
+
+  const [ano, mes, dia] = value.split('T')[0].split('-').map(Number);
+
+  return new Date(ano, mes - 1, dia);
+}
+
 function isPrioridade(valor: any): valor is Prioridade {
   return (
     valor === 'BAIXA' ||
@@ -59,19 +67,38 @@ export class TarefasController {
   async criar(req: Request<{}, {}, CriarTarefaBody>, res: Response) {
     const { titulo, descricao, projetoId } = req.body;
 
-    const tarefa = await this.deps.createTarefa.execute({ titulo, descricao, projetoId });
+    const tarefa = await this.deps.createTarefa.execute({
+      titulo,
+      descricao,
+      projetoId,
+      usuario: req.user.id,
+      usuarioNome: req.user.nome ?? req.user.id,
+    });
 
     return res.status(201).json(TarefaDTO.fromDomain(tarefa));
   }
 
   async buscarTodas(req: Request, res: Response) {
-    const tarefas = await this.deps.getAllTarefas.execute();
+    const tarefas = await this.deps.getAllTarefas.execute({
+      usuarioId: req.user.id,
+      usuarioNome: req.user.nome,
+      perfil: req.user.perfil,
+    });
     return res.json(tarefas);
   }
 
   async buscarPorId(req: Request, res: Response) {
-    const tarefa = await this.deps.getById.execute(req.params.id);
-    return res.json(tarefa);
+    try {
+      const tarefa = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(tarefa);
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
   }
 
   async adicionarComentario(req: Request, res: Response) {
@@ -85,11 +112,22 @@ export class TarefasController {
   }
 
   async buscarAtividades(req: Request, res: Response) {
-    const atividades = await this.deps.getAtividadeByTarefa.execute({
-      tarefaId: req.params.id,
-    });
+    try {
+      await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
 
-    return res.json(atividades.map(AtividadeDTO.fromDomain));
+      const atividades = await this.deps.getAtividadeByTarefa.execute({
+        tarefaId: req.params.id,
+      });
+
+      return res.json(atividades.map(AtividadeDTO.fromDomain));
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
   }
 
   async AdicionarChecklistLitem(req: Request, res: Response) {
@@ -165,7 +203,7 @@ export class TarefasController {
         usuario: req.user.id,
       });
 
-      return res.json(TarefaDTO.fromDomain(result));
+      return res.json(TarefaDTO.fromDomain(result.tarefa, result.responsavel));
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -188,8 +226,8 @@ export class TarefasController {
 
       const tarefa = await this.deps.alterarDatas.execute({
         tarefaId: id,
-        dataInicio: dataInicio ? new Date(dataInicio) : undefined,
-        dataFim: dataFim ? new Date(dataFim) : undefined,
+        dataInicio: parseDateOnly(dataInicio),
+        dataFim: parseDateOnly(dataFim),
         usuario,
       });
 

@@ -10,10 +10,39 @@
 /* Estilo de cada coluna (raia) */
 .kanban-column {
   flex: 0 0 390px; /* Não cresce, não encolhe, largura base de 320px */
-  background-color: #ffff; /* Um cinzento muito claro */
   border-radius: 8px; /* Cantos arredondados */
+  border: 1px solid transparent;
+  border-left-width: 6px;
   display: flex;
   flex-direction: column; /* Organiza o header e os cards um em cima do outro */
+}
+
+.kanban-column--pendente {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  box-shadow: 0 0.35rem 0.9rem rgba(220, 53, 69, 0.18);
+}
+
+.kanban-column--andamento {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  box-shadow: 0 0.35rem 0.9rem rgba(255, 193, 7, 0.2);
+}
+
+.kanban-column--concluida {
+  background-color: #d1e7dd;
+  border-color: #198754;
+  box-shadow: 0 0.35rem 0.9rem rgba(25, 135, 84, 0.18);
+}
+
+.kanban-column--outros {
+  background-color: #e2e3e5;
+  border-color: #6c757d;
+  box-shadow: 0 0.35rem 0.9rem rgba(108, 117, 125, 0.18);
+}
+
+.kanban-column--outros .kanban-column-header {
+  background-color: #d3d6d8 !important;
 }
 
 /* O cabeçalho de cada coluna */

@@ -1,7 +1,7 @@
 <div class="container-fluid">
   <div class="kanban-board mt-4 ms-1" cdkDropListGroup>
     <!-- ======================= PENDENTE ======================= -->
-    <div class="kanban-column shadow-sm border-start border-danger-subtle">
+    <div class="kanban-column kanban-column--pendente shadow-sm border-start border-danger-subtle">
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-danger-subtle p-2 rounded-top"
       >
@@ -45,7 +45,7 @@
     </div>
 
     <!-- ======================= EM ANDAMENTO ======================= -->
-    <div class="kanban-column shadow-sm border-start border-warning-subtle">
+    <div class="kanban-column kanban-column--andamento shadow-sm border-start border-warning-subtle">
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-warning-subtle p-2 rounded-top"
       >
@@ -89,7 +89,7 @@
     </div>
 
     <!-- ======================= CONCLUÍDAS ======================= -->
-    <div class="kanban-column shadow-sm border-start border-success-subtle">
+    <div class="kanban-column kanban-column--concluida shadow-sm border-start border-success-subtle">
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-success-subtle p-2 rounded-top"
       >
@@ -133,7 +133,7 @@
     </div>
 
     <!-- ======================= OUTROS ======================= -->
-    <div class="kanban-column shadow-sm border-start border-secondary-subtle">
+    <div class="kanban-column kanban-column--outros shadow-sm border-start border-secondary-subtle">
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-light p-2 rounded-top"
       >

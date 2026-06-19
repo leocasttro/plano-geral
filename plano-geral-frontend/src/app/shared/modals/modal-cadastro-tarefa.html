@@ -19,6 +19,24 @@
       />
     </div>
 
+    <div class="mb-3">
+      <select
+      class="form-select"
+      id="projetoId"
+      [(ngModel)]="projetoId"
+      name="projetoId"
+      [disabled]="carregandoProjetos || projetos.length === 0"
+      required
+      >
+        <option value="" disabled>
+          {{ carregandoProjetos ? 'Carregando projetos...' : 'Selecione um projeto' }}
+        </option>
+        <option *ngFor="let projeto of projetos" [value]="projeto.id">
+          {{ projeto.nome }}
+      </select>
+
+    </div>
+
     <!-- DESCRIÇÃO -->
     <div class="mb-3">
       <label for="descricao" class="fw-bold text-secondary">Descrição</label>
@@ -46,6 +64,7 @@
     type="button"
     class="btn btn-primary"
     (click)="salvar()"
+    [disabled]="!titulo.trim() || !projetoId"
   >
     Salvar
   </button>

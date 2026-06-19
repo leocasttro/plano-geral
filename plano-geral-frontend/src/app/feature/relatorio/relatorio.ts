@@ -9,13 +9,25 @@ import {
   TarefaUsuarioDetalhe,
 } from '../../domain/relatorio/relatorio.model';
 import { TarefaApi } from '../../domain/tarefa/tarefa.api';
+import { ProductivityChartComponent } from '../../shared/dashboard/productivity-chart/productivity-chart';
+import { ProjectStatusChartComponent } from '../../shared/dashboard/project-status-chart/project-status-chart';
+import { StatusMixChartComponent } from '../../shared/dashboard/status-mix-chart/status-mix-chart';
+import { UserPerformanceChartComponent } from '../../shared/dashboard/user-performance-chart/user-performance-chart';
+import { CumulativeFlowChartComponent } from '../../shared/dashboard/cumulative-flow-chart/cumulative-flow-chart';
 
 type UsuarioCarga = RelatorioCargaUsuariosDTO['usuarios'][number];
 
 @Component({
   selector: 'app-relatorio',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    ProductivityChartComponent,
+    ProjectStatusChartComponent,
+    StatusMixChartComponent,
+    UserPerformanceChartComponent,
+    CumulativeFlowChartComponent,
+  ],
   templateUrl: './relatorio.html',
   styleUrl: './relatorio.scss',
 })
@@ -140,7 +152,11 @@ export class Relatorio implements OnInit {
               }).pipe(
                 map(({ alteracoes, tempos }) => {
                   const tempoDoUsuario = tempos
-                    .filter((tempo) => tempo.responsavel === usuario.usuarioId)
+                    .filter(
+                      (tempo) =>
+                        tempo.responsavel === usuario.usuarioId ||
+                        tempo.responsavel === usuario.nome
+                    )
                     .reduce((total, tempo) => total + tempo.duracaoHoras, 0);
 
                   const tempoComUsuarioHoras = Number(tempoDoUsuario.toFixed(2));
@@ -212,5 +228,34 @@ export class Relatorio implements OnInit {
     }
 
     return `${horasInteiras}h ${minutos}min`;
+  }
+
+  totalHorasUsuario(): number {
+    return Number(
+      this.tarefasUsuario
+        .reduce((total, tarefa) => total + tarefa.tempoComUsuarioHoras, 0)
+        .toFixed(2),
+    );
+  }
+
+  totalAlteracoesUsuario(): number {
+    return this.tarefasUsuario.reduce(
+      (total, tarefa) => total + tarefa.totalAlteracoesDatas,
+      0,
+    );
+  }
+
+  percentualNoPrazoUsuario(): number {
+    if (!this.usuarioSelecionado?.totalTarefas) {
+      return 0;
+    }
+
+    const noPrazo =
+      this.usuarioSelecionado.totalTarefas - this.usuarioSelecionado.atrasadas;
+
+    return Math.max(
+      0,
+      Math.round((noPrazo / this.usuarioSelecionado.totalTarefas) * 100),
+    );
   }
 }

@@ -5,7 +5,7 @@ import {ProjetoRepository} from '../../../domain/repositories/ProjetoRepository'
 export class CreateTarefa {
   constructor(private readonly repo: TarefaRepository, private readonly projetoRepo: ProjetoRepository) {}
 
-  async execute(input: { titulo: string; descricao?: string; projetoId: string }) {
+  async execute(input: { titulo: string; descricao?: string; projetoId: string; usuario: string; usuarioNome: string }) {
 
     const projeto = await this.projetoRepo.findById(input.projetoId);
 
@@ -19,6 +19,13 @@ export class CreateTarefa {
       input.descricao,
       input.projetoId
     );
+
+    tarefa.definirProjeto({
+      id: projeto.id,
+      nome: projeto.nome,
+    });
+
+    tarefa.registrarCriacao(input.usuario, input.usuarioNome);
 
     await this.repo.save(tarefa);
 

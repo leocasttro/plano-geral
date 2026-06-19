@@ -18,30 +18,40 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
       >
-        <fa-icon class="fs-5 me-2" [icon]="faTable" /> Kanban
+        <fa-icon class="fs-5 me-2" [icon]="faTable" />
+        Kanban
       </a>
+
       <a
-        class="nav-link text-muted"
+        class="nav-link"
         routerLink="/projetos"
         routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
       >
         <fa-icon class="fs-5 me-2" [icon]="faListCheck" />
         Projetos
       </a>
-      <a class="nav-link text-muted" href="#">
-        <fa-icon class="fs-5 me-2" [icon]="faCalender" /> Calendário</a
-      >
+
+      <a class="nav-link nav-link-disabled">
+        <fa-icon class="fs-5 me-2" [icon]="faCalender" />
+        Calendário
+      </a>
+
       <a
-        class="nav-link text-muted"
+        *ngIf="isAdmin"
+        class="nav-link"
         routerLink="/relatorios"
         routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
       >
         <fa-icon class="fs-5 me-2" [icon]="faChart" />
         Relatórios
       </a>
-      <a class="nav-link text-muted" aria-disabled="true">
-        <fa-icon class="fs-5 me-2" [icon]="faGear" />Configurações</a
-      >
+
+      <a class="nav-link nav-link-disabled">
+        <fa-icon class="fs-5 me-2" [icon]="faGear" />
+        Configurações
+      </a>
     </nav>
   </div>
 </div>

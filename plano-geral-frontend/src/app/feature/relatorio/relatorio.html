@@ -1,5 +1,5 @@
-<div class="relatorio-page p-4">
-  <div *ngIf="loading" class="text-muted">
+<div class="relatorio-page">
+  <div *ngIf="loading" class="loading-state">
     Carregando relatórios...
   </div>
 
@@ -8,216 +8,207 @@
   </div>
 
   <ng-container *ngIf="dashboard && !loading">
-    <div class="metrics-grid">
-      <section class="metric-card clickable" (click)="abrirModalDashboard('Projetos')">
-        <span class="metric-label">Projetos</span>
-        <strong>{{ dashboard.projetos.total }}</strong>
-        <small>{{ dashboard.projetos.ativos }} ativos</small>
-      </section>
+    <header class="report-header">
+      <div>
+        <h2>Visão geral</h2>
+        <p>Indicadores consolidados de tarefas, projetos e desempenho da equipe.</p>
+      </div>
 
-      <section class="metric-card clickable" (click)="abrirModalDashboard('Tarefas')">
-        <span class="metric-label">Tarefas</span>
-        <strong>{{ dashboard.tarefas.total }}</strong>
-        <small>{{ dashboard.tarefas.emAndamento }} em andamento</small>
-      </section>
+      <div class="period-switch" aria-label="Período do relatório">
+        <button type="button" class="active">15d</button>
+        <button type="button">30d</button>
+        <button type="button">90d</button>
+        <button type="button">Ano</button>
+      </div>
+    </header>
 
-      <section class="metric-card danger clickable" (click)="abrirModalDashboard('Tarefas atrasadas')">
-        <span class="metric-label">Atrasadas</span>
+    <section class="kpi-grid">
+      <button class="kpi-card" type="button" (click)="abrirModalDashboard('Tarefas concluídas')">
+        <span class="kpi-label">Tarefas concluídas</span>
+        <strong>{{ dashboard.tarefas.concluidas }}</strong>
+        <small>{{ dashboard.produtividade.tarefasConcluidasUltimos15Dias }} nos últimos 15 dias</small>
+      </button>
+
+      <button class="kpi-card highlighted" type="button" (click)="abrirModalDashboard('Produtividade')">
+        <span class="kpi-label">Tarefas criadas</span>
+        <strong>{{ dashboard.produtividade.tarefasCriadasUltimos15Dias }}</strong>
+        <small>Criação recente</small>
+      </button>
+
+      <button class="kpi-card" type="button" (click)="abrirModalDashboard('Tarefas em andamento')">
+        <span class="kpi-label">Em andamento</span>
+        <strong>{{ dashboard.tarefas.emAndamento }}</strong>
+        <small>{{ dashboard.tarefas.total }} tarefas no total</small>
+      </button>
+
+      <button class="kpi-card danger" type="button" (click)="abrirModalDashboard('Tarefas atrasadas')">
+        <span class="kpi-label">Tarefas atrasadas</span>
         <strong>{{ dashboard.tarefas.atrasadas }}</strong>
-        <small>Tarefas fora do prazo</small>
-      </section>
-
-      <section class="metric-card clickable" (click)="abrirModalDashboard('Usuários ativos')">
-        <span class="metric-label">Usuários ativos</span>
-        <strong>{{ dashboard.usuarios.ativos }}</strong>
-        <small>{{ dashboard.usuarios.total }} cadastrados</small>
-      </section>
-    </div>
-
-    <div class="dashboard-grid mt-4">
-      <section class="relatorio-section">
-        <div class="section-header">
-          <h5>Status das tarefas</h5>
-          <span>{{ dashboard.tarefas.total }} tarefas</span>
-        </div>
-
-        <div class="status-grid">
-          <div class="status-item pendente">
-            <span>Pendentes</span>
-            <strong>{{ dashboard.tarefas.pendentes }}</strong>
-          </div>
-
-          <div class="status-item andamento">
-            <span>Em andamento</span>
-            <strong>{{ dashboard.tarefas.emAndamento }}</strong>
-          </div>
-
-          <div class="status-item concluida">
-            <span>Concluídas</span>
-            <strong>{{ dashboard.tarefas.concluidas }}</strong>
-          </div>
-        </div>
-
-        <div class="chart-block mt-3">
-          <div class="chart-row">
-            <div class="chart-label">
-              <span>Pendentes</span>
-              <strong>{{ dashboard.tarefas.pendentes }}</strong>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill pendente"
-                [style.width.%]="dashboard.tarefas.total ? (dashboard.tarefas.pendentes / dashboard.tarefas.total) * 100 : 0"
-              ></div>
-            </div>
-          </div>
-
-          <div class="chart-row">
-            <div class="chart-label">
-              <span>Em andamento</span>
-              <strong>{{ dashboard.tarefas.emAndamento }}</strong>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill andamento"
-                [style.width.%]="dashboard.tarefas.total ? (dashboard.tarefas.emAndamento / dashboard.tarefas.total) * 100 : 0"
-              ></div>
-            </div>
-          </div>
-
-          <div class="chart-row">
-            <div class="chart-label">
-              <span>Concluídas</span>
-              <strong>{{ dashboard.tarefas.concluidas }}</strong>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill concluida"
-                [style.width.%]="dashboard.tarefas.total ? (dashboard.tarefas.concluidas / dashboard.tarefas.total) * 100 : 0"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="relatorio-section">
-        <div class="section-header">
-          <h5>Status dos projetos</h5>
-          <span>{{ dashboard.projetos.total }} projetos</span>
-        </div>
-
-        <div class="chart-block">
-          <div class="chart-row">
-            <div class="chart-label">
-              <span>Ativos</span>
-              <strong>{{ dashboard.projetos.ativos }}</strong>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill projeto-ativo"
-                [style.width.%]="dashboard.projetos.total ? (dashboard.projetos.ativos / dashboard.projetos.total) * 100 : 0"
-              ></div>
-            </div>
-          </div>
-
-          <div class="chart-row">
-            <div class="chart-label">
-              <span>Pausados</span>
-              <strong>{{ dashboard.projetos.pausados }}</strong>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill projeto-pausado"
-                [style.width.%]="dashboard.projetos.total ? (dashboard.projetos.pausados / dashboard.projetos.total) * 100 : 0"
-              ></div>
-            </div>
-          </div>
-
-          <div class="chart-row">
-            <div class="chart-label">
-              <span>Concluídos</span>
-              <strong>{{ dashboard.projetos.concluidos }}</strong>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill projeto-concluido"
-                [style.width.%]="dashboard.projetos.total ? (dashboard.projetos.concluidos / dashboard.projetos.total) * 100 : 0"
-              ></div>
-            </div>
-          </div>
-
-          <div class="chart-row">
-            <div class="chart-label">
-              <span>Cancelados</span>
-              <strong>{{ dashboard.projetos.cancelados }}</strong>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill projeto-cancelado"
-                [style.width.%]="dashboard.projetos.total ? (dashboard.projetos.cancelados / dashboard.projetos.total) * 100 : 0"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <section class="relatorio-section mt-4">
-      <div class="section-header">
-        <h5>Produtividade dos últimos 15 dias</h5>
-        <span>Criação x conclusão</span>
-      </div>
-
-      <div class="productivity-grid">
-        <div class="productivity-card">
-          <span>Criadas</span>
-          <strong>{{ dashboard.produtividade.tarefasCriadasUltimos15Dias }}</strong>
-        </div>
-
-        <div class="productivity-card">
-          <span>Concluídas</span>
-          <strong>{{ dashboard.produtividade.tarefasConcluidasUltimos15Dias }}</strong>
-        </div>
-      </div>
+        <small>Fora do prazo planejado</small>
+      </button>
     </section>
 
-    <section class="relatorio-section mt-4" *ngIf="cargaUsuarios">
-      <div class="section-header">
-        <h5>Usuários ativos</h5>
-        <span>{{ cargaUsuarios.totalUsuarios }} usuários</span>
-      </div>
-
-      <div class="usuarios-lista">
-        <button
-          type="button"
-          class="usuario-row"
-          *ngFor="let usuario of cargaUsuarios.usuarios"
-          (click)="abrirUsuario(usuario)"
-        >
-          <div class="usuario-info">
-            <strong>{{ usuario.nome }}</strong>
-            <small>{{ usuario.email }}</small>
+    <div class="overview-grid">
+      <section class="report-panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Criação x conclusão</h3>
+            <span>Últimos 15 dias</span>
           </div>
 
-          <div class="usuario-metricas">
-            <span>{{ usuario.totalTarefas }} tarefas</span>
-            <span>{{ usuario.emAndamento }} em andamento</span>
-            <span>{{ usuario.atrasadas }} atrasadas</span>
+          <div class="legend">
+            <span><i class="dot created"></i>Criadas</span>
+            <span><i class="dot done"></i>Concluídas</span>
           </div>
-        </button>
+        </div>
+
+        <app-productivity-chart
+          [criadas]="dashboard.produtividade.tarefasCriadasUltimos15Dias"
+          [concluidas]="dashboard.produtividade.tarefasConcluidasUltimos15Dias"
+        ></app-productivity-chart>
+      </section>
+
+      <section class="report-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Mix de status</h3>
+            <span>Distribuição atual</span>
+          </div>
+        </div>
+
+        <app-status-mix-chart
+          [pendentes]="dashboard.tarefas.pendentes"
+          [andamento]="dashboard.tarefas.emAndamento"
+          [concluidas]="dashboard.tarefas.concluidas"
+          [atrasadas]="dashboard.tarefas.atrasadas"
+        ></app-status-mix-chart>
+      </section>
+    </div>
+
+    <section class="report-panel projects-panel">
+      <div class="panel-header">
+        <div>
+          <h3>Projetos</h3>
+          <span>Status consolidado dos projetos</span>
+        </div>
+        <span class="panel-count">{{ dashboard.projetos.total }} projetos</span>
       </div>
+
+      <app-project-status-chart
+        [ativos]="dashboard.projetos.ativos"
+        [pausados]="dashboard.projetos.pausados"
+        [concluidos]="dashboard.projetos.concluidos"
+        [cancelados]="dashboard.projetos.cancelados"
+      ></app-project-status-chart>
+    </section>
+
+    <div class="lower-grid" *ngIf="cargaUsuarios">
+      <section class="report-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Desempenho por usuário</h3>
+            <span>Tarefas, andamento e prazos</span>
+          </div>
+          <span class="panel-count">{{ cargaUsuarios.totalUsuarios }} membros</span>
+        </div>
+
+        <app-user-performance-chart
+          [usuarios]="cargaUsuarios.usuarios"
+        ></app-user-performance-chart>
+
+        <div class="users-list">
+          <button
+            type="button"
+            class="user-row"
+            *ngFor="let usuario of cargaUsuarios.usuarios"
+            (click)="abrirUsuario(usuario)"
+          >
+            <div class="avatar">{{ usuario.nome | slice:0:2 | uppercase }}</div>
+
+            <div class="user-main">
+              <strong>{{ usuario.nome }}</strong>
+              <small>
+                {{ usuario.totalTarefas }} tarefas · {{ usuario.emAndamento }} em andamento · {{ usuario.atrasadas }} atrasadas
+              </small>
+            </div>
+
+            <div class="user-progress">
+              <span>{{ usuario.concluidas }} concluídas</span>
+              <div class="bar-track">
+                <div
+                  class="bar-fill done"
+                  [style.width.%]="usuario.totalTarefas ? (usuario.concluidas / usuario.totalTarefas) * 100 : 0"
+                ></div>
+              </div>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <section class="report-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Atividade recente</h3>
+            <span>Resumo operacional</span>
+          </div>
+        </div>
+
+        <div class="activity-list">
+          <div class="activity-item">
+            <span class="activity-code">CRIADAS</span>
+            <strong>{{ dashboard.produtividade.tarefasCriadasUltimos15Dias }} tarefas criadas</strong>
+            <small>Últimos 15 dias</small>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-code done">CONCLUÍDAS</span>
+            <strong>{{ dashboard.produtividade.tarefasConcluidasUltimos15Dias }} tarefas concluídas</strong>
+            <small>Últimos 15 dias</small>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-code danger">ATRASADAS</span>
+            <strong>{{ dashboard.tarefas.atrasadas }} tarefas fora do prazo</strong>
+            <small>Distribuição atual</small>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="report-panel cumulative-panel">
+      <div class="panel-header">
+        <div>
+          <h3>Fluxo cumulativo</h3>
+          <span>Tarefas por status ao longo da semana</span>
+        </div>
+      </div>
+
+      <app-cumulative-flow-chart
+        [pendentes]="dashboard.tarefas.pendentes"
+        [andamento]="dashboard.tarefas.emAndamento"
+        [concluidas]="dashboard.tarefas.concluidas"
+      ></app-cumulative-flow-chart>
     </section>
 
     <div class="modal-backdrop-custom" *ngIf="modalAberto" (click)="fecharModal()"></div>
 
     <div class="modal-panel" *ngIf="modalAberto">
       <div class="modal-header-custom">
-        <div>
-          <h5>{{ modalTitulo }}</h5>
-          <small *ngIf="usuarioSelecionado">
-            {{ usuarioSelecionado.email }}
-          </small>
+        <div class="modal-user-heading" *ngIf="usuarioSelecionado; else modalTituloPadrao">
+          <div class="modal-avatar">
+            {{ usuarioSelecionado.nome | slice:0:2 | uppercase }}
+          </div>
+          <div>
+            <h5>{{ usuarioSelecionado.nome }}</h5>
+            <small>{{ usuarioSelecionado.email }}</small>
+          </div>
         </div>
+
+        <ng-template #modalTituloPadrao>
+          <div>
+            <h5>{{ modalTitulo }}</h5>
+          </div>
+        </ng-template>
 
         <button type="button" class="btn-close" (click)="fecharModal()"></button>
       </div>
@@ -228,80 +219,122 @@
         </div>
 
         <ng-container *ngIf="usuarioSelecionado && !loadingModal">
-          <div class="status-grid mb-3">
-            <div class="status-item">
+          <div class="modal-summary">
+            <div class="summary-card">
               <span>Total</span>
               <strong>{{ usuarioSelecionado.totalTarefas }}</strong>
             </div>
-
-            <div class="status-item andamento">
+            <div class="summary-card">
+              <span>Tempo total</span>
+              <strong>{{ formatarHorasBrasil(totalHorasUsuario()) }}</strong>
+            </div>
+            <div class="summary-card">
               <span>Em andamento</span>
               <strong>{{ usuarioSelecionado.emAndamento }}</strong>
             </div>
-
-            <div class="status-item pendente">
-              <span>Atrasadas</span>
-              <strong>{{ usuarioSelecionado.atrasadas }}</strong>
+            <div class="summary-card">
+              <span>No prazo</span>
+              <strong>{{ percentualNoPrazoUsuario() }}%</strong>
             </div>
           </div>
 
-          <div class="chart-block mb-3">
-            <div class="chart-row">
-              <div class="chart-label">
-                <span>Pendentes</span>
-                <strong>{{ usuarioSelecionado.pendentes }}</strong>
+          <div class="user-modal-grid">
+            <section>
+              <div class="modal-section-title">
+                <span class="title-icon">▦</span>
+                <strong>Tarefas ({{ tarefasUsuario.length }})</strong>
               </div>
-              <div class="bar-track">
-                <div
-                  class="bar-fill pendente"
-                  [style.width.%]="usuarioSelecionado.totalTarefas ? (usuarioSelecionado.pendentes / usuarioSelecionado.totalTarefas) * 100 : 0"
-                ></div>
-              </div>
-            </div>
 
-            <div class="chart-row">
-              <div class="chart-label">
-                <span>Em andamento</span>
-                <strong>{{ usuarioSelecionado.emAndamento }}</strong>
-              </div>
-              <div class="bar-track">
-                <div
-                  class="bar-fill andamento"
-                  [style.width.%]="usuarioSelecionado.totalTarefas ? (usuarioSelecionado.emAndamento / usuarioSelecionado.totalTarefas) * 100 : 0"
-                ></div>
-              </div>
-            </div>
+              <div class="modal-task-card" *ngFor="let tarefa of tarefasUsuario">
+                <div class="task-meta">
+                  <span>{{ tarefa.id | slice:0:8 | uppercase }}</span>
+                  <span class="status-pill">{{ tarefa.status }}</span>
+                  <span class="priority-pill">{{ tarefa.prioridade }}</span>
+                </div>
 
-            <div class="chart-row">
-              <div class="chart-label">
-                <span>Concluídas</span>
-                <strong>{{ usuarioSelecionado.concluidas }}</strong>
+                <div class="task-line">
+                  <div>
+                    <strong>{{ tarefa.titulo }}</strong>
+                    <small>{{ tarefa.dataInicioFormatada }} até {{ tarefa.dataFimFormatada }}</small>
+                  </div>
+
+                  <strong class="task-time">{{ tarefa.tempoComUsuarioFormatado }}</strong>
+                </div>
               </div>
-              <div class="bar-track">
-                <div
-                  class="bar-fill concluida"
-                  [style.width.%]="usuarioSelecionado.totalTarefas ? (usuarioSelecionado.concluidas / usuarioSelecionado.totalTarefas) * 100 : 0"
-                ></div>
+
+              <div *ngIf="!tarefasUsuario.length" class="text-muted">
+                Nenhuma tarefa atribuída a este usuário.
               </div>
-            </div>
-          </div>
+            </section>
 
-          <div class="tarefa-detalhe" *ngFor="let tarefa of tarefasUsuario">
-            <div>
-              <strong>{{ tarefa.titulo }}</strong>
-              <small>{{ tarefa.status }} · {{ tarefa.prioridade }}</small>
-            </div>
+            <section>
+              <div class="modal-section-title">
+                <span class="title-icon">□</span>
+                <strong>Resumo</strong>
+              </div>
 
-            <div class="tarefa-detalhe-grid">
-              <span>Início: {{ tarefa.dataInicioFormatada }}</span>
-              <span>Fim: {{ tarefa.dataFimFormatada }}</span>
-              <span>Alterações: {{ tarefa.totalAlteracoesDatas }}</span>
-              <span>Tempo: {{ tarefa.tempoComUsuarioFormatado }}</span>
-            </div>
-          </div>
+              <div class="project-summary-card">
+                <div class="project-summary-header">
+                  <strong>Distribuição das tarefas</strong>
+                  <span>{{ usuarioSelecionado.totalTarefas }} tarefas</span>
+                </div>
 
-          <div *ngIf="!tarefasUsuario.length" class="text-muted">
-            Nenhuma tarefa atribuída a este usuário.
+                <div class="summary-progress-row">
+                  <span>Concluídas</span>
+                  <strong>{{ usuarioSelecionado.concluidas }}</strong>
+                  <div class="bar-track">
+                    <div
+                      class="bar-fill done"
+                      [style.width.%]="usuarioSelecionado.totalTarefas ? (usuarioSelecionado.concluidas / usuarioSelecionado.totalTarefas) * 100 : 0"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="summary-progress-row">
+                  <span>Em andamento</span>
+                  <strong>{{ usuarioSelecionado.emAndamento }}</strong>
+                  <div class="bar-track">
+                    <div
+                      class="bar-fill progress"
+                      [style.width.%]="usuarioSelecionado.totalTarefas ? (usuarioSelecionado.emAndamento / usuarioSelecionado.totalTarefas) * 100 : 0"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="summary-progress-row">
+                  <span>Atrasadas</span>
+                  <strong>{{ usuarioSelecionado.atrasadas }}</strong>
+                  <div class="bar-track">
+                    <div
+                      class="bar-fill danger"
+                      [style.width.%]="usuarioSelecionado.totalTarefas ? (usuarioSelecionado.atrasadas / usuarioSelecionado.totalTarefas) * 100 : 0"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="project-summary-card">
+                <div class="project-summary-header">
+                  <strong>Indicadores</strong>
+                  <span>{{ usuarioSelecionado.projetos }} projetos</span>
+                </div>
+
+                <div class="indicator-list">
+                  <div>
+                    <span>Pendentes</span>
+                    <strong>{{ usuarioSelecionado.pendentes }}</strong>
+                  </div>
+                  <div>
+                    <span>Alterações de datas</span>
+                    <strong>{{ totalAlteracoesUsuario() }}</strong>
+                  </div>
+                  <div>
+                    <span>Tempo registrado</span>
+                    <strong>{{ formatarHorasBrasil(totalHorasUsuario()) }}</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
         </ng-container>
 

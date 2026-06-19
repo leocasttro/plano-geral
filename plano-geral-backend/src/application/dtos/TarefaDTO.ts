@@ -11,17 +11,24 @@ type ResponsavelDTO = {
   email: string;
 };
 
+type ProjetoResumoDTO = {
+  id: string;
+  nome: string;
+};
+
 export interface TarefaDTOProps {
   id: string;
   titulo: string;
   descricao?: string;
-  dataInicio?: Date | null;
-  dataFim?: Date | null;
+  dataInicio?: string | null;
+  dataFim?: string | null;
   status: StatusTarefa;
   prioridade: Prioridade;
+  criadorId?: string | null;
   responsavelId?: string | null;
   responsavel?: ResponsavelDTO | null;
   projetoId: string | null;
+  projeto?: ProjetoResumoDTO | null;
   checklist: {
     id: string;
     nome: string;
@@ -34,6 +41,16 @@ export interface TarefaDTOProps {
     descricao: string;
     data: Date;
   }[];
+}
+
+function formatDateOnly(data: Date | null): string | null {
+  if (!data) return null;
+
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
+
+  return `${ano}-${mes}-${dia}`;
 }
 
 export class TarefaDTO {
@@ -55,13 +72,15 @@ export class TarefaDTO {
       id: tarefa.id,
       titulo: tarefa.titulo,
       descricao: tarefa.descricao,
-      dataInicio,
-      dataFim,
+      dataInicio: formatDateOnly(dataInicio),
+      dataFim: formatDateOnly(dataFim),
       status: tarefa.obterStatus(),
       prioridade: tarefa.obterPrioridade(),
+      criadorId: tarefa.obterCriador() ?? null,
       responsavelId,
       responsavel: responsavel ?? null,
       projetoId: tarefa.obterProjetoId(),
+      projeto: tarefa.obterProjeto(),
       checklist: tarefa.obterChecklist().map((item: CheckListItem) => ({
         id: item.id,
         nome: item.nome,

@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbActiveModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
+import { ProjetoApi} from '../../domain/projeto/projeto.api';
+import { ProjetoDTO } from '../../domain/projeto/projetoModel';
 
 @Component({
   selector: 'app-modal-cadastro-tarefa',
@@ -10,11 +12,35 @@ import { CommonModule } from '@angular/common';
   templateUrl: './modal-cadastro-tarefa.html',
   styleUrls: ['./modal-cadastro-tarefa.scss'],
 })
-export class ModalCadastroTarefa {
+export class ModalCadastroTarefa implements OnInit{
   titulo = '';
   descricao = '';
+  projetoId = '';
 
-  constructor(public activeModal: NgbActiveModal) {}
+  projetos: ProjetoDTO[] = [];
+  carregandoProjetos = false;
+  erroProjetos = '';
+
+  constructor(public activeModal: NgbActiveModal, private projetoApi: ProjetoApi) {}
+
+  ngOnInit() {
+    this.carregarProjetos();
+  }
+
+  carregarProjetos(): void {
+    this.carregandoProjetos = true;
+
+    this.projetoApi.buscarTodos().subscribe({
+      next: (projetos) => {
+        this.projetos = projetos;
+        this.projetoId = this.projetos[0]?.id ?? '';
+        this.carregandoProjetos = false;
+      }, error: (err) => {
+        this.erroProjetos = 'Erro ao carregar projetos';
+        this.carregandoProjetos = false;
+      },
+    });
+  }
 
   salvar() {
     if (!this.titulo.trim()) return;
@@ -22,6 +48,7 @@ export class ModalCadastroTarefa {
     this.activeModal.close({
       titulo: this.titulo,
       descricao: this.descricao,
+      projetoId: this.projetoId,
     });
   }
 }

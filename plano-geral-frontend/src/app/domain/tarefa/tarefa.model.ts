@@ -31,8 +31,13 @@ export interface TarefaDTO {
   dataFim?: string | null;
   status: StatusTarefa;
   prioridade: Prioridade;
+  criadorId?: string | null;
   responsavelId?: string | null;
   responsavel?: ResponsavelTarefaDTO | null;
+
+  projetoId?: string | null;
+  projeto?: ProjetoResumoDTO | null;
+
   checklist: ChecklistItemDTO[];
   atividades: AtividadeDTO[];
 }
@@ -49,4 +54,9 @@ export interface ResponsavelTarefaDTO {
   id: string;
   nome: string;
   email: string;
+}
+
+export interface ProjetoResumoDTO {
+  id: string;
+  nome: string;
 }

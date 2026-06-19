@@ -39,6 +39,8 @@ export function tarefaDtoToCardData(t: TarefaDTO): CardData {
     dataCriacao: new Date(t.atividades?.[0]?.data ?? Date.now()),
     dataInicio: formatDateToString(t.dataInicio),
     dataFim: formatDateToString(t.dataFim),
+    projetoId: t.projetoId ?? null,
+    projeto: t.projeto ?? null,
     checklist: (t.checklist ?? []).map((item) => ({
       id: item.id,
       nome: item.nome,

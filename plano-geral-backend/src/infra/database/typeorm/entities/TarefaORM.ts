@@ -33,9 +33,16 @@ export class TarefaORM {
   @Column({ name: 'responsavel_id', type: 'uuid', nullable: true })
   responsavel?: string | null;
 
+  @Column({ name: 'criador_id', type: 'uuid', nullable: true })
+  criadorId?: string | null;
+
   @ManyToOne(() => UserORM, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'responsavel_id' })
   responsavelUsuario?: UserORM | null;
+
+  @ManyToOne(() => UserORM, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'criador_id' })
+  criadorUsuario?: UserORM | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

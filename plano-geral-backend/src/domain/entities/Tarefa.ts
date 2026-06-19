@@ -14,17 +14,27 @@ type TarefaProps = {
   status: StatusTarefa;
   prioridade: Prioridade;
   responsavel?: string;
+  criadorId?: string;
   projetoId: string;
+  projeto?: ProjetoResumo | null;
   checklist?: CheckListItem[];
   atividades?: Atividade[];
 };
+
+type ProjetoResumo = {
+  id: string;
+  nome: string;
+}
+
 export class Tarefa {
   private status: StatusTarefa;
   private checklist: CheckListItem[] = [];
   private atividades: Atividade[] = [];
   private responsavel?: string;
+  private criadorId?: string;
   private projetoId: string;
   private prioridade: Prioridade;
+  private projeto?: ProjetoResumo | null;
 
   constructor(
     public readonly id: string,
@@ -47,7 +57,9 @@ export class Tarefa {
     tarefa.status = props.status;
     tarefa.prioridade = props.prioridade;
     tarefa.responsavel = props.responsavel;
+    tarefa.criadorId = props.criadorId;
     tarefa.projetoId = props.projetoId;
+    tarefa.projeto = props.projeto ?? null;
     tarefa.checklist = props.checklist ?? [];
     tarefa.atividades = props.atividades ?? [];
 
@@ -94,6 +106,19 @@ export class Tarefa {
     );
   }
 
+  registrarCriacao(usuarioId: string, usuarioNome: string): void {
+    this.criadorId = usuarioId;
+
+    this.registrarAtividade(
+      new Atividade(
+        randomUUID(),
+        TipoAtividade.CRIACAO,
+        usuarioNome,
+        `Tarefa criada por ${usuarioNome}`,
+      ),
+    );
+  }
+
   alterarPrioridade(nova: Prioridade, usuario: string) {
     this.prioridade = nova;
 
@@ -107,19 +132,23 @@ export class Tarefa {
     );
   }
 
-  atribuirResponsavel(usuarioAlvo: string, usuarioAcao: string) {
-    if (!usuarioAlvo || usuarioAlvo.trim().length === 0) {
+  atribuirResponsavel(
+    responsavelId: string,
+    usuarioAcao: string,
+    nomeResponsavel: string,
+  ) {
+    if (!responsavelId || responsavelId.trim().length === 0) {
       throw new Error('Responsável inválido');
     }
 
-    this.responsavel = usuarioAlvo;
+    this.responsavel = responsavelId;
 
     this.registrarAtividade(
       new Atividade(
         randomUUID(),
         TipoAtividade.ATRIBUICAO_RESPONSAVEL,
         usuarioAcao,
-        `Responsável atribuído: ${usuarioAlvo}`,
+        `Responsável atribuído: ${nomeResponsavel}`
       ),
     );
   }
@@ -188,11 +217,21 @@ export class Tarefa {
       status: this.status,
       prioridade: this.prioridade,
       responsavel: this.responsavel,
+      criadorId: this.criadorId,
+      projeto: this.projeto,
       checklist: [...this.checklist],
       atividades: [...this.atividades],
     });
 
     return tarefaComPrazo;
+  }
+
+  obterProjeto(): ProjetoResumo | null {
+    return this.projeto ?? null;
+  }
+
+  definirProjeto(projeto: ProjetoResumo): void {
+    this.projeto = projeto;
   }
 
   associarAoProjeto(projetoId: string): void {
@@ -221,5 +260,9 @@ export class Tarefa {
 
   obterResponsavel(): string | undefined {
     return this.responsavel;
+  }
+
+  obterCriador(): string | undefined {
+    return this.criadorId;
   }
 }

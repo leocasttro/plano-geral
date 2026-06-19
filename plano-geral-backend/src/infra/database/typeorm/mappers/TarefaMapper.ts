@@ -22,6 +22,7 @@ export class TarefaMapper {
     row.status = tarefa.obterStatus();
     row.prioridade = tarefa.obterPrioridade();
     row.responsavel = tarefa.obterResponsavel() ?? (null as any);
+    row.criadorId = tarefa.obterCriador() ?? (null as any);
     row.projeto = { id: tarefa.obterProjetoId() } as any;
 
     const projeto = new ProjetoORM();
@@ -91,9 +92,16 @@ export class TarefaMapper {
       titulo: row.titulo,
       descricao: row.descricao ?? undefined,
       responsavel: row.responsavel ?? undefined,
+      criadorId: row.criadorId ?? undefined,
       projetoId: row.projeto?.id || '',
       status: row.status as StatusTarefa,
       prioridade: row.prioridade as Prioridade,
+      projeto: row.projeto
+        ? {
+          id: row.projeto.id,
+          nome: row.projeto.nome,
+        }
+        : null,
       checklist,
       atividades,
     });
@@ -104,11 +112,27 @@ export class TarefaMapper {
     if (temDatas) {
       // ✅ USA O MÉTODO DE CONVERSÃO
       return tarefaBase.converterParaPrazo(
-        row.dataInicio ? new Date(row.dataInicio) : undefined,
-        row.dataFim ? new Date(row.dataFim) : undefined
-      );
+        parseDateOnly(row.dataInicio),
+        parseDateOnly(row.dataFim)
+      )
     }
 
     return tarefaBase;
   }
+}
+
+function parseDateOnly(value: Date | string | null): Date | undefined {
+  if (!value) return undefined;
+
+  if (value instanceof Date) {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  }
+
+  const [ano, mes, dia] = value.split('T')[0].split('-').map(Number);
+
+  if (!ano || !mes || !dia) {
+    return undefined;
+  }
+
+  return new Date(ano, mes - 1, dia);
 }

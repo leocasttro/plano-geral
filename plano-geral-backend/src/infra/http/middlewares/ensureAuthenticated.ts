@@ -4,6 +4,7 @@ import {authConfig} from '../../config/auth';
 
 type JwtPayload = {
   sub: string;
+  nome: string;
   perfil: string;
 };
 
@@ -29,8 +30,11 @@ export function ensureAuthenticated(
 
     req.user = {
       id: decoded.sub,
+      nome: decoded.nome,
       perfil: decoded.perfil,
     };
+
+    console.log(req.user);
 
     return next();
   } catch {

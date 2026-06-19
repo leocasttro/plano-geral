@@ -33,6 +33,12 @@ export interface CardData {
     email: string;
   } | null;
   status?: string;
+
+  projetoId?: string | null;
+  projeto?: {
+    id: string;
+    nome: string;
+  } | null;
   checklist: ChecklistItem[];
 
   /* Metadados simples */

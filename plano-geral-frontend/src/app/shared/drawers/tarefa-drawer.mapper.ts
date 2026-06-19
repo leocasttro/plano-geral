@@ -45,6 +45,9 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
 
     status: dto.status,
 
+    projetoId: dto.projetoId ?? null,
+    projeto: dto.projeto ?? null,
+
     checklist: (dto.checklist ?? []).map((item) => {
       return {
         id: item.id,
@@ -82,6 +85,13 @@ function prioridadeToBadge(prioridade: string): string {
 }
 
 function formatarDataParaString(data: string | Date): string {
-  const date = new Date(data);
-  return date.toISOString().split('T')[0];
+  if (typeof data === 'string') {
+    return data.split('T')[0];
+  }
+
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
+
+  return `${ano}-${mes}-${dia}`;
 }

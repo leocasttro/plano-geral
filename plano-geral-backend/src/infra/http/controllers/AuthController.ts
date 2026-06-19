@@ -19,6 +19,7 @@ export class AuthController {
       const token = jwt.sign(
         {
           sub: user.id,
+          nome: user.nome,
           perfil: user.perfil,
         },
         authConfig.jwtSecret,

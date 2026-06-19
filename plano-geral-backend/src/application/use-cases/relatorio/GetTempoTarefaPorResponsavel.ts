@@ -40,8 +40,12 @@ export class GetTempoTarefaPorResponsavel {
       const duracaoHoras =
         (fim.getTime() - inicio.getTime()) / (1000 * 60 * 60);
 
+      const valor = atividade.descricao.replace('Responsável atribuído: ', '');
+      const [responsavelId, nomeResponsavel] = valor.split('|');
+
       return {
-        responsavel: atividade.descricao.replace('Responsável atribuído: ', ''),
+        responsavel: responsavelId,
+        responsavelNome: nomeResponsavel,
         inicio,
         fim,
         duracaoHoras: Number(duracaoHoras.toFixed(2)),

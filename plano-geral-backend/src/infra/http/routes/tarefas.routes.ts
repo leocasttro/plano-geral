@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { makeTarefaController } from "../factories/makeTarefaController";
+import { ensureAuthenticated } from '../middlewares/ensureAuthenticated';
 
 const router = Router();
 const controller = makeTarefaController();
 
-router.post("/", (req, res) => controller.criar(req, res));
+router.post("/", ensureAuthenticated, (req, res) => controller.criar(req, res));
 router.get("/", (req, res) => controller.buscarTodas(req, res));
 router.get("/:id", (req, res) => controller.buscarPorId(req, res));
 router.post("/:id/comentarios", (req, res) => controller.adicionarComentario(req, res));
