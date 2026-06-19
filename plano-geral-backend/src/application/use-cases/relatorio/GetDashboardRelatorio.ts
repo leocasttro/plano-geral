@@ -6,12 +6,14 @@ import {StatusTarefa} from '../../../domain/value-objects/StatusTarefa';
 import {TipoAtividade} from '../../../domain/value-objects/TipoAtividade';
 import {StatusProjeto} from '../../../domain/value-objects/StatusProjeto';
 import {RelatorioDashboardDTO} from '../../dtos/RelatorioDashboardDTO';
+import {CalcularFluxoCumulativoService} from '../../services/CalcularFluxoCumulativoService';
 
 export class GetDashboardRelatorio {
   constructor(
     private projetoRepository: ProjetoRepository,
     private tarefaRepository: TarefaRepository,
-    private userRepository: UserRepository
+    private userRepository: UserRepository,
+    private calcularFluxoCumulativoService: CalcularFluxoCumulativoService
   ) {}
 
   async execute(): Promise<RelatorioDashboardDTO> {
@@ -87,6 +89,7 @@ export class GetDashboardRelatorio {
         tarefasCriadasUltimos15Dias,
         tarefasConcluidasUltimos15Dias,
       },
+      fluxoCumulativo: this.calcularFluxoCumulativoService.execute(tarefas),
     };
   }
 }

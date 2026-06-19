@@ -7,17 +7,20 @@ import {ProjetoTypeORMRepository} from '../../database/typeorm/entities/reposito
 import {GetCargaUsuarios} from '../../../application/use-cases/relatorio/GetCargaUsuarios';
 import {UserTypeORMRepository} from '../../database/typeorm/entities/repositories/UserTypeORMRepository';
 import {GetDashboardRelatorio} from '../../../application/use-cases/relatorio/GetDashboardRelatorio';
+import {CalcularFluxoCumulativoService} from '../../../application/services/CalcularFluxoCumulativoService';
 
 export function makeRelatoriosController() {
   const tarefaRepository = new TarefaTypeORMRepository();
   const projetoRepository = new ProjetoTypeORMRepository();
   const userRepository = new UserTypeORMRepository();
+  const calcularFluxoCumulativoService = new CalcularFluxoCumulativoService();
 
   return new RelatoriosController({
     getTempoTarefaPorResponsavel: new GetTempoTarefaPorResponsavel(tarefaRepository),
     getAlteracoesDatasTarefa: new GetAlteracoesDatasTarefa(tarefaRepository),
     getResumoProjeto: new GetResumoProjeto(projetoRepository),
     getCargaUsuarios: new GetCargaUsuarios(tarefaRepository, userRepository),
-    getDashboardRelatorio: new GetDashboardRelatorio(projetoRepository, tarefaRepository, userRepository),
+    getDashboardRelatorio: new GetDashboardRelatorio(projetoRepository, tarefaRepository,
+      userRepository, calcularFluxoCumulativoService),
   });
 }

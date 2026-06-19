@@ -21,4 +21,12 @@ export type RelatorioDashboardDTO = {
     tarefasCriadasUltimos15Dias: number;
     tarefasConcluidasUltimos15Dias: number;
   };
+  fluxoCumulativo: FluxoCumulativoDiaDTO[]
+};
+
+export type FluxoCumulativoDiaDTO = {
+  data: string;
+  pendentes: number;
+  emAndamento: number;
+  concluidas: number;
 };

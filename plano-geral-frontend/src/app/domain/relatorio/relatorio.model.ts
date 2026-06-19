@@ -21,6 +21,12 @@ export interface RelatorioDashboardDTO {
     tarefasCriadasUltimos15Dias: number;
     tarefasConcluidasUltimos15Dias: number;
   };
+  fluxoCumulativo: {
+    data: string;
+    pendentes: number;
+    emAndamento: number;
+    concluidas: number;
+  }[];
 }
 
 export interface RelatorioCargaUsuariosDTO {

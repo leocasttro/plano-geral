@@ -3,10 +3,11 @@ import {SignOptions} from 'jsonwebtoken';
 
 dotenv.config();
 
-export const authConfig: {
-  jwtSecret: string;
-  jwtExpiresIn: SignOptions['expiresIn'];
-} = {
-  jwtSecret: process.env.JWT_SECRET || 'dev-secret',
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET não configurado');
+}
+
+export const authConfig = {
+  jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: (process.env.JWT_EXPIRES_IN || '8h') as SignOptions['expiresIn'],
 };

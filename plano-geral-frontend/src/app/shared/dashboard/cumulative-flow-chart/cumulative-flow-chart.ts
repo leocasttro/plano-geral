@@ -21,9 +21,12 @@ import {
   styleUrl: './cumulative-flow-chart.scss',
 })
 export class CumulativeFlowChartComponent implements OnChanges {
-  @Input() pendentes = 0;
-  @Input() andamento = 0;
-  @Input() concluidas = 0;
+  @Input() dados: {
+    data: string;
+    pendentes: number;
+    emAndamento: number;
+    concluidas: number;
+  }[] = [];
 
   series: ApexAxisChartSeries = [];
   colors = ['#ffc107', '#0d6efd', '#198754'];
@@ -92,27 +95,38 @@ export class CumulativeFlowChartComponent implements OnChanges {
   };
 
   ngOnChanges(): void {
+    const dadosOrdenados = [...this.dados].sort((a, b) =>
+      a.data.localeCompare(b.data),
+    );
+
+    this.xaxis = {
+      ...this.xaxis,
+      categories: dadosOrdenados.map((item) => this.formatarData(item.data)),
+    };
+
     this.series = [
       {
         name: 'Pendentes',
-        data: this.distribuirSemana(this.pendentes, [0.72, 0.8, 0.76, 0.9, 1, 0.42, 0.3]),
+        data: dadosOrdenados.map((item) => item.pendentes),
       },
       {
         name: 'Em andamento',
-        data: this.distribuirSemana(this.andamento, [0.58, 0.72, 0.7, 0.84, 0.62, 0.28, 0.18]),
+        data: dadosOrdenados.map((item) => item.emAndamento),
       },
       {
         name: 'Concluídas',
-        data: this.distribuirSemana(this.concluidas, [0.42, 0.58, 0.7, 0.66, 0.88, 0.36, 0.2]),
+        data: dadosOrdenados.map((item) => item.concluidas),
       },
     ];
   }
 
-  private distribuirSemana(total: number, fatores: number[]): number[] {
-    if (!total || total < 0) {
-      return fatores.map(() => 0);
+  private formatarData(data: string): string {
+    const [ano, mes, dia] = data.split('-');
+
+    if (!ano || !mes || !dia) {
+      return data;
     }
 
-    return fatores.map((fator) => Math.max(0, Math.round(total * fator)));
+    return `${dia}/${mes}`;
   }
 }
