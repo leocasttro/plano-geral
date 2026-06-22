@@ -1,11 +1,13 @@
 import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 import {UserRepository} from '../../../domain/repositories/UserRepository';
 import {TarefaDTO, TarefaDTOProps} from '../../dtos/TarefaDTO';
+import {TarefaAccessPolicy} from '../../../domain/policies/TarefaAccessPolicy';
 
 export class GetTarefaById {
   constructor(
     private tarefaRepository: TarefaRepository,
     private userRepository: UserRepository,
+    private tarefaAccessPolicy = new TarefaAccessPolicy()
   ) {}
 
   async execute(input: { id: string; usuarioId: string; usuarioNome?: string; perfil: string }): Promise<TarefaDTOProps> {
@@ -15,22 +17,16 @@ export class GetTarefaById {
       throw new Error('Tarefa não encontrada');
     }
 
-    const usuarioPodeVisualizar =
-      input.perfil === 'ADMIN' ||
-      tarefa.obterCriador() === input.usuarioId ||
-      tarefa.obterResponsavel() === input.usuarioId ||
-      tarefa.obterAtividades().some((atividade) => {
-        return (
-          atividade.tipo === 'CRIACAO' &&
-          (
-            atividade.usuario === input.usuarioId ||
-            atividade.usuario === input.usuarioNome
-          )
-        );
-      });
+    const usuarioPodeVisualizar = this.tarefaAccessPolicy.podeVisualizar(
+      tarefa, {
+        id: input.usuarioId,
+        nome: input.usuarioNome,
+        perfil: input.perfil,
+      }
+    );
 
     if (!usuarioPodeVisualizar) {
-      throw new Error('Acesso não permitido para esta tarefa');
+      throw new Error('Acesso não permitido para esta tarefa')
     }
 
     const responsavelId = tarefa.obterResponsavel();
