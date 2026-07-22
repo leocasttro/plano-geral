@@ -31,22 +31,18 @@ export class TarefaApi {
   atualizarStatus(
     tarefaId: string,
     novoStatus: string,
-    usuario: string,
   ): Observable<TarefaDTO> {
     return this.http.post<TarefaDTO>(`${this.apiUrl}/${tarefaId}/status`, {
       novoStatus,
-      usuario,
     });
   }
 
   adicionarComentario(
     tarefaId: string,
     comentario: string,
-    usuario: string,
   ): Observable<TarefaDTO> {
     return this.http.post<TarefaDTO>(`${this.apiUrl}/${tarefaId}/comentarios`, {
       comentario,
-      usuario,
     });
   }
 
@@ -72,8 +68,8 @@ export class TarefaApi {
     );
   }
 
-  alterarPrioridade(id: string, novaPrioridade: string, usuario: string): Observable<TarefaDTO> {
-    return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/prioridade`, {novaPrioridade, usuario},);
+  alterarPrioridade(id: string, novaPrioridade: string): Observable<TarefaDTO> {
+    return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/prioridade`, {novaPrioridade},);
   }
 
   atribuirResponsavel(id: string, responsavelId: string): Observable<TarefaDTO> {
@@ -92,5 +88,9 @@ export class TarefaApi {
     },
   ): Observable<TarefaDTO> {
     return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/datas`, payload);
+  }
+
+  excluir(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

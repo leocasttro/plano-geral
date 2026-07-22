@@ -413,3 +413,25 @@
     </div>
   </div>
 </div>
+
+<div class="drawer-footer">
+  <div class="drawer-danger-zone">
+    <div>
+      <strong>Apagar tarefa</strong>
+      <span>Remove a tarefa, checklist, atividades e comentários vinculados.</span>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-outline-danger btn-sm"
+      [disabled]="excluindoTarefa"
+      (click)="excluirTarefa()"
+    >
+      <span
+        *ngIf="excluindoTarefa"
+        class="spinner-border spinner-border-sm me-1"
+      ></span>
+      Apagar tarefa
+    </button>
+  </div>
+</div>

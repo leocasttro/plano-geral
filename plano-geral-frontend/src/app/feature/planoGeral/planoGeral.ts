@@ -4,8 +4,10 @@ import {
   ViewChild,
   OnInit,
   ChangeDetectorRef,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   CdkDragDrop,
   moveItemInArray,
@@ -26,6 +28,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { TarefaDrawersComponent } from '../../shared/drawers/tarefa-drawers-component';
 import { tarefaDtoToCardData } from './planoGeral.mapper';
+import { KanbanSearchService } from '../../shared/services/kanban-search.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-planoGeral',
@@ -37,32 +41,45 @@ import { tarefaDtoToCardData } from './planoGeral.mapper';
     CdkDropList,
     CdkDrag,
     FontAwesomeModule,
+    FormsModule,
   ],
   templateUrl: './planoGeral.html',
   styleUrl: './planoGeral.scss',
 })
-export class Pedidos implements OnInit {
+export class Pedidos implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef;
+  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
 
   tarefasPendentes: CardData[] = [];
   tarefasEmAndamento: CardData[] = [];
   tarefasConcluidas: CardData[] = [];
   tarefasTeste: CardData[] = [];
   tarefas: CardData[] = [];
+  termoPesquisa = '';
+  mostrarPesquisa = false;
 
   faPlus = faPlus;
 
   private itemSelecionadoParaUpload: ChecklistItem | null = null;
+  private searchSub?: Subscription;
 
   constructor(
     private tarefaApi: TarefaApi,
     private cdr: ChangeDetectorRef,
     private modalService: NgbModal,
     private offcanvasService: NgbOffcanvas,
+    private kanbanSearch: KanbanSearchService,
   ) {}
 
   ngOnInit(): void {
+    this.searchSub = this.kanbanSearch.openSearch$.subscribe(() => {
+      this.abrirPesquisa();
+    });
     this.carregarTarefas();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
   }
 
   carregarTarefas(): void {
@@ -89,6 +106,53 @@ export class Pedidos implements OnInit {
       },
       error: (err) => console.error(err),
     });
+  }
+
+  pesquisaAtiva(): boolean {
+    return this.termoPesquisa.trim().length > 0;
+  }
+
+  abrirPesquisa(): void {
+    this.mostrarPesquisa = true;
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.searchInput?.nativeElement.focus();
+    });
+  }
+
+  limparPesquisa(): void {
+    this.termoPesquisa = '';
+    this.mostrarPesquisa = false;
+  }
+
+  filtrarTarefas(tarefas: CardData[]): CardData[] {
+    const termo = this.normalizarTexto(this.termoPesquisa);
+
+    if (!termo) {
+      return tarefas;
+    }
+
+    return tarefas.filter((tarefa) => {
+      const titulo = this.normalizarTexto(tarefa.titulo);
+      const responsavelNome = this.normalizarTexto(tarefa.responsavel?.nome);
+      const responsavelEmail = this.normalizarTexto(tarefa.responsavel?.email);
+
+      return (
+        titulo.includes(termo) ||
+        responsavelNome.includes(termo) ||
+        responsavelEmail.includes(termo)
+      );
+    });
+  }
+
+  totalFiltrado(): number {
+    return (
+      this.filtrarTarefas(this.tarefasPendentes).length +
+      this.filtrarTarefas(this.tarefasEmAndamento).length +
+      this.filtrarTarefas(this.tarefasConcluidas).length +
+      this.filtrarTarefas(this.tarefasTeste).length
+    );
   }
 
   onNovaTarefa(): void {
@@ -127,12 +191,28 @@ export class Pedidos implements OnInit {
     this.cdr.detectChanges();
   }
 
+  onTarefaExcluida(tarefaId: string): void {
+    const remover = (list: CardData[]) =>
+      (list ?? []).filter((tarefa) => tarefa.id !== tarefaId);
+
+    this.tarefasPendentes = remover(this.tarefasPendentes);
+    this.tarefasEmAndamento = remover(this.tarefasEmAndamento);
+    this.tarefasConcluidas = remover(this.tarefasConcluidas);
+    this.tarefasTeste = remover(this.tarefasTeste);
+
+    this.cdr.detectChanges();
+  }
+
   handleChecklistItemClick(item: ChecklistItem): void {
     this.itemSelecionadoParaUpload = item;
     this.fileInput.nativeElement.click();
   }
 
   drop(event: CdkDragDrop<CardData[]>, novoStatus: string): void {
+    if (this.pesquisaAtiva()) {
+      return;
+    }
+
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
@@ -158,7 +238,7 @@ export class Pedidos implements OnInit {
     if (!tarefaMovida.id) return;
 
     this.tarefaApi
-      .atualizarStatus(tarefaMovida.id, statusNovo, 'usuario-logado')
+      .atualizarStatus(tarefaMovida.id, statusNovo)
       .subscribe({
         next: (tarefaAtualizada) => {
           tarefaMovida.status = String(tarefaAtualizada.status).toUpperCase();
@@ -194,5 +274,16 @@ export class Pedidos implements OnInit {
         this.onTarefaAtualizada(tarefaAtualizada);
       },
     );
+    ref.componentInstance.tarefaExcluida.subscribe((tarefaId: string) => {
+      this.onTarefaExcluida(tarefaId);
+    });
+  }
+
+  private normalizarTexto(valor?: string | null): string {
+    return (valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 }

@@ -19,6 +19,7 @@ import {
 } from './tarefa-drawer.mapper';
 import { UsuarioApi } from '../../domain/usuario/usuario.api';
 import { UsuarioDTO } from '../../domain/usuario/usuario.model';
+import { ToastService } from '../toast/toast.service';
 
 @Component({
   selector: 'app-tarefa-drawers-component',
@@ -37,6 +38,7 @@ import { UsuarioDTO } from '../../domain/usuario/usuario.model';
 export class TarefaDrawersComponent implements OnInit {
   @Input() tarefa!: CardDataDrawer;
   @Output() tarefaAtualizada = new EventEmitter<CardDataDrawer>();
+  @Output() tarefaExcluida = new EventEmitter<string>();
 
   faCalendar = faCalendar;
 
@@ -62,12 +64,14 @@ export class TarefaDrawersComponent implements OnInit {
   justificativaDatasTemp = '';
 
   salvandoDatas = false;
+  excluindoTarefa = false;
 
   constructor(
     private offcanvas: NgbOffcanvas,
     private tarefaApi: TarefaApi,
     private usuarioApi: UsuarioApi,
     private cdr: ChangeDetectorRef,
+    private toast: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -104,7 +108,6 @@ export class TarefaDrawersComponent implements OnInit {
       .adicionarComentario(
         this.tarefa.id!,
         this.novoComentario,
-        'Leonardo Castro',
       )
       .subscribe({
         next: (dto) => {
@@ -124,7 +127,12 @@ export class TarefaDrawersComponent implements OnInit {
 
           this.novoComentario = '';
 
+          this.toast.success('Comentário adicionado na tarefa.');
           this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error('Erro ao adicionar comentário.');
         },
       });
   }
@@ -177,6 +185,26 @@ export class TarefaDrawersComponent implements OnInit {
     this.offcanvas.dismiss();
   }
 
+  excluirTarefa(): void {
+    if (!this.tarefa.id || this.excluindoTarefa) return;
+
+    this.excluindoTarefa = true;
+
+    this.tarefaApi.excluir(this.tarefa.id).subscribe({
+      next: () => {
+        this.toast.success('Tarefa apagada.');
+        this.tarefaExcluida.emit(this.tarefa.id!);
+        this.offcanvas.dismiss();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error(err.error?.error ?? 'Erro ao apagar tarefa.');
+        this.excluindoTarefa = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   abrirFormChecklist() {
     this.isChecklistCollapsed = false;
     this.mostrarFormChecklist = true;
@@ -217,9 +245,13 @@ export class TarefaDrawersComponent implements OnInit {
         ];
 
         this.fecharFormChecklist();
+        this.toast.success('Item adicionado ao checklist.');
         this.cdr.detectChanges();
       },
-      error: (err) => console.error(err),
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Erro ao adicionar item no checklist.');
+      },
     });
   }
 
@@ -227,7 +259,7 @@ export class TarefaDrawersComponent implements OnInit {
     if (!this.tarefa.id) return;
 
     if (!this.validarDatas()) {
-      alert('A data de incio não pode ser maior que a data de fim.');
+      this.toast.warning('A data de início não pode ser maior que a data de fim.');
       return;
     }
 
@@ -235,7 +267,7 @@ export class TarefaDrawersComponent implements OnInit {
       this.deveInformarJustificativaDatas() &&
       !this.justificativaDatasTemp.trim()
     ) {
-      alert('Informe uma justificativa para alterar as datas.');
+      this.toast.warning('Informe uma justificativa para alterar as datas.');
       return;
     }
 
@@ -270,10 +302,12 @@ export class TarefaDrawersComponent implements OnInit {
         this.salvandoDatas = false;
 
         this.tarefaAtualizada.emit(this.tarefa);
+        this.toast.success('Datas da tarefa atualizadas.');
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
+        this.toast.error('Erro ao alterar as datas da tarefa.');
         this.salvandoDatas = false;
         this.cdr.detectChanges();
       },
@@ -294,9 +328,13 @@ export class TarefaDrawersComponent implements OnInit {
 
         this.tarefaAtualizada.emit(this.tarefa); // ✅
 
+        this.toast.success('Checklist atualizado.');
         this.cdr.detectChanges();
       },
-      error: (err) => console.error(err),
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Erro ao atualizar checklist.');
+      },
     });
   }
 
@@ -351,6 +389,7 @@ export class TarefaDrawersComponent implements OnInit {
   selecionarResponsavel(usuario: Usuario) {
     this.responsavelSelecionado = usuario;
     this.mostrarSelecaoResponsavel = false;
+
     this.tarefaApi
       .atribuirResponsavel(this.tarefa.id!, usuario.id)
       .subscribe({
@@ -377,11 +416,12 @@ export class TarefaDrawersComponent implements OnInit {
             : null;
 
           this.tarefaAtualizada.emit(this.tarefa);
+          this.toast.success('Responsável atualizado.');
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Erro ao atribuir responsável:', err);
-          alert('Erro ao atribuir responsável');
+          this.toast.error('Erro ao atribuir responsável.');
         },
       });
   }
@@ -399,7 +439,7 @@ export class TarefaDrawersComponent implements OnInit {
     this.mostrarPrioridades = false;
 
     this.tarefaApi
-      .alterarPrioridade(this.tarefa.id!, nova, 'Leonardo Castro')
+      .alterarPrioridade(this.tarefa.id!, nova)
       .subscribe({
         next: (dto) => {
           const atualizada = tarefaDtoToDrawer(dto);
@@ -413,6 +453,7 @@ export class TarefaDrawersComponent implements OnInit {
 
           this.tarefaAtualizada.emit(this.tarefa); // ✅ AVISA O BOARD
 
+          this.toast.success('Prioridade atualizada.');
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -423,6 +464,7 @@ export class TarefaDrawersComponent implements OnInit {
 
           this.tarefaAtualizada.emit(this.tarefa); // ✅ volta pro board também
 
+          this.toast.error('Erro ao alterar prioridade.');
           this.cdr.detectChanges();
         },
       });

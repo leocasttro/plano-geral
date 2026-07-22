@@ -1,4 +1,32 @@
 <div class="container-fluid">
+  <section class="kanban-search-panel" *ngIf="mostrarPesquisa">
+    <div class="search-copy">
+      <strong>Pesquisar tarefas</strong>
+      <span>Busque pelo título ou pelo responsável da tarefa.</span>
+    </div>
+
+    <div class="search-field">
+      <input
+        #searchInput
+        type="search"
+        [(ngModel)]="termoPesquisa"
+        placeholder="Digite título, nome ou email do responsável"
+        aria-label="Pesquisar tarefas por título ou responsável"
+      />
+      <button
+        type="button"
+        *ngIf="pesquisaAtiva()"
+        (click)="limparPesquisa()"
+      >
+        Limpar
+      </button>
+    </div>
+
+    <div class="search-result" *ngIf="pesquisaAtiva()">
+      {{ totalFiltrado() }} resultado(s)
+    </div>
+  </section>
+
   <div class="kanban-board mt-4 ms-1" cdkDropListGroup>
     <!-- ======================= PENDENTE ======================= -->
     <div class="kanban-column kanban-column--pendente shadow-sm border-start border-danger-subtle">
@@ -11,7 +39,7 @@
 
         <div class="d-flex align-items-center gap-2">
           <span class="count badge bg-danger text-light">
-            {{ tarefasPendentes.length }}
+            {{ filtrarTarefas(tarefasPendentes).length }}
           </span>
 
           <button
@@ -31,16 +59,22 @@
         id="pendentes"
         [cdkDropListData]="tarefasPendentes"
         [cdkDropListConnectedTo]="['andamento', 'concluidas', 'outros']"
+        [cdkDropListDisabled]="pesquisaAtiva()"
         (cdkDropListDropped)="drop($event, 'PENDENTE')"
       >
-        @for (tarefa of tarefasPendentes; track tarefa.id) {
+        @for (tarefa of filtrarTarefas(tarefasPendentes); track tarefa.id) {
           <app-card-component
             cdkDrag
+            [cdkDragDisabled]="pesquisaAtiva()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"
           ></app-card-component>
         }
+
+        <div class="empty-column" *ngIf="!filtrarTarefas(tarefasPendentes).length">
+          Nenhuma tarefa pendente encontrada.
+        </div>
       </div>
     </div>
 
@@ -55,7 +89,7 @@
 
         <div class="d-flex align-items-center gap-2">
           <span class="count badge bg-warning">
-            {{ tarefasEmAndamento.length }}
+            {{ filtrarTarefas(tarefasEmAndamento).length }}
           </span>
 
           <button
@@ -75,16 +109,22 @@
         id="andamento"
         [cdkDropListData]="tarefasEmAndamento"
         [cdkDropListConnectedTo]="['pendentes', 'concluidas', 'outros']"
+        [cdkDropListDisabled]="pesquisaAtiva()"
         (cdkDropListDropped)="drop($event, 'EM_ANDAMENTO')"
       >
-        @for (tarefa of tarefasEmAndamento; track tarefa.id) {
+        @for (tarefa of filtrarTarefas(tarefasEmAndamento); track tarefa.id) {
           <app-card-component
             cdkDrag
+            [cdkDragDisabled]="pesquisaAtiva()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"
           ></app-card-component>
         }
+
+        <div class="empty-column" *ngIf="!filtrarTarefas(tarefasEmAndamento).length">
+          Nenhuma tarefa em andamento encontrada.
+        </div>
       </div>
     </div>
 
@@ -99,7 +139,7 @@
 
         <div class="d-flex align-items-center gap-2">
           <span class="count badge bg-success">
-            {{ tarefasConcluidas.length }}
+            {{ filtrarTarefas(tarefasConcluidas).length }}
           </span>
 
           <button
@@ -119,16 +159,22 @@
         id="concluidas"
         [cdkDropListData]="tarefasConcluidas"
         [cdkDropListConnectedTo]="['pendentes', 'andamento', 'outros']"
+        [cdkDropListDisabled]="pesquisaAtiva()"
         (cdkDropListDropped)="drop($event, 'CONCLUIDA')"
       >
-        @for (tarefa of tarefasConcluidas; track tarefa.id) {
+        @for (tarefa of filtrarTarefas(tarefasConcluidas); track tarefa.id) {
           <app-card-component
             cdkDrag
+            [cdkDragDisabled]="pesquisaAtiva()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"
           ></app-card-component>
         }
+
+        <div class="empty-column" *ngIf="!filtrarTarefas(tarefasConcluidas).length">
+          Nenhuma tarefa concluída encontrada.
+        </div>
       </div>
     </div>
 
@@ -143,7 +189,7 @@
 
         <div class="d-flex align-items-center gap-2">
           <span class="count badge bg-secondary">
-            {{ tarefasTeste.length }}
+            {{ filtrarTarefas(tarefasTeste).length }}
           </span>
 
           <button
@@ -163,16 +209,22 @@
         id="outros"
         [cdkDropListData]="tarefasTeste"
         [cdkDropListConnectedTo]="['pendentes', 'andamento', 'concluidas']"
+        [cdkDropListDisabled]="pesquisaAtiva()"
         (cdkDropListDropped)="drop($event, 'OUTROS')"
       >
-        @for (tarefa of tarefasTeste; track tarefa.id) {
+        @for (tarefa of filtrarTarefas(tarefasTeste); track tarefa.id) {
           <app-card-component
             cdkDrag
+            [cdkDragDisabled]="pesquisaAtiva()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"
           ></app-card-component>
         }
+
+        <div class="empty-column" *ngIf="!filtrarTarefas(tarefasTeste).length">
+          Nenhuma tarefa encontrada.
+        </div>
       </div>
     </div>
   </div>
