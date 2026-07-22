@@ -1,0 +1,159 @@
+<div class="configuracoes-page">
+  <div class="settings-tabs">
+    <button
+      type="button"
+      [class.active]="abaAtiva === 'usuarios'"
+      (click)="selecionarAba('usuarios')"
+    >
+      Usuários
+    </button>
+    <button
+      type="button"
+      [class.active]="abaAtiva === 'perfis'"
+      (click)="selecionarAba('perfis')"
+    >
+      Perfis
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+
+  <ng-container *ngIf="abaAtiva === 'usuarios'">
+    <section class="settings-summary">
+      <div>
+        <span>Total</span>
+        <strong>{{ usuarios.length }}</strong>
+      </div>
+      <div>
+        <span>Ativos</span>
+        <strong>{{ totalAtivos() }}</strong>
+      </div>
+      <div>
+        <span>Administradores</span>
+        <strong>{{ contarPerfil('ADMIN') }}</strong>
+      </div>
+      <div>
+        <span>Gestores</span>
+        <strong>{{ contarPerfil('MANAGER') }}</strong>
+      </div>
+    </section>
+
+    <div class="settings-grid">
+      <section class="settings-panel">
+        <div class="panel-heading">
+          <div>
+            <h3>Novo usuário</h3>
+            <span>Crie acessos para a equipe</span>
+          </div>
+        </div>
+
+        <form class="user-form" (ngSubmit)="criarUsuario()">
+          <label>
+            Nome
+            <input type="text" name="nome" [(ngModel)]="novoUsuario.nome" placeholder="Nome completo" />
+          </label>
+
+          <label>
+            Email
+            <input type="email" name="email" [(ngModel)]="novoUsuario.email" placeholder="email@empresa.com" />
+          </label>
+
+          <label>
+            Senha temporária
+            <input type="password" name="senha" [(ngModel)]="novoUsuario.senha" placeholder="Senha inicial" />
+          </label>
+
+          <label>
+            Perfil
+            <select name="perfil" [(ngModel)]="novoUsuario.perfil">
+              <option *ngFor="let perfil of perfisConfig" [value]="perfil.id">
+                {{ perfil.nome }} - {{ perfil.resumo }}
+              </option>
+            </select>
+          </label>
+
+          <button type="submit" class="primary-action" [disabled]="saving">
+            {{ saving ? 'Criando...' : 'Criar usuário' }}
+          </button>
+        </form>
+      </section>
+
+      <section class="settings-panel users-panel">
+        <div class="panel-heading">
+          <div>
+            <h3>Usuários cadastrados</h3>
+            <span>Controle perfil e acesso</span>
+          </div>
+          <button type="button" class="ghost-action" (click)="carregarUsuarios()">Atualizar</button>
+        </div>
+
+        <div *ngIf="loading" class="loading-state">Carregando usuários...</div>
+
+        <div class="users-table" *ngIf="!loading">
+          <div class="table-head">
+            <span>Usuário</span>
+            <span>Perfil</span>
+            <span>Status</span>
+            <span>Ação</span>
+          </div>
+
+          <div class="user-row" *ngFor="let usuario of usuarios">
+            <div class="user-identity">
+              <div class="avatar">{{ usuario.nome | slice:0:2 | uppercase }}</div>
+              <div>
+                <strong>{{ usuario.nome }}</strong>
+                <small>{{ usuario.email }}</small>
+              </div>
+            </div>
+
+            <div class="profile-field">
+              <select
+                class="profile-select"
+                [ngModel]="usuario.perfil"
+                (ngModelChange)="alterarPerfil(usuario, $event)"
+                [name]="'perfil-' + usuario.id"
+              >
+                <option *ngFor="let perfil of perfisConfig" [value]="perfil.id">
+                  {{ perfil.nome }}
+                </option>
+              </select>
+              <small>{{ resumoPerfil(usuario.perfil) }}</small>
+            </div>
+
+            <span class="status-pill" [class.inactive]="!usuario.ativo">
+              {{ usuario.ativo ? 'Ativo' : 'Inativo' }}
+            </span>
+
+            <button
+              type="button"
+              class="row-action"
+              [class.danger]="usuario.ativo"
+              (click)="alterarStatus(usuario)"
+            >
+              {{ usuario.ativo ? 'Desativar' : 'Ativar' }}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+
+  <section class="profiles-grid" *ngIf="abaAtiva === 'perfis'">
+    <article class="profile-card" *ngFor="let perfil of perfisConfig">
+      <div class="profile-card-head">
+        <div>
+          <strong>{{ perfil.nome }}</strong>
+          <span>{{ perfil.resumo }}</span>
+        </div>
+        <em>{{ contarPerfil(perfil.id) }}</em>
+      </div>
+
+      <p>{{ perfil.descricao }}</p>
+
+      <ul>
+        <li *ngFor="let permissao of perfil.permissoes">{{ permissao }}</li>
+      </ul>
+    </article>
+  </section>
+</div>
