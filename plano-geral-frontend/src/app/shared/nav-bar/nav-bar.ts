@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { filter, Subscription } from 'rxjs';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {AuthService} from '../../domain/auth/auth.service';
+import { KanbanSearchService } from '../services/kanban-search.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -22,6 +23,7 @@ export class NavBar {
   @Output() novoProjeto = new EventEmitter<void>();
 
   isProjetosRoute = false;
+  isKanbanRoute = false;
 
   faSearch = faMagnifyingGlass;
   faNotification = faBell;
@@ -43,13 +45,25 @@ export class NavBar {
       titulo: 'Projetos',
       subtitulo: 'Gerencie os projetos e seus ocupantes',
     },
+    '/calendario': {
+      titulo: 'Calendário',
+      subtitulo: 'Visualize início, fim e duração das tarefas',
+    },
     '/relatorios': {
       titulo: 'Relatórios',
       subtitulo: 'Acompanhe indicadores dos projetos, tarefas e usuários',
     },
+    '/configuracoes': {
+      titulo: 'Configurações',
+      subtitulo: 'Gerencie usuários, perfis e permissões',
+    },
   };
 
-  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private kanbanSearch: KanbanSearchService,
+  ) {}
 
   ngOnInit() {
     this.routerSubscription = this.router.events.pipe(filter(
@@ -74,6 +88,7 @@ export class NavBar {
     const urlBase = '/' + url.split('/')[1];
 
     this.isProjetosRoute = urlBase === '/projetos';
+    this.isKanbanRoute = urlBase === '/planoGeral';
 
     if (this.routeConfig[urlBase]) {
       this.titulo = this.routeConfig[urlBase].titulo;
@@ -85,6 +100,12 @@ export class NavBar {
 
   onNovoProjetoClick() {
     this.novoProjeto.emit();
+  }
+
+  onSearchClick() {
+    if (this.isKanbanRoute) {
+      this.kanbanSearch.abrirPesquisa();
+    }
   }
 
   private extrairTituloDaRota() {

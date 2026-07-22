@@ -6,10 +6,11 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { filter } from 'rxjs';
 import { ModalCadastroTarefa } from './shared/modals/modal-cadastro-tarefa';
 import {ProjetoEventsService} from './domain/projeto/projeto-events.service';
+import { ToastContainer } from './shared/toast/toast-container';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NavBar, SideBar],
+  imports: [RouterOutlet, NavBar, SideBar, ToastContainer],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

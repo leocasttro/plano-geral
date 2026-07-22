@@ -4,3 +4,23 @@
   margin: 0;
   background-color: #E5E7EB;
 }
+
+.nav-icon-btn {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nav-icon-btn.active:hover {
+  background: #f1f5f9;
+}
+
+.nav-icon-btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}

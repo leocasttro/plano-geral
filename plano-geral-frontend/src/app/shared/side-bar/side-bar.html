@@ -32,7 +32,12 @@
         Projetos
       </a>
 
-      <a class="nav-link nav-link-disabled">
+      <a
+        class="nav-link"
+        routerLink="/calendario"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
         <fa-icon class="fs-5 me-2" [icon]="faCalender" />
         Calendário
       </a>
@@ -48,7 +53,13 @@
         Relatórios
       </a>
 
-      <a class="nav-link nav-link-disabled">
+      <a
+        *ngIf="isAdmin"
+        class="nav-link"
+        routerLink="/configuracoes"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
         <fa-icon class="fs-5 me-2" [icon]="faGear" />
         Configurações
       </a>

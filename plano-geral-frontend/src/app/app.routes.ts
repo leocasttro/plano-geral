@@ -4,6 +4,8 @@ import { Projeto } from './feature/projeto/projeto';
 import {Login} from './feature/login/login';
 import {authGuard} from './domain/auth/auth.guard';
 import {Relatorio} from './feature/relatorio/relatorio';
+import { Calendario } from './feature/calendario/calendario';
+import { Configuracoes } from './feature/configuracoes/configuracoes';
 
 export const routes: Routes = [
   { path: 'login', component: Login, title: 'Login | Prosul' },
@@ -21,9 +23,21 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'calendario',
+    component: Calendario,
+    title: 'Calendário | Prosul',
+    canActivate: [authGuard],
+  },
+  {
     path: 'relatorios',
     component: Relatorio,
     title: 'Relatórios | Prosul',
+    canActivate: [authGuard],
+  },
+  {
+    path: 'configuracoes',
+    component: Configuracoes,
+    title: 'Configurações | Prosul',
     canActivate: [authGuard],
   },
 ];
