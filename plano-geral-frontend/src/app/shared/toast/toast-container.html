@@ -1,0 +1,21 @@
+<div class="toast-stack" aria-live="polite" aria-atomic="true">
+  <div
+    *ngFor="let toast of toastService.toasts$ | async"
+    class="app-toast"
+    [ngClass]="toast.tipo"
+  >
+    <div class="toast-content">
+      <strong *ngIf="toast.titulo">{{ toast.titulo }}</strong>
+      <span>{{ toast.mensagem }}</span>
+    </div>
+
+    <button
+      type="button"
+      class="toast-close"
+      aria-label="Fechar aviso"
+      (click)="toastService.fechar(toast.id)"
+    >
+      &times;
+    </button>
+  </div>
+</div>
