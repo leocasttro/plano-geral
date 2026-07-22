@@ -1,4 +1,12 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import {
+  animate,
+  keyframes,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map, switchMap, take } from 'rxjs/operators';
@@ -6,6 +14,8 @@ import { RelatorioApi } from '../../domain/relatorio/relatorio.api';
 import {
   RelatorioCargaUsuariosDTO,
   RelatorioDashboardDTO,
+  RelatorioMetricasProjetosDTO,
+  RelatorioTempoMedioPorTituloDTO,
   TarefaUsuarioDetalhe,
 } from '../../domain/relatorio/relatorio.model';
 import { TarefaApi } from '../../domain/tarefa/tarefa.api';
@@ -14,29 +24,73 @@ import { ProjectStatusChartComponent } from '../../shared/dashboard/project-stat
 import { StatusMixChartComponent } from '../../shared/dashboard/status-mix-chart/status-mix-chart';
 import { UserPerformanceChartComponent } from '../../shared/dashboard/user-performance-chart/user-performance-chart';
 import { CumulativeFlowChartComponent } from '../../shared/dashboard/cumulative-flow-chart/cumulative-flow-chart';
+import { ProjectRadarChartComponent } from '../../shared/dashboard/project-radar-chart/project-radar-chart';
 
 type UsuarioCarga = RelatorioCargaUsuariosDTO['usuarios'][number];
+type MetricaProjeto = RelatorioMetricasProjetosDTO['projetos'][number];
+type MetricaTitulo = RelatorioTempoMedioPorTituloDTO['titulos'][number];
+type PeriodoThroughput = '15d' | '30d' | '90d' | 'ano';
 
 @Component({
   selector: 'app-relatorio',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ProductivityChartComponent,
     ProjectStatusChartComponent,
     StatusMixChartComponent,
     UserPerformanceChartComponent,
     CumulativeFlowChartComponent,
+    ProjectRadarChartComponent,
   ],
   templateUrl: './relatorio.html',
   styleUrl: './relatorio.scss',
+  animations: [
+    trigger('reportFade', [
+      transition('* => *', [
+        animate(
+          '360ms cubic-bezier(0.22, 1, 0.36, 1)',
+          keyframes([
+            style({
+              opacity: 0.55,
+              transform: 'translateY(6px)',
+              filter: 'blur(2px)',
+              offset: 0,
+            }),
+            style({
+              opacity: 0.85,
+              transform: 'translateY(2px)',
+              filter: 'blur(0.5px)',
+              offset: 0.55,
+            }),
+            style({
+              opacity: 1,
+              transform: 'translateY(0)',
+              filter: 'blur(0)',
+              offset: 1,
+            }),
+          ]),
+        ),
+      ]),
+    ]),
+  ],
 })
+
 export class Relatorio implements OnInit {
   dashboard: RelatorioDashboardDTO | null = null;
   cargaUsuarios: RelatorioCargaUsuariosDTO | null = null;
+  metricasProjetos: RelatorioMetricasProjetosDTO | null = null;
+  metricasTitulos: RelatorioTempoMedioPorTituloDTO | null = null;
 
   usuarioSelecionado: UsuarioCarga | null = null;
+  projetoSelecionado: MetricaProjeto | null = null;
+  tituloSelecionado: MetricaTitulo | null = null;
   tarefasUsuario: TarefaUsuarioDetalhe[] = [];
+
+  periodoThroughput: PeriodoThroughput = '15d';
+
+  buscaTituloMetrica = '';
 
   loading = false;
   loadingModal = false;
@@ -55,13 +109,25 @@ export class Relatorio implements OnInit {
     this.carregarTela();
   }
 
-  carregarTela(): void {
-    this.loading = true;
+  carregarTela(exibirLoading = true): void {
+    this.loading = exibirLoading;
     this.error = '';
 
     forkJoin({
-      dashboard: this.relatorioApi.dashboard(),
+      dashboard: this.relatorioApi.dashboard(this.periodoThroughput),
       cargaUsuarios: this.relatorioApi.cargaUsuarios(),
+      metricasProjetos: this.relatorioApi.metricasProjetos().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar métricas dos projetos:', err);
+          return of({ projetos: [] });
+        }),
+      ),
+      metricasTitulos: this.relatorioApi.tempoMedioPorTitulo().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar métricas por título:', err);
+          return of({ totalTitulos: 0, titulos: [] });
+        }),
+      ),
     })
       .pipe(
         take(1),
@@ -71,9 +137,11 @@ export class Relatorio implements OnInit {
         }),
       )
       .subscribe({
-        next: ({ dashboard, cargaUsuarios }) => {
+        next: ({ dashboard, cargaUsuarios, metricasProjetos, metricasTitulos }) => {
           this.dashboard = dashboard;
           this.cargaUsuarios = cargaUsuarios;
+          this.metricasProjetos = metricasProjetos;
+          this.metricasTitulos = metricasTitulos;
         },
         error: (err) => {
           console.error(err);
@@ -82,8 +150,19 @@ export class Relatorio implements OnInit {
       });
   }
 
+  alterarPeriodoThroughput(periodo: PeriodoThroughput): void {
+    if (this.periodoThroughput === periodo) {
+      return;
+    }
+
+    this.periodoThroughput = periodo;
+    this.carregarTela(false);
+  }
+
   abrirModalDashboard(tipo: string): void {
     this.usuarioSelecionado = null;
+    this.projetoSelecionado = null;
+    this.tituloSelecionado = null;
     this.tarefasUsuario = [];
     this.loadingModal = false;
     this.modalTitulo = tipo;
@@ -94,12 +173,27 @@ export class Relatorio implements OnInit {
   fecharModal(): void {
     this.modalAberto = false;
     this.usuarioSelecionado = null;
+    this.projetoSelecionado = null;
+    this.tituloSelecionado = null;
     this.tarefasUsuario = [];
     this.loadingModal = false;
     this.cdr.detectChanges();
   }
 
+  abrirProjetoMetricas(projeto: MetricaProjeto): void {
+    this.usuarioSelecionado = null;
+    this.projetoSelecionado = projeto;
+    this.tituloSelecionado = null;
+    this.tarefasUsuario = [];
+    this.loadingModal = false;
+    this.modalTitulo = `Métricas de ${projeto.nome}`;
+    this.modalAberto = true;
+    this.cdr.detectChanges();
+  }
+
   abrirUsuario(usuario: UsuarioCarga): void {
+    this.projetoSelecionado = null;
+    this.tituloSelecionado = null;
     this.usuarioSelecionado = usuario;
     this.modalTitulo = `Métricas de ${usuario.nome}`;
     this.modalAberto = true;
@@ -195,6 +289,17 @@ export class Relatorio implements OnInit {
       });
   }
 
+  abrirTituloMetricas(titulo: MetricaTitulo): void {
+    this.usuarioSelecionado = null;
+    this.projetoSelecionado = null;
+    this.tituloSelecionado = titulo;
+    this.tarefasUsuario = [];
+    this.loadingModal = false;
+    this.modalTitulo = `Métricas de ${titulo.titulo}`;
+    this.modalAberto = true;
+    this.cdr.detectChanges();
+  }
+
   formatarDataBrasil(data?: string | null): string {
     if (!data) {
       return 'sem data';
@@ -211,7 +316,7 @@ export class Relatorio implements OnInit {
     });
   }
 
-  formatarHorasBrasil(horas: number): string {
+  formatarHorasBrasil(horas?: number | null): string {
     if (!horas || horas <= 0) {
       return '0h';
     }
@@ -228,6 +333,35 @@ export class Relatorio implements OnInit {
     }
 
     return `${horasInteiras}h ${minutos}min`;
+  }
+
+  iniciais(valor?: string | null): string {
+    return (valor ?? '').trim().slice(0, 2).toUpperCase();
+  }
+
+  codigoCurto(valor?: string | null): string {
+    return (valor ?? '').trim().slice(0, 8).toUpperCase();
+  }
+
+  larguraTempoMedio(horas?: number | null): number {
+    if (!horas || horas <= 0) {
+      return 0;
+    }
+
+    return Math.min(horas, 100);
+  }
+
+  get metricasTitulosFiltradas() {
+    const busca = this.buscaTituloMetrica.trim().toLowerCase();
+    const titulos = this.metricasTitulos?.titulos ?? [];
+
+    if (!busca) {
+      return titulos;
+    }
+
+    return titulos.filter((item) =>
+      item.titulo.toLowerCase().includes(busca),
+    );
   }
 
   totalHorasUsuario(): number {
@@ -258,4 +392,5 @@ export class Relatorio implements OnInit {
       Math.round((noPrazo / this.usuarioSelecionado.totalTarefas) * 100),
     );
   }
+
 }

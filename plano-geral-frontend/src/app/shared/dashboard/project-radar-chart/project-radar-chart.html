@@ -1,0 +1,18 @@
+<div class="empty-state" *ngIf="!projeto">
+  Selecione um projeto.
+</div>
+
+<apx-chart
+  *ngIf="projeto"
+  [series]="series"
+  [chart]="chart"
+  [xaxis]="xaxis"
+  [yaxis]="yaxis"
+  [stroke]="stroke"
+  [fill]="fill"
+  [markers]="markers"
+  [plotOptions]="plotOptions"
+  [dataLabels]="dataLabels"
+  [tooltip]="tooltip"
+  [colors]="colors"
+></apx-chart>

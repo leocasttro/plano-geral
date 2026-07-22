@@ -20,6 +20,11 @@ export interface RelatorioDashboardDTO {
   produtividade: {
     tarefasCriadasUltimos15Dias: number;
     tarefasConcluidasUltimos15Dias: number;
+
+    periodo: '15d' | '30d' | '90d' | 'ano';
+    periodoLabel: string;
+    tarefasCriadasPeriodo: number;
+    tarefasConcluidasPeriodo: number;
   };
   fluxoCumulativo: {
     data: string;
@@ -71,6 +76,53 @@ export interface RelatorioProjetoResumoDTO {
   }[];
 }
 
+export interface RelatorioMetricasProjetosDTO {
+  projetos: {
+    projetoId: string;
+    nome: string;
+    centroCusto: string | null;
+    status: string;
+    totalTarefas: number;
+    tarefasEmAndamento: number;
+    tarefasConcluidas: number;
+    tarefasComPrazo: number;
+    tarefasDentroDoPrazo: number;
+    tarefasForaDoPrazo: number;
+    tarefasAtrasadas: number;
+    percentualConclusao: number;
+    percentualRespeitoPrazo: number;
+    indiceAvanco: number;
+    avancou: boolean;
+  }[];
+}
+
+export interface RelatorioCalendarioTarefasDTO {
+  periodo: {
+    inicio: string | null;
+    fim: string | null;
+  };
+  total: number;
+  tarefas: TarefaCalendarioDTO[];
+}
+
+export interface TarefaCalendarioDTO {
+  id: string;
+  titulo: string;
+  descricao?: string;
+  status: string;
+  prioridade: string;
+  responsavelId: string | null;
+  projetoId: string | null;
+  projeto: {
+    id: string;
+    nome: string;
+  } | null;
+  dataInicio: string;
+  dataFim: string;
+  diasDuracao: number;
+  atrasada: boolean;
+}
+
 export interface RelatorioAlteracoesDatasDTO {
   tarefaId: string;
   titulo: string;
@@ -104,4 +156,48 @@ export interface TarefaUsuarioDetalhe {
   totalAlteracoesDatas: number;
   tempoComUsuarioHoras: number;
   tempoComUsuarioFormatado: string;
+}
+
+export interface RelatorioTempoConclusaoPorTituloDTO {
+  titulo: string;
+  totalTarefas: number;
+  totalConcluidas: number;
+  tempoMedioHoras: number | null;
+  tempoMedioDias: number | null;
+  tarefas: {
+    tarefaId: string;
+    titulo: string;
+    status: string;
+    criadaEm: string | null;
+    concluidaEm: string | null;
+    duracaoHoras: number | null;
+    duracaoDias: number | null;
+  }[];
+}
+
+export interface RelatorioTempoMedioPorTituloDTO {
+  totalTitulos: number;
+  titulos: MetricaTituloTarefaDTO[];
+}
+
+export interface MetricaTituloTarefaDTO {
+  titulo: string;
+  totalTarefas: number;
+  pendentes: number;
+  emAndamento: number;
+  concluidas: number;
+  tarefasComTempoCalculado: number;
+  tempoMedioHoras: number | null;
+  percentualConclusao: number;
+  tarefas: {
+    tarefaId: string;
+    status: string;
+    prioridade: string;
+    projetoNome: string | null;
+    criadaEm: string | null;
+    concluidaEm: string | null;
+    duracaoHoras: number | null;
+    dataInicio: string | null;
+    dataFim: string | null;
+  }[];
 }
