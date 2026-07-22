@@ -20,6 +20,11 @@ export type RelatorioDashboardDTO = {
   produtividade: {
     tarefasCriadasUltimos15Dias: number;
     tarefasConcluidasUltimos15Dias: number;
+
+    periodo: '15d' | '30d' | '90d' | 'ano';
+    periodoLabel: string;
+    tarefasCriadasPeriodo: number;
+    tarefasConcluidasPeriodo: number;
   };
   fluxoCumulativo: FluxoCumulativoDiaDTO[]
 };

@@ -22,4 +22,16 @@ router.get('/usuarios/carga', ensureAdmin,
 router.get('/dashboard', ensureAdmin,
   (req, res) =>
     controller.dashboard(req, res));
+router.get('/projetos/metricas', ensureAdmin,
+  (req, res) =>
+    controller.metricasProjetos(req, res));
+router.get('/tarefas/tempo-medio-titulos', ensureAdmin,
+  (req, res) =>
+    controller.tempoMedioPorTitulo(req, res));
+router.get('/calendario', ensureAdmin,
+  (req, res) =>
+    controller.calendarioTarefas(req, res));
+router.get('/tarefas/tempo-conclusao', ensureAdmin,
+  (req, res) =>
+    controller.tempoConclusaoPorTitulo(req, res));
 export default router;

@@ -8,6 +8,10 @@ import {GetCargaUsuarios} from '../../../application/use-cases/relatorio/GetCarg
 import {UserTypeORMRepository} from '../../database/typeorm/entities/repositories/UserTypeORMRepository';
 import {GetDashboardRelatorio} from '../../../application/use-cases/relatorio/GetDashboardRelatorio';
 import {CalcularFluxoCumulativoService} from '../../../application/services/CalcularFluxoCumulativoService';
+import { GetMetricasProjetos } from "../../../application/use-cases/relatorio/GetMetricasProjetos";
+import { GetCalendarioTarefas } from '../../../application/use-cases/relatorio/GetCalendarioTarefas';
+import {GetTempoConclusaoPorTitulo} from '../../../application/use-cases/relatorio/GetTempoConclusaoPorTitulo';
+import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
 
 export function makeRelatoriosController() {
   const tarefaRepository = new TarefaTypeORMRepository();
@@ -22,5 +26,9 @@ export function makeRelatoriosController() {
     getCargaUsuarios: new GetCargaUsuarios(tarefaRepository, userRepository),
     getDashboardRelatorio: new GetDashboardRelatorio(projetoRepository, tarefaRepository,
       userRepository, calcularFluxoCumulativoService),
+    getMetricasProjetos: new GetMetricasProjetos(projetoRepository),
+    getCalendarioTarefas: new GetCalendarioTarefas(tarefaRepository),
+    getTempoConclusaoPorTitulo: new GetTempoConclusaoPorTitulo(tarefaRepository),
+    getTempoMedioPorTitulo: new GetTempoMedioPorTitulo(tarefaRepository),
   });
 }

@@ -4,6 +4,10 @@ import {GetAlteracoesDatasTarefa} from '../../../application/use-cases/relatorio
 import {GetResumoProjeto} from '../../../application/use-cases/relatorio/GetResumoProjeto';
 import {GetCargaUsuarios} from '../../../application/use-cases/relatorio/GetCargaUsuarios';
 import {GetDashboardRelatorio} from '../../../application/use-cases/relatorio/GetDashboardRelatorio';
+import { GetMetricasProjetos } from "../../../application/use-cases/relatorio/GetMetricasProjetos";
+import { GetCalendarioTarefas } from '../../../application/use-cases/relatorio/GetCalendarioTarefas';
+import {GetTempoConclusaoPorTitulo} from '../../../application/use-cases/relatorio/GetTempoConclusaoPorTitulo';
+import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
 
 type Deps = {
   getTempoTarefaPorResponsavel: GetTempoTarefaPorResponsavel;
@@ -11,6 +15,10 @@ type Deps = {
   getResumoProjeto: GetResumoProjeto;
   getCargaUsuarios: GetCargaUsuarios;
   getDashboardRelatorio: GetDashboardRelatorio;
+  getMetricasProjetos: GetMetricasProjetos;
+  getCalendarioTarefas: GetCalendarioTarefas;
+  getTempoConclusaoPorTitulo: GetTempoConclusaoPorTitulo;
+  getTempoMedioPorTitulo: GetTempoMedioPorTitulo;
 };
 
 export class RelatoriosController {
@@ -63,7 +71,67 @@ export class RelatoriosController {
 
   async dashboard(req: Request, res: Response) {
     try {
-      const resultado = await this.deps.getDashboardRelatorio.execute();
+      const periodo = this.getQueryParam(req.query.periodo);
+
+      const periodoValido =
+        periodo === '15d' ||
+        periodo === '30d' ||
+        periodo === '90d' ||
+        periodo === 'ano'
+          ? periodo
+          : '15d';
+
+      const resultado = await this.deps.getDashboardRelatorio.execute(periodoValido);
+
+      return res.json(resultado);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async metricasProjetos(req: Request, res: Response) {
+    try {
+      const resultado = await this.deps.getMetricasProjetos.execute();
+
+      return res.json(resultado);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async tempoMedioPorTitulo(req: Request, res: Response) {
+    try {
+      const resultado = await this.deps.getTempoMedioPorTitulo.execute();
+
+      return res.json(resultado);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async calendarioTarefas(req: Request, res: Response) {
+    try {
+      const resultado = await this.deps.getCalendarioTarefas.execute({
+        projetoId: this.getQueryParam(req.query.projetoId),
+        inicio: this.getQueryParam(req.query.inicio),
+        fim: this.getQueryParam(req.query.fim),
+      });
+
+      return res.json(resultado);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  private getQueryParam(value: unknown): string | undefined {
+    return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
+
+  async tempoConclusaoPorTitulo(req: Request, res: Response) {
+    try {
+      const resultado = await this.deps.getTempoConclusaoPorTitulo.execute(
+        this.getQueryParam(req.query.titulo) ?? '',
+      );
 
       return res.json(resultado);
     } catch (error: any) {
