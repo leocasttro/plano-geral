@@ -18,5 +18,6 @@ router.patch('/:id/prioridade', (req, res) => controller.alterarPrioridade(req, 
 router.post('/:id/status', (req, res) => controller.alterarStatus(req, res));
 router.post('/:id/atribuirResponsavel', (req, res) => controller.atribuirResponsavel(req, res));
 router.patch('/:id/datas', (req, res) => controller.alterarDatas(req, res));
+router.delete('/:id', (req, res) => controller.excluir(req, res));
 
 export default router;

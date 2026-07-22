@@ -9,6 +9,7 @@ import { GetAtividadeByTarefa } from '../../../application/use-cases/tarefa/GetA
 import { GetTarefaById } from '../../../application/use-cases/tarefa/GetTarefaById';
 import { ResponsavelTarefa } from '../../../application/use-cases/tarefa/ResponsavelTarefa';
 import { ToggleChecklistItem } from '../../../application/use-cases/tarefa/ToggleChecklistItem';
+import { DeleteTarefa } from '../../../application/use-cases/tarefa/DeleteTarefa';
 import { AtividadeTypeORMRepository } from '../../database/typeorm/entities/repositories/AtividadeTypeORMRepository';
 import { TarefaTypeORMRepository } from '../../database/typeorm/entities/repositories/TarefaTypeORMRepository';
 import { TarefasController } from '../controllers/TarefasController';
@@ -33,5 +34,6 @@ export function makeTarefaController() {
     alterarPrioridade: new AlterarPrioridadeTarefa(repo),
     responsavelTarefa: new ResponsavelTarefa(repo, userRepo),
     alterarDatas: new AlterarDatasTarefaUseCase(repo),
+    deleteTarefa: new DeleteTarefa(repo),
   });
 }

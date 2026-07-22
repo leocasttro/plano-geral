@@ -15,6 +15,7 @@ import { StatusTarefa } from '../../../domain/value-objects/StatusTarefa';
 import { ResponsavelTarefa } from '../../../application/use-cases/tarefa/ResponsavelTarefa';
 import { AlterarDatasTarefaUseCase } from '../../../application/use-cases/tarefa/AlterarDatasTarefaUseCase';
 import {getAuthenticatedUser, getAuthenticatedUserId} from '../helpers/getAuthenticatedUser';
+import { DeleteTarefa } from '../../../application/use-cases/tarefa/DeleteTarefa';
 
 
 interface CriarTarefaBody {
@@ -35,6 +36,7 @@ type Deps = {
   alterarPrioridade: AlterarPrioridadeTarefa;
   responsavelTarefa: ResponsavelTarefa;
   alterarDatas: AlterarDatasTarefaUseCase; // NOVO
+  deleteTarefa: DeleteTarefa;
 };
 
 function parseDateOnly(value?: string): Date | undefined {
@@ -106,7 +108,7 @@ export class TarefasController {
     const tarefa = await this.deps.addComentario.execute({
       tarefaId: req.params.id,
       comentario: req.body.comentario,
-      usuario: req.body.usuario,
+      usuario: getAuthenticatedUser(req),
     });
 
     return res.json(TarefaDTO.fromDomain(tarefa));
@@ -222,6 +224,25 @@ export class TarefasController {
       });
 
       return res.status(200).json(TarefaDTO.fromDomain(tarefa));
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async excluir(req: Request, res: Response): Promise<Response> {
+    try {
+      await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+
+      await this.deps.deleteTarefa.execute({
+        tarefaId: req.params.id,
+      });
+
+      return res.status(204).send();
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
