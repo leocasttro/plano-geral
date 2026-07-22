@@ -1,0 +1,176 @@
+<div class="calendario-page">
+  <div *ngIf="loading" class="loading-state">
+    Carregando calendário...
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <section
+    class="calendar-panel"
+    [ngClass]="'calendar-mode-' + calendarioModo"
+    *ngIf="!loading"
+  >
+    <div class="calendar-toolbar">
+      <div>
+        <h3>Calendário de tarefas</h3>
+        <span>{{ calendario?.total ?? 0 }} tarefas com início e fim planejados</span>
+      </div>
+
+      <div class="calendar-actions">
+        <button type="button" class="calendar-icon-btn" title="Anterior" (click)="voltarCalendario()">
+          ‹
+        </button>
+        <button type="button" class="calendar-today-btn" (click)="irParaHojeCalendario()">
+          Hoje
+        </button>
+        <button type="button" class="calendar-icon-btn" title="Próximo" (click)="avancarCalendario()">
+          ›
+        </button>
+
+        <div class="calendar-mode-switch" aria-label="Visualização do calendário">
+          <button
+            type="button"
+            *ngFor="let modo of calendarioModos"
+            [class.active]="calendarioModo === modo.id"
+            (click)="alterarModoCalendario(modo.id)"
+          >
+            {{ modo.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="calendar-title-row">
+      <strong>{{ tituloCalendario() }}</strong>
+      <span>
+        {{ calendarioModo === 'ano' ? 'Distribuição anual' : calendarioModo === 'dia' ? 'Agenda do dia' : 'Planejamento por período' }}
+      </span>
+    </div>
+
+    <ng-container [ngSwitch]="calendarioModo">
+      <div *ngSwitchCase="'ano'" class="calendar-year-grid">
+        <button
+          type="button"
+          class="calendar-month-card"
+          *ngFor="let mes of mesesDoAnoCalendario()"
+          (click)="selecionarMesCalendario(mes.indice)"
+        >
+          <div class="month-card-head">
+            <strong>{{ mes.nome | titlecase }}</strong>
+            <span>{{ mes.total }}</span>
+          </div>
+          <div class="month-bar-track">
+            <div class="month-bar-fill" [style.width.%]="mes.largura"></div>
+          </div>
+          <small>
+            {{ mes.concluidas }} concluídas · {{ mes.atrasadas }} atrasadas
+          </small>
+        </button>
+      </div>
+
+      <div *ngSwitchCase="'semana'" class="calendar-week-board">
+        <button
+          type="button"
+          class="calendar-week-day"
+          *ngFor="let dia of diasDaSemanaCalendario()"
+          [class.today]="dia.hoje"
+          (click)="selecionarDiaCalendario(dia)"
+        >
+          <span>{{ calendarioSemanaDias[dia.data.getDay()] }}</span>
+          <strong>{{ dia.numero }}</strong>
+          <small *ngIf="dia.tarefas.length">{{ dia.tarefas.length }}</small>
+        </button>
+
+        <div class="calendar-range-layer week-range-layer">
+          <button
+            type="button"
+            class="calendar-range-bar"
+            *ngFor="let faixa of faixasDaSemanaCalendario()"
+            [ngClass]="[
+              classeStatusCalendario(faixa.tarefa),
+              faixa.iniciaNoPeriodo ? 'starts-in-period' : 'continues-left',
+              faixa.terminaNoPeriodo ? 'ends-in-period' : 'continues-right'
+            ]"
+            [ngStyle]="estiloFaixaCalendario(faixa)"
+            [title]="resumoTarefaCalendario(faixa.tarefa)"
+            (click)="abrirTarefaNoDia(faixa.tarefa)"
+          >
+            {{ faixa.tarefa.titulo }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="'dia'" class="calendar-day-view">
+        <div class="day-agenda-date">
+          <strong>{{ dataCalendario.getDate() }}</strong>
+          <span>{{ nomeDiaSemana(dataCalendario) }}</span>
+        </div>
+
+        <div class="day-task-stack" *ngIf="tarefasDoDiaCalendario().length; else semTarefasDia">
+          <div
+            class="day-task-card"
+            *ngFor="let tarefa of tarefasDoDiaCalendario()"
+            [ngClass]="classeStatusCalendario(tarefa)"
+          >
+            <div>
+              <strong>{{ tarefa.titulo }}</strong>
+              <small>{{ resumoTarefaCalendario(tarefa) }}</small>
+            </div>
+            <span>{{ tarefa.diasDuracao }}d</span>
+          </div>
+        </div>
+
+        <ng-template #semTarefasDia>
+          <div class="calendar-empty-state">
+            Nenhuma tarefa planejada para este dia.
+          </div>
+        </ng-template>
+      </div>
+
+        <div *ngSwitchDefault class="calendar-month-view">
+          <div class="calendar-weekday" *ngFor="let dia of calendarioSemanaDias">
+            {{ dia }}
+          </div>
+
+          <div
+            class="calendar-month-week"
+            *ngFor="let semana of semanasDoMesCalendario()"
+          >
+            <button
+              type="button"
+              class="calendar-day-cell"
+              *ngFor="let dia of semana.dias"
+              [class.outside]="dia.foraDoMes"
+              [class.today]="dia.hoje"
+              (click)="selecionarDiaCalendario(dia)"
+            >
+              <div class="day-number-row">
+                <span>{{ dia.numero }}</span>
+                <strong *ngIf="dia.tarefas.length">{{ dia.tarefas.length }}</strong>
+              </div>
+            </button>
+
+            <div class="calendar-range-layer month-range-layer">
+              <button
+                type="button"
+                class="calendar-range-bar"
+                *ngFor="let faixa of semana.faixas"
+                [ngClass]="[
+                  classeStatusCalendario(faixa.tarefa),
+                  faixa.iniciaNoPeriodo ? 'starts-in-period' : 'continues-left',
+                  faixa.terminaNoPeriodo ? 'ends-in-period' : 'continues-right'
+                ]"
+                [ngStyle]="estiloFaixaCalendario(faixa)"
+                [title]="resumoTarefaCalendario(faixa.tarefa)"
+                (click)="abrirTarefaNoDia(faixa.tarefa)"
+              >
+                {{ faixa.tarefa.titulo }}
+              </button>
+            </div>
+          </div>
+      </div>
+    </ng-container>
+  </section>
+</div>
