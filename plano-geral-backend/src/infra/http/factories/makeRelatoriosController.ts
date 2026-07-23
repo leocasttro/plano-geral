@@ -10,8 +10,9 @@ import {GetDashboardRelatorio} from '../../../application/use-cases/relatorio/Ge
 import {CalcularFluxoCumulativoService} from '../../../application/services/CalcularFluxoCumulativoService';
 import { GetMetricasProjetos } from "../../../application/use-cases/relatorio/GetMetricasProjetos";
 import { GetCalendarioTarefas } from '../../../application/use-cases/relatorio/GetCalendarioTarefas';
-import {GetTempoConclusaoPorTitulo} from '../../../application/use-cases/relatorio/GetTempoConclusaoPorTitulo';
+import { GetTempoConclusaoPorTitulo } from '../../../application/use-cases/relatorio/GetTempoConclusaoPorTitulo';
 import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
+import { GetLeadTimeRelatorio } from '../../../application/use-cases/GetLeadTimeRelatorio';
 
 export function makeRelatoriosController() {
   const tarefaRepository = new TarefaTypeORMRepository();
@@ -30,5 +31,6 @@ export function makeRelatoriosController() {
     getCalendarioTarefas: new GetCalendarioTarefas(tarefaRepository),
     getTempoConclusaoPorTitulo: new GetTempoConclusaoPorTitulo(tarefaRepository),
     getTempoMedioPorTitulo: new GetTempoMedioPorTitulo(tarefaRepository),
+    getLeadTimeRelatorio: new GetLeadTimeRelatorio(tarefaRepository, userRepository),
   });
 }

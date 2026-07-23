@@ -8,6 +8,7 @@ import { GetMetricasProjetos } from "../../../application/use-cases/relatorio/Ge
 import { GetCalendarioTarefas } from '../../../application/use-cases/relatorio/GetCalendarioTarefas';
 import {GetTempoConclusaoPorTitulo} from '../../../application/use-cases/relatorio/GetTempoConclusaoPorTitulo';
 import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
+import {GetLeadTimeRelatorio} from '../../../application/use-cases/GetLeadTimeRelatorio';
 
 type Deps = {
   getTempoTarefaPorResponsavel: GetTempoTarefaPorResponsavel;
@@ -19,6 +20,7 @@ type Deps = {
   getCalendarioTarefas: GetCalendarioTarefas;
   getTempoConclusaoPorTitulo: GetTempoConclusaoPorTitulo;
   getTempoMedioPorTitulo: GetTempoMedioPorTitulo;
+  getLeadTimeRelatorio: GetLeadTimeRelatorio;
 };
 
 export class RelatoriosController {
@@ -133,6 +135,15 @@ export class RelatoriosController {
         this.getQueryParam(req.query.titulo) ?? '',
       );
 
+      return res.json(resultado);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async leadTime(req: Request, res: Response) {
+    try {
+      const resultado = await this.deps.getLeadTimeRelatorio.execute();
       return res.json(resultado);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });

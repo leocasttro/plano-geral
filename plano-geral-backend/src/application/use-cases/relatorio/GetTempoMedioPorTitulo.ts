@@ -8,8 +8,11 @@ type TarefaTituloDetalheDTO = {
   prioridade: string;
   projetoNome: string | null;
   criadaEm: Date | null;
+  iniciadaEm: Date | null;
   concluidaEm: Date | null;
   duracaoHoras: number | null;
+  tempoEsperaHoras: number | null;
+  tempoExecucaoHoras: number | null;
   dataInicio: Date | null;
   dataFim: Date | null;
 };
@@ -112,6 +115,11 @@ export class GetTempoMedioPorTitulo {
       .sort((a, b) => a.data.getTime() - b.data.getTime());
 
     const criacao = atividades.find((a) => a.tipo === 'CRIACAO');
+    const inicio = atividades.find(
+      (a) =>
+        a.tipo === 'ALTERACAO_STATUS' &&
+        a.descricao.toLowerCase().includes('inici'),
+    );
     const conclusao = atividades.find(
       (a) =>
         a.tipo === 'ALTERACAO_STATUS' &&
@@ -119,11 +127,25 @@ export class GetTempoMedioPorTitulo {
     );
 
     const criadaEm = criacao?.data ?? null;
+    const iniciadaEm = inicio?.data ?? null;
     const concluidaEm = conclusao?.data ?? null;
     const duracaoHoras =
       criadaEm && concluidaEm
         ? Number(((concluidaEm.getTime() - criadaEm.getTime()) / 36e5).toFixed(2))
         : null;
+    const agora = new Date();
+    const tempoEsperaHoras =
+      criadaEm && iniciadaEm
+        ? this.calcularHoras(criadaEm, iniciadaEm)
+        : criadaEm && !iniciadaEm
+          ? this.calcularHoras(criadaEm, concluidaEm ?? agora)
+          : null;
+    const tempoExecucaoHoras =
+      iniciadaEm && concluidaEm
+        ? this.calcularHoras(iniciadaEm, concluidaEm)
+        : iniciadaEm && !concluidaEm
+          ? this.calcularHoras(iniciadaEm, agora)
+          : null;
 
     let dataInicio: Date | null = null;
     let dataFim: Date | null = null;
@@ -139,10 +161,17 @@ export class GetTempoMedioPorTitulo {
       prioridade: tarefa.obterPrioridade(),
       projetoNome: tarefa.obterProjeto()?.nome ?? null,
       criadaEm,
+      iniciadaEm,
       concluidaEm,
       duracaoHoras,
+      tempoEsperaHoras,
+      tempoExecucaoHoras,
       dataInicio,
       dataFim,
     };
+  }
+
+  private calcularHoras(inicio: Date, fim: Date): number {
+    return Number(Math.max(0, (fim.getTime() - inicio.getTime()) / 36e5).toFixed(2));
   }
 }
