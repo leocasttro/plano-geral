@@ -539,6 +539,102 @@
   gap: 24px;
 }
 
+.title-modal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 24px;
+}
+
+.title-detail-kpis {
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+}
+
+.title-status-block {
+  margin-bottom: 18px;
+}
+
+.title-status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.title-status-legend span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.title-stage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.title-stage-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.stage-dot.wait,
+.stage-fill.wait {
+  background: #888780;
+}
+
+.stage-dot.execution,
+.stage-fill.execution {
+  background: #2a78d6;
+}
+
+.title-status-track,
+.title-lead-track,
+.title-stage-track {
+  display: flex;
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef2f7;
+}
+
+.title-lead-track {
+  margin-top: 10px;
+}
+
+.title-stage-track {
+  margin-top: 10px;
+}
+
+.stage-fill {
+  height: 100%;
+  min-width: 0;
+}
+
+.title-task-card {
+  background: #fcfcfd;
+}
+
+.title-lead-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 0.72rem;
+}
+
 .project-modal-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
@@ -594,6 +690,21 @@
 .status-pill {
   background: #e7f1ff;
   color: #0d6efd;
+}
+
+.status-pill.done {
+  background: #e8f7ef;
+  color: #198754;
+}
+
+.status-pill.progress {
+  background: #e7f1ff;
+  color: #0d6efd;
+}
+
+.status-pill.pending {
+  background: #fff3cd;
+  color: #664d03;
 }
 
 .priority-pill {
@@ -696,6 +807,7 @@
   .kpi-grid,
   .modal-summary,
   .user-modal-grid,
+  .title-modal-grid,
   .project-modal-grid {
     grid-template-columns: 1fr;
   }

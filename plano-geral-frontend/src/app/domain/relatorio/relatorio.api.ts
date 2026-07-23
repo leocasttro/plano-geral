@@ -12,6 +12,7 @@ import {
   RelatorioTempoConclusaoPorTituloDTO,
   RelatorioTempoMedioPorTituloDTO,
   TempoTarefaResponsavelDTO,
+  RelatorioLeadTimeDTO,
 } from './relatorio.model';
 
 @Injectable({ providedIn: 'root' })
@@ -102,6 +103,12 @@ export class RelatorioApi {
   tempoMedioPorTitulo(): Observable<RelatorioTempoMedioPorTituloDTO> {
     return this.http.get<RelatorioTempoMedioPorTituloDTO>(
       `${this.apiUrl}/tarefas/tempo-medio-titulos`,
+    );
+  }
+
+  leadTime(): Observable<RelatorioLeadTimeDTO> {
+    return this.http.get<RelatorioLeadTimeDTO>(
+      `${this.apiUrl}/lead-time`,
     );
   }
 }

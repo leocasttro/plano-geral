@@ -195,9 +195,36 @@ export interface MetricaTituloTarefaDTO {
     prioridade: string;
     projetoNome: string | null;
     criadaEm: string | null;
+    iniciadaEm: string | null;
     concluidaEm: string | null;
     duracaoHoras: number | null;
+    tempoEsperaHoras: number | null;
+    tempoExecucaoHoras: number | null;
     dataInicio: string | null;
     dataFim: string | null;
   }[];
+}
+
+export interface LeadTimeResumoDTO {
+  totalTarefas: number;
+  tarefasComLeadTime: number;
+  tarefasSemLeadTime: number;
+  tempoMedioHoras: number | null;
+  tempoMedioDias: number | null;
+}
+
+export interface RelatorioLeadTimeDTO {
+  geral: LeadTimeResumoDTO;
+  porProjeto: Array<LeadTimeResumoDTO & {
+    projetoId: string | null;
+    projetoNome: string;
+  }>;
+  porResponsavel: Array<LeadTimeResumoDTO & {
+    responsavelId: string | null;
+    responsavelNome: string;
+  }>;
+  porPeriodo: Array<LeadTimeResumoDTO & {
+    periodo: string;
+    periodoLabel: string;
+  }>;
 }

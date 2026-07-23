@@ -184,6 +184,101 @@
       </div>
     </section>
 
+    <section class="report-panel" *ngIf="leadTime as leadTimeData">
+      <div class="panel-header">
+        <div>
+          <h3>Lead time</h3>
+          <span>Tempo entre criação e conclusão das tarefas</span>
+        </div>
+
+        <span class="panel-count">
+    {{ leadTimeData.geral.tarefasComLeadTime }} tarefas medidas
+  </span>
+      </div>
+
+      <div class="modal-summary">
+        <div class="summary-card">
+          <span>Média geral</span>
+          <strong>{{ formatarHorasBrasil(leadTimeData.geral.tempoMedioHoras) }}</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Total de tarefas</span>
+          <strong>{{ leadTimeData.geral.totalTarefas }}</strong>
+        </div>
+
+        <div class="summary-card">
+          <span>Sem conclusão</span>
+          <strong>{{ leadTimeData.geral.tarefasSemLeadTime }}</strong>
+        </div>
+      </div>
+
+      <div class="lower-grid">
+        <section>
+          <div class="modal-section-title">
+            <strong>Por projeto</strong>
+          </div>
+
+          <div class="modal-task-card" *ngFor="let item of leadTimeData.porProjeto">
+            <div class="task-line">
+              <div>
+                <strong>{{ item.projetoNome }}</strong>
+                <small>
+                  {{ item.tarefasComLeadTime }} medidas ·
+                  {{ item.tarefasSemLeadTime }} sem conclusão
+                </small>
+              </div>
+
+              <strong class="task-time">
+                {{ formatarHorasBrasil(item.tempoMedioHoras) }}
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="modal-section-title">
+            <strong>Por responsável</strong>
+          </div>
+
+          <div class="modal-task-card" *ngFor="let item of leadTimeData.porResponsavel">
+            <div class="task-line">
+              <div>
+                <strong>{{ item.responsavelNome }}</strong>
+                <small>
+                  {{ item.tarefasComLeadTime }} medidas ·
+                  {{ item.tarefasSemLeadTime }} sem conclusão
+                </small>
+              </div>
+
+              <strong class="task-time">
+                {{ formatarHorasBrasil(item.tempoMedioHoras) }}
+              </strong>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section style="margin-top: 16px">
+        <div class="modal-section-title">
+          <strong>Por período</strong>
+        </div>
+
+        <div class="modal-task-card" *ngFor="let item of leadTimeData.porPeriodo">
+          <div class="task-line">
+            <div>
+              <strong>{{ formatarMesAno(item.periodoLabel) }}</strong>
+              <small>{{ item.tarefasComLeadTime }} tarefas concluídas</small>
+            </div>
+
+            <strong class="task-time">
+              {{ formatarHorasBrasil(item.tempoMedioHoras) }}
+            </strong>
+          </div>
+        </div>
+      </section>
+    </section>
+
     <div class="lower-grid" *ngIf="cargaUsuarios as carga">
       <section class="report-panel">
         <div class="panel-header">
@@ -450,7 +545,7 @@
           </ng-container>
 
           <ng-container *ngIf="tituloSelecionado as tituloModal">
-            <div class="modal-summary">
+            <div class="modal-summary title-detail-kpis">
               <div class="summary-card">
                 <span>Total</span>
                 <strong>{{ tituloModal.totalTarefas }}</strong>
@@ -467,19 +562,71 @@
                 <span>Tempo médio</span>
                 <strong>{{ formatarHorasBrasil(tituloModal.tempoMedioHoras) }}</strong>
               </div>
+              <div class="summary-card">
+                <span>Com lead time</span>
+                <strong>{{ tituloModal.tarefasComTempoCalculado }}</strong>
+              </div>
+              <div class="summary-card">
+                <span>Sem conclusão</span>
+                <strong>{{ tituloModal.totalTarefas - tituloModal.tarefasComTempoCalculado }}</strong>
+              </div>
             </div>
 
-            <div class="user-modal-grid">
+            <div class="title-status-block">
+              <div class="modal-section-title">
+                <span class="title-icon">▦</span>
+                <strong>Status das tarefas</strong>
+              </div>
+
+              <div class="title-status-legend">
+                <span>
+                  <i class="dot done"></i>
+                  Concluídas {{ tituloModal.concluidas }}
+                </span>
+                <span>
+                  <i class="dot progress"></i>
+                  Em andamento {{ tituloModal.emAndamento }}
+                </span>
+                <span>
+                  <i class="dot pending"></i>
+                  Pendentes {{ tituloModal.pendentes }}
+                </span>
+              </div>
+
+              <div class="title-status-track">
+                <div
+                  class="bar-fill done"
+                  [style.width.%]="percentualTitulo(tituloModal.concluidas, tituloModal.totalTarefas)"
+                ></div>
+                <div
+                  class="bar-fill progress"
+                  [style.width.%]="percentualTitulo(tituloModal.emAndamento, tituloModal.totalTarefas)"
+                ></div>
+                <div
+                  class="bar-fill pending"
+                  [style.width.%]="percentualTitulo(tituloModal.pendentes, tituloModal.totalTarefas)"
+                ></div>
+              </div>
+            </div>
+
+            <div class="title-modal-grid">
               <section>
                 <div class="modal-section-title">
                   <span class="title-icon">▦</span>
-                  <strong>Tarefas ({{ tituloModal.tarefas.length }})</strong>
+                  <strong>Lead time por etapa (horas)</strong>
                 </div>
 
-                <div class="modal-task-card" *ngFor="let tarefa of tituloModal.tarefas">
+                <div class="title-stage-legend">
+                  <span><i class="stage-dot wait"></i>Espera para iniciar</span>
+                  <span><i class="stage-dot execution"></i>Tempo em execução</span>
+                </div>
+
+                <div class="modal-task-card title-task-card" *ngFor="let tarefa of tituloModal.tarefas">
                   <div class="task-meta">
                     <span>{{ codigoCurto(tarefa.tarefaId) }}</span>
-                    <span class="status-pill">{{ tarefa.status }}</span>
+                    <span class="status-pill" [ngClass]="statusClasse(tarefa.status)">
+                      {{ statusLabel(tarefa.status) }}
+                    </span>
                     <span class="priority-pill">{{ tarefa.prioridade }}</span>
                   </div>
 
@@ -496,8 +643,26 @@
                     </div>
 
                     <strong class="task-time">
-                      {{ tarefa.duracaoHoras === null ? 'pendente' : formatarHorasBrasil(tarefa.duracaoHoras) }}
+                      {{ totalEtapasTitulo(tarefa) ? formatarHorasBrasil(totalEtapasTitulo(tarefa)) : 'pendente' }}
                     </strong>
+                  </div>
+
+                  <div class="title-stage-track">
+                    <div
+                      class="stage-fill wait"
+                      [style.width.%]="larguraEtapaTitulo(tarefa.tempoEsperaHoras, tarefa)"
+                    ></div>
+                    <div
+                      class="stage-fill execution"
+                      [style.width.%]="larguraEtapaTitulo(tarefa.tempoExecucaoHoras, tarefa)"
+                    ></div>
+                  </div>
+
+                  <div class="title-lead-meta">
+                    <span>Espera {{ formatarHorasBrasil(tarefa.tempoEsperaHoras) }}</span>
+                    <span>
+                      Execução {{ formatarHorasBrasil(tarefa.tempoExecucaoHoras) }}
+                    </span>
                   </div>
                 </div>
 
@@ -509,7 +674,7 @@
               <section>
                 <div class="modal-section-title">
                   <span class="title-icon">□</span>
-                  <strong>Distribuição</strong>
+                  <strong>Resumo</strong>
                 </div>
 
                 <div class="project-summary-card">

@@ -17,6 +17,7 @@ import {
   RelatorioMetricasProjetosDTO,
   RelatorioTempoMedioPorTituloDTO,
   TarefaUsuarioDetalhe,
+  RelatorioLeadTimeDTO,
 } from '../../domain/relatorio/relatorio.model';
 import { TarefaApi } from '../../domain/tarefa/tarefa.api';
 import { ProductivityChartComponent } from '../../shared/dashboard/productivity-chart/productivity-chart';
@@ -99,6 +100,8 @@ export class Relatorio implements OnInit {
   modalAberto = false;
   modalTitulo = '';
 
+  leadTime: RelatorioLeadTimeDTO | null = null;
+
   constructor(
     private relatorioApi: RelatorioApi,
     private tarefaApi: TarefaApi,
@@ -128,6 +131,24 @@ export class Relatorio implements OnInit {
           return of({ totalTitulos: 0, titulos: [] });
         }),
       ),
+      leadTime: this.relatorioApi.leadTime().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar lead time:', err);
+
+          return of({
+            geral: {
+              totalTarefas: 0,
+              tarefasComLeadTime: 0,
+              tarefasSemLeadTime: 0,
+              tempoMedioHoras: null,
+              tempoMedioDias: null,
+            },
+            porProjeto: [],
+            porResponsavel: [],
+            porPeriodo: [],
+          });
+        }),
+      ),
     })
       .pipe(
         take(1),
@@ -137,11 +158,12 @@ export class Relatorio implements OnInit {
         }),
       )
       .subscribe({
-        next: ({ dashboard, cargaUsuarios, metricasProjetos, metricasTitulos }) => {
+        next: ({ dashboard, cargaUsuarios, metricasProjetos, metricasTitulos, leadTime }) => {
           this.dashboard = dashboard;
           this.cargaUsuarios = cargaUsuarios;
           this.metricasProjetos = metricasProjetos;
           this.metricasTitulos = metricasTitulos;
+          this.leadTime = leadTime;
         },
         error: (err) => {
           console.error(err);
@@ -316,6 +338,21 @@ export class Relatorio implements OnInit {
     });
   }
 
+  formatarMesAno(valor?: string | null): string {
+    if (!valor) {
+      return 'sem período';
+    }
+
+    const match = valor.match(/^(\d{4})-(\d{2})$/);
+
+    if (match) {
+      const [, ano, mes] = match;
+      return `${mes}/${ano}`;
+    }
+
+    return valor;
+  }
+
   formatarHorasBrasil(horas?: number | null): string {
     if (!horas || horas <= 0) {
       return '0h';
@@ -349,6 +386,82 @@ export class Relatorio implements OnInit {
     }
 
     return Math.min(horas, 100);
+  }
+
+  larguraLeadTimeTitulo(
+    horas: number | null,
+    titulo: MetricaTitulo,
+  ): number {
+    if (!horas || horas <= 0) {
+      return 0;
+    }
+
+    const maiorTempo = Math.max(
+      ...titulo.tarefas
+        .map((tarefa) => tarefa.duracaoHoras ?? 0)
+        .filter((tempo) => tempo > 0),
+      1,
+    );
+
+    return Math.max(4, Math.round((horas / maiorTempo) * 100));
+  }
+
+  larguraEtapaTitulo(
+    valor: number | null,
+    tarefa: MetricaTitulo['tarefas'][number],
+  ): number {
+    if (!valor || valor <= 0) {
+      return 0;
+    }
+
+    const total =
+      (tarefa.tempoEsperaHoras ?? 0) + (tarefa.tempoExecucaoHoras ?? 0);
+
+    if (total <= 0) {
+      return 0;
+    }
+
+    return Math.max(3, Math.round((valor / total) * 100));
+  }
+
+  totalEtapasTitulo(tarefa: MetricaTitulo['tarefas'][number]): number {
+    return Number(
+      ((tarefa.tempoEsperaHoras ?? 0) + (tarefa.tempoExecucaoHoras ?? 0)).toFixed(2),
+    );
+  }
+
+  percentualTitulo(valor: number, total: number): number {
+    if (!total) {
+      return 0;
+    }
+
+    return Math.round((valor / total) * 100);
+  }
+
+  statusLabel(status: string): string {
+    switch (String(status).toUpperCase()) {
+      case 'CONCLUIDA':
+        return 'Concluída';
+      case 'EM_ANDAMENTO':
+        return 'Em andamento';
+      case 'PENDENTE':
+        return 'Pendente';
+      default:
+        return status;
+    }
+  }
+
+  statusClasse(status: string): string {
+    switch (String(status).toUpperCase()) {
+      case 'CONCLUIDA':
+        return 'done';
+      case 'EM_ANDAMENTO':
+        return 'progress';
+      case 'PENDENTE':
+        return 'pending';
+      default:
+        return 'created';
+    }
   }
 
   get metricasTitulosFiltradas() {
