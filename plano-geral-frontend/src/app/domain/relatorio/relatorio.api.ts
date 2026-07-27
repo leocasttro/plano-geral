@@ -12,7 +12,7 @@ import {
   RelatorioTempoConclusaoPorTituloDTO,
   RelatorioTempoMedioPorTituloDTO,
   TempoTarefaResponsavelDTO,
-  RelatorioLeadTimeDTO,
+  RelatorioLeadTimeDTO, RelatorioDisponibilidadeUsuariosDTO,
 } from './relatorio.model';
 
 @Injectable({ providedIn: 'root' })
@@ -109,6 +109,12 @@ export class RelatorioApi {
   leadTime(): Observable<RelatorioLeadTimeDTO> {
     return this.http.get<RelatorioLeadTimeDTO>(
       `${this.apiUrl}/lead-time`,
+    );
+  }
+
+  disponibilidadeUsuarios(): Observable<RelatorioDisponibilidadeUsuariosDTO> {
+    return this.http.get<RelatorioDisponibilidadeUsuariosDTO>(
+      `${this.apiUrl}/usuarios/disponibilidade`,
     );
   }
 }

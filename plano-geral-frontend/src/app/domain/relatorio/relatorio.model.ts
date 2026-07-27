@@ -228,3 +228,21 @@ export interface RelatorioLeadTimeDTO {
     periodoLabel: string;
   }>;
 }
+
+export interface DisponibilidadeUsuarioDTO {
+  usuarioId: string;
+  nome: string;
+  email: string;
+  tarefasAbertas: number;
+  tarefasComData: number;
+  tarefasSemData: number;
+  tarefasAtrasadas: number;
+  ocupadoAte: string | null;
+  disponivelEm: string;
+  statusDisponibilidade: 'DISPONIVEL' | 'OCUPADO' | 'SEM_DADOS';
+}
+
+export interface RelatorioDisponibilidadeUsuariosDTO {
+  totalUsuarios: number;
+  usuarios: DisponibilidadeUsuarioDTO[];
+}

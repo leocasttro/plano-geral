@@ -18,6 +18,7 @@ import {
   RelatorioTempoMedioPorTituloDTO,
   TarefaUsuarioDetalhe,
   RelatorioLeadTimeDTO,
+  RelatorioDisponibilidadeUsuariosDTO,
 } from '../../domain/relatorio/relatorio.model';
 import { TarefaApi } from '../../domain/tarefa/tarefa.api';
 import { ProductivityChartComponent } from '../../shared/dashboard/productivity-chart/productivity-chart';
@@ -101,6 +102,7 @@ export class Relatorio implements OnInit {
   modalTitulo = '';
 
   leadTime: RelatorioLeadTimeDTO | null = null;
+  disponibilidadeUsuarios: RelatorioDisponibilidadeUsuariosDTO | null = null;
 
   constructor(
     private relatorioApi: RelatorioApi,
@@ -149,6 +151,12 @@ export class Relatorio implements OnInit {
           });
         }),
       ),
+      disponibilidadeUsuarios: this.relatorioApi.disponibilidadeUsuarios().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar disponibilidade de usuários:', err);
+          return of({ totalUsuarios: 0, usuarios: [] });
+        }),
+      ),
     })
       .pipe(
         take(1),
@@ -158,12 +166,20 @@ export class Relatorio implements OnInit {
         }),
       )
       .subscribe({
-        next: ({ dashboard, cargaUsuarios, metricasProjetos, metricasTitulos, leadTime }) => {
+        next: ({
+          dashboard,
+          cargaUsuarios,
+          metricasProjetos,
+          metricasTitulos,
+          leadTime,
+          disponibilidadeUsuarios,
+        }) => {
           this.dashboard = dashboard;
           this.cargaUsuarios = cargaUsuarios;
           this.metricasProjetos = metricasProjetos;
           this.metricasTitulos = metricasTitulos;
           this.leadTime = leadTime;
+          this.disponibilidadeUsuarios = disponibilidadeUsuarios;
         },
         error: (err) => {
           console.error(err);
@@ -458,6 +474,32 @@ export class Relatorio implements OnInit {
       case 'EM_ANDAMENTO':
         return 'progress';
       case 'PENDENTE':
+        return 'pending';
+      default:
+        return 'created';
+    }
+  }
+
+  disponibilidadeLabel(status: string): string {
+    switch (String(status).toUpperCase()) {
+      case 'DISPONIVEL':
+        return 'Disponível';
+      case 'OCUPADO':
+        return 'Ocupado';
+      case 'SEM_DADOS':
+        return 'Sem dados';
+      default:
+        return status;
+    }
+  }
+
+  disponibilidadeClasse(status: string): string {
+    switch (String(status).toUpperCase()) {
+      case 'DISPONIVEL':
+        return 'done';
+      case 'OCUPADO':
+        return 'progress';
+      case 'SEM_DADOS':
         return 'pending';
       default:
         return 'created';

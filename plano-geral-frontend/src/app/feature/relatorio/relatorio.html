@@ -320,6 +320,47 @@
             </div>
           </button>
         </div>
+
+        <section style="margin-top: 18px" *ngIf="disponibilidadeUsuarios as disponibilidade">
+          <div class="modal-section-title">
+            <strong>Disponibilidade dos usuários</strong>
+          </div>
+
+          <div class="empty-projects-list" *ngIf="disponibilidade.usuarios.length === 0; else listaDisponibilidade">
+            Nenhuma disponibilidade encontrada.
+          </div>
+
+          <ng-template #listaDisponibilidade>
+            <div
+              class="modal-task-card"
+              *ngFor="let usuario of disponibilidade.usuarios"
+            >
+              <div class="task-line">
+                <div>
+                  <div class="task-meta">
+                    <span
+                      class="status-pill"
+                      [ngClass]="disponibilidadeClasse(usuario.statusDisponibilidade)"
+                    >
+                      {{ disponibilidadeLabel(usuario.statusDisponibilidade) }}
+                    </span>
+                    <span>{{ usuario.tarefasAbertas }} abertas</span>
+                    <span>{{ usuario.tarefasSemData }} sem data</span>
+                    <span>{{ usuario.tarefasAtrasadas }} atrasadas</span>
+                  </div>
+
+                  <strong>{{ usuario.nome }}</strong>
+                  <small>
+                    Disponível em {{ formatarDataBrasil(usuario.disponivelEm) }}
+                    <ng-container *ngIf="usuario.ocupadoAte">
+                      · ocupado até {{ formatarDataBrasil(usuario.ocupadoAte) }}
+                    </ng-container>
+                  </small>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </section>
       </section>
 
       <section class="report-panel">
