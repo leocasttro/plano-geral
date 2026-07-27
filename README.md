@@ -335,6 +335,14 @@ Use esta tela para acompanhar indicadores como:
 - Status de tarefas.
 - Alterações de datas.
 - Tempo de tarefa por responsável.
+- Lead time das tarefas, com tempo médio entre criação e conclusão.
+
+O relatório de lead time apresenta:
+
+- Média geral em horas e dias.
+- Total de tarefas avaliadas.
+- Quantidade de tarefas com e sem lead time calculado.
+- Agrupamentos por projeto, responsável e período de conclusão.
 
 Alguns relatórios exigem perfil administrativo.
 
@@ -448,6 +456,26 @@ Endpoints:
 - `GET /relatorios/projetos/:projetoId/resumo`
 - `GET /relatorios/tarefas/:tarefaId/alteracoes-datas`
 - `GET /relatorios/tarefas/:tarefaId/tempo-responsavel`
+- `GET /relatorios/lead-time`
+
+#### Lead time
+
+O endpoint `GET /relatorios/lead-time` retorna o tempo entre a criação e a conclusão das tarefas. O cálculo usa a atividade de criação da tarefa e a atividade de alteração de status para concluída.
+
+Retorno:
+
+- `geral`: resumo consolidado do lead time.
+- `porProjeto`: resumo agrupado por projeto.
+- `porResponsavel`: resumo agrupado por responsável.
+- `porPeriodo`: resumo agrupado pelo mês de conclusão.
+
+Cada resumo contém:
+
+- `totalTarefas`
+- `tarefasComLeadTime`
+- `tarefasSemLeadTime`
+- `tempoMedioHoras`
+- `tempoMedioDias`
 
 ## Autenticação e Autorização
 
