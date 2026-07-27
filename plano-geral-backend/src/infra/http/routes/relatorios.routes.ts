@@ -37,4 +37,7 @@ router.get('/tarefas/tempo-conclusao', ensureAdmin,
 router.get('/lead-time', ensureAdmin, (req, res) =>
   controller.leadTime(req, res),
 );
+router.get('/usuarios/disponibilidade', ensureAdmin, (req, res) =>
+  controller.disponibilidadeUsuarios(req, res),
+);
 export default router;

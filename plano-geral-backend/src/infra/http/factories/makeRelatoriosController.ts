@@ -13,6 +13,7 @@ import { GetCalendarioTarefas } from '../../../application/use-cases/relatorio/G
 import { GetTempoConclusaoPorTitulo } from '../../../application/use-cases/relatorio/GetTempoConclusaoPorTitulo';
 import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
 import { GetLeadTimeRelatorio } from '../../../application/use-cases/GetLeadTimeRelatorio';
+import {GetDisponibilidadeUsuarios} from '../../../application/use-cases/relatorio/GetDisponibilidadeUsuarios';
 
 export function makeRelatoriosController() {
   const tarefaRepository = new TarefaTypeORMRepository();
@@ -32,5 +33,6 @@ export function makeRelatoriosController() {
     getTempoConclusaoPorTitulo: new GetTempoConclusaoPorTitulo(tarefaRepository),
     getTempoMedioPorTitulo: new GetTempoMedioPorTitulo(tarefaRepository),
     getLeadTimeRelatorio: new GetLeadTimeRelatorio(tarefaRepository, userRepository),
+    getDisponibilidadeUsuarios: new GetDisponibilidadeUsuarios(tarefaRepository, userRepository),
   });
 }

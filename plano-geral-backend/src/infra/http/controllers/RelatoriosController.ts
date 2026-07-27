@@ -9,6 +9,7 @@ import { GetCalendarioTarefas } from '../../../application/use-cases/relatorio/G
 import {GetTempoConclusaoPorTitulo} from '../../../application/use-cases/relatorio/GetTempoConclusaoPorTitulo';
 import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
 import {GetLeadTimeRelatorio} from '../../../application/use-cases/GetLeadTimeRelatorio';
+import {GetDisponibilidadeUsuarios} from '../../../application/use-cases/relatorio/GetDisponibilidadeUsuarios';
 
 type Deps = {
   getTempoTarefaPorResponsavel: GetTempoTarefaPorResponsavel;
@@ -21,6 +22,7 @@ type Deps = {
   getTempoConclusaoPorTitulo: GetTempoConclusaoPorTitulo;
   getTempoMedioPorTitulo: GetTempoMedioPorTitulo;
   getLeadTimeRelatorio: GetLeadTimeRelatorio;
+  getDisponibilidadeUsuarios: GetDisponibilidadeUsuarios;
 };
 
 export class RelatoriosController {
@@ -144,6 +146,15 @@ export class RelatoriosController {
   async leadTime(req: Request, res: Response) {
     try {
       const resultado = await this.deps.getLeadTimeRelatorio.execute();
+      return res.json(resultado);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async disponibilidadeUsuarios(req: Request, res: Response) {
+    try {
+      const resultado = await this.deps.getDisponibilidadeUsuarios.execute();
       return res.json(resultado);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
