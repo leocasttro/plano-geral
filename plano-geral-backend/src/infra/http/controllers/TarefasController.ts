@@ -64,6 +64,12 @@ function isStatusTarefa(valor: any): valor is StatusTarefa {
   );
 }
 
+function podeAprovarAlteracaoDatas(perfil?: string): boolean {
+  return ['ADMIN', 'MANAGER', 'GESTOR'].includes(
+    String(perfil ?? '').toUpperCase(),
+  );
+}
+
 export class TarefasController {
   constructor(private deps: Deps) {}
 
@@ -207,6 +213,12 @@ export class TarefasController {
 
   async alterarDatas(req: Request, res: Response): Promise<Response> {
     try {
+      if (!podeAprovarAlteracaoDatas(req.user?.perfil)) {
+        return res.status(403).json({
+          error: 'Alteração de datas precisa ser aprovada por um gestor ou administrador',
+        });
+      }
+
       const { dataInicio, dataFim, justificativa } = req.body;
 
       if (dataInicio === undefined && dataFim === undefined) {

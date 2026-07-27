@@ -20,6 +20,7 @@ import {
 import { UsuarioApi } from '../../domain/usuario/usuario.api';
 import { UsuarioDTO } from '../../domain/usuario/usuario.model';
 import { ToastService } from '../toast/toast.service';
+import { AuthService } from '../../domain/auth/auth.service';
 
 @Component({
   selector: 'app-tarefa-drawers-component',
@@ -72,6 +73,7 @@ export class TarefaDrawersComponent implements OnInit {
     private usuarioApi: UsuarioApi,
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -258,6 +260,11 @@ export class TarefaDrawersComponent implements OnInit {
   salvarDatas() {
     if (!this.tarefa.id) return;
 
+    if (!this.podeAlterarDatas()) {
+      this.toast.warning('Alteração de datas precisa ser aprovada por um gestor ou administrador.');
+      return;
+    }
+
     if (!this.validarDatas()) {
       this.toast.warning('A data de início não pode ser maior que a data de fim.');
       return;
@@ -307,7 +314,7 @@ export class TarefaDrawersComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error('Erro ao alterar as datas da tarefa.');
+        this.toast.error(err.error?.error ?? 'Erro ao alterar as datas da tarefa.');
         this.salvandoDatas = false;
         this.cdr.detectChanges();
       },
@@ -475,6 +482,11 @@ export class TarefaDrawersComponent implements OnInit {
       event.stopPropagation();
     }
 
+    if (!this.mostrandoCalendario && !this.podeAlterarDatas()) {
+      this.toast.warning('Alteração de datas precisa ser aprovada por um gestor ou administrador.');
+      return;
+    }
+
     if (!this.mostrandoCalendario) {
       this.dataInicioTemp = this.tarefa.dataInicio || '';
       this.dataFimTemp = this.tarefa.dataFim || '';
@@ -517,6 +529,11 @@ export class TarefaDrawersComponent implements OnInit {
 
   deveInformarJustificativaDatas(): boolean {
     return !!(this.tarefa.dataInicio || this.tarefa.dataFim);
+  }
+
+  podeAlterarDatas(): boolean {
+    const perfil = this.authService.usuario()?.perfil?.toUpperCase();
+    return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR';
   }
 
   getCorAvatar(nome: string): string {

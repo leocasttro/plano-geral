@@ -311,7 +311,10 @@
           <fa-icon
             [icon]="faCalendar"
             (click)="toggleCalendario($event)"
-            style="font-size: 1.1rem; color: #6c757d; cursor: pointer"
+            [title]="podeAlterarDatas() ? 'Alterar datas' : 'Alteração de datas precisa de aprovação'"
+            [style.opacity]="podeAlterarDatas() ? 1 : 0.45"
+            [style.cursor]="podeAlterarDatas() ? 'pointer' : 'not-allowed'"
+            style="font-size: 1.1rem; color: #6c757d"
           />
         </div>
 
