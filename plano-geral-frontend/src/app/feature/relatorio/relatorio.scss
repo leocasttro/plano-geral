@@ -123,6 +123,7 @@
   grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
   gap: 16px;
   margin-bottom: 16px;
+  align-items: stretch;
 }
 
 .report-panel {
@@ -839,4 +840,19 @@
   border: 1px solid #dbe3ef;
   border-radius: 8px;
   padding: 8px 12px;
+}
+
+.title-metrics-panel {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-metrics-list {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
+  align-content: start;
 }

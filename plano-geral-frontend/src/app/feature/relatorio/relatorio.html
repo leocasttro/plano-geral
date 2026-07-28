@@ -96,7 +96,7 @@
         ></app-productivity-chart>
       </section>
 
-      <section class="report-panel">
+      <section class="report-panel title-metrics-panel">
         <div class="panel-header">
           <div>
             <h3>Mix de status</h3>
@@ -184,7 +184,7 @@
       </div>
     </section>
 
-    <section class="report-panel" *ngIf="leadTime as leadTimeData">
+    <section class="report-panel mb-3" *ngIf="leadTime as leadTimeData">
       <div class="panel-header">
         <div>
           <h3>Lead time</h3>
@@ -192,8 +192,8 @@
         </div>
 
         <span class="panel-count">
-    {{ leadTimeData.geral.tarefasComLeadTime }} tarefas medidas
-  </span>
+          {{ leadTimeData.geral.tarefasComLeadTime }} tarefas medidas
+        </span>
       </div>
 
       <div class="modal-summary">
@@ -380,7 +380,7 @@
           />
         </div>
 
-        <div class="projects-list" *ngIf="metricasTitulosFiltradas.length; else semMetricasTitulos">
+        <div class="projects-list title-metrics-list" *ngIf="metricasTitulosFiltradas.length; else semMetricasTitulos">
           <button
             type="button"
             class="project-metric-row"
