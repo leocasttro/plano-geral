@@ -114,7 +114,8 @@ export class TarefasController {
     const tarefa = await this.deps.addComentario.execute({
       tarefaId: req.params.id,
       comentario: req.body.comentario,
-      usuario: getAuthenticatedUser(req),
+      usuarioId: getAuthenticatedUserId(req),
+      usuarioNome: getAuthenticatedUser(req),
     });
 
     return res.json(TarefaDTO.fromDomain(tarefa));

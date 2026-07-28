@@ -15,6 +15,8 @@ import { TarefaTypeORMRepository } from '../../database/typeorm/entities/reposit
 import { TarefasController } from '../controllers/TarefasController';
 import {ProjetoTypeORMRepository} from '../../database/typeorm/entities/repositories/ProjetoTypeORMRepository';
 import {UserTypeORMRepository} from '../../database/typeorm/entities/repositories/UserTypeORMRepository';
+import {NotificacaoTypeORMRepository} from '../../database/typeorm/entities/repositories/NotificacaoTypeORMRepository';
+import {NotificacaoService} from '../../../application/services/NotificacaoService';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
@@ -22,11 +24,15 @@ export function makeTarefaController() {
   const repoAtividade = new AtividadeTypeORMRepository();
   const userRepo = new UserTypeORMRepository();
 
+  const notificacaoRepository = new NotificacaoTypeORMRepository();
+  const notificacaoService = new NotificacaoService(notificacaoRepository);
+
+
   return new TarefasController({
     createTarefa: new CreateTarefa(repo, projetoRepo),
     getById: new GetTarefaById(repo, userRepo),
     getAllTarefas: new GetAllTarefas(repo, userRepo),
-    addComentario: new AdicionarComentario(repo),
+    addComentario: new AdicionarComentario(repo, notificacaoService),
     alterarStatus: new AlterarStatusTarefa(repo),
     getAtividadeByTarefa: new GetAtividadeByTarefa(repoAtividade),
     adicionarChecklistItem: new AdicionarChecklistItem(repo),
