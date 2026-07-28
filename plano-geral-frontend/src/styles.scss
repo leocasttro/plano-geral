@@ -34,8 +34,7 @@ app-side-bar {
   padding: 20px;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1); // Sombra sutil para separar.
 
-  // Se a sidebar tiver muitos itens, ela terá sua própria barra de rolagem.
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 // 3. Faz o conteúdo principal ocupar todo o espaço restante e ser rolável.

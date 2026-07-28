@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
-import { faBarsProgress, faCalendarDays, faChartBar, faGear, faListCheck, faPeopleGroup, faStethoscope, faTableCellsLarge, faTableList } from '@fortawesome/free-solid-svg-icons';
+import { faBarsProgress, faCalendarDays, faChartBar, faGear, faListCheck, faRightFromBracket, faStethoscope, faTableList } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../domain/auth/auth.service';
 
 @Component({
@@ -21,8 +21,13 @@ export class SideBar {
   faGear = faGear;
   faChart = faChartBar
   faBarProgess = faBarsProgress;
+  faLogout = faRightFromBracket;
 
   get isAdmin(): boolean {
     return this.authService.usuario()?.perfil === 'ADMIN';
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

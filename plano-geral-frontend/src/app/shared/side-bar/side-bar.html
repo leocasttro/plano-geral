@@ -1,68 +1,80 @@
-<div class="container">
-  <div class="wrapper d-inline-flex align-items-center mt-1">
-    <div class="icon rounded bg-primary p-2 me-2">
-      <fa-icon class="fs-5 text-light" [icon]="faBarProgess" />
+<div class="container sidebar-shell">
+  <div>
+    <div class="wrapper d-inline-flex align-items-center mt-1">
+      <div class="icon rounded bg-primary p-2 me-2">
+        <fa-icon class="fs-5 text-light" [icon]="faBarProgess" />
+      </div>
+
+      <div>
+        <h4 class="fw-bolder titulo mb-0">Prosul</h4>
+        <span class="text-muted subtext">Gerenciador de tarefas</span>
+      </div>
     </div>
 
-    <div>
-      <h4 class="fw-bolder titulo mb-0">Prosul</h4>
-      <span class="text-muted subtext">Gerenciador de tarefas</span>
+    <div class="menu mt-5 w-100">
+      <nav class="nav flex-column">
+        <a
+          class="nav-link"
+          routerLink="/planoGeral"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <fa-icon class="fs-5 me-2" [icon]="faTable" />
+          Kanban
+        </a>
+
+        <a
+          class="nav-link"
+          routerLink="/projetos"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <fa-icon class="fs-5 me-2" [icon]="faListCheck" />
+          Projetos
+        </a>
+
+        <a
+          class="nav-link"
+          routerLink="/calendario"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <fa-icon class="fs-5 me-2" [icon]="faCalender" />
+          Calendário
+        </a>
+
+        <a
+          *ngIf="isAdmin"
+          class="nav-link"
+          routerLink="/relatorios"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <fa-icon class="fs-5 me-2" [icon]="faChart" />
+          Relatórios
+        </a>
+
+        <a
+          *ngIf="isAdmin"
+          class="nav-link"
+          routerLink="/configuracoes"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <fa-icon class="fs-5 me-2" [icon]="faGear" />
+          Configurações
+        </a>
+      </nav>
     </div>
   </div>
 
-  <div class="menu mt-5 w-100">
-    <nav class="nav flex-column">
-      <a
-        class="nav-link"
-        routerLink="/planoGeral"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <fa-icon class="fs-5 me-2" [icon]="faTable" />
-        Kanban
-      </a>
-
-      <a
-        class="nav-link"
-        routerLink="/projetos"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <fa-icon class="fs-5 me-2" [icon]="faListCheck" />
-        Projetos
-      </a>
-
-      <a
-        class="nav-link"
-        routerLink="/calendario"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <fa-icon class="fs-5 me-2" [icon]="faCalender" />
-        Calendário
-      </a>
-
-      <a
-        *ngIf="isAdmin"
-        class="nav-link"
-        routerLink="/relatorios"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <fa-icon class="fs-5 me-2" [icon]="faChart" />
-        Relatórios
-      </a>
-
-      <a
-        *ngIf="isAdmin"
-        class="nav-link"
-        routerLink="/configuracoes"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <fa-icon class="fs-5 me-2" [icon]="faGear" />
-        Configurações
-      </a>
-    </nav>
-  </div>
+  <button
+    type="button"
+    class="logout-button"
+    (click)="logout()"
+    title="Sair"
+  >
+    <fa-icon class="fs-5 me-2" [icon]="faLogout" />
+    Sair
+  </button>
 </div>
