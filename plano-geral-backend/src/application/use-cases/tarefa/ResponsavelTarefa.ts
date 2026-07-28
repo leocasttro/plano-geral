@@ -1,8 +1,13 @@
 import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 import {UserRepository} from '../../../domain/repositories/UserRepository';
+import { NotificacaoService } from '../../services/NotificacaoService';
 
 export class ResponsavelTarefa {
-  constructor(private repo: TarefaRepository, private userRepository: UserRepository) {}
+  constructor(
+    private repo: TarefaRepository,
+    private userRepository: UserRepository,
+    private notificacaoService: NotificacaoService,
+  ) {}
 
   async execute(input: {tarefaId: string; responsavelId: string; usuario: string}) {
     const tarefa = await this.repo.findById(input.tarefaId);
@@ -31,6 +36,16 @@ export class ResponsavelTarefa {
     );
 
     await this.repo.save(tarefa);
+
+    await this.notificacaoService.notificarUsuario({
+      usuarioId: input.responsavelId,
+      autorId: input.usuario,
+      tipo: 'ATRIBUICAO_TAREFA',
+      titulo: 'Nova tarefa atribuída',
+      mensagem: `Você foi atribuído à tarefa "${tarefa.titulo}".`,
+      link: `/tarefas/${tarefa.id}`,
+    });
+
     return {
       tarefa,
       responsavel: {

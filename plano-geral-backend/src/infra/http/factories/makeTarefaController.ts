@@ -17,6 +17,12 @@ import {ProjetoTypeORMRepository} from '../../database/typeorm/entities/reposito
 import {UserTypeORMRepository} from '../../database/typeorm/entities/repositories/UserTypeORMRepository';
 import {NotificacaoTypeORMRepository} from '../../database/typeorm/entities/repositories/NotificacaoTypeORMRepository';
 import {NotificacaoService} from '../../../application/services/NotificacaoService';
+import { SolicitacaoAlteracaoDatasTypeORMRepository } from '../../database/typeorm/entities/repositories/SolicitacaoAlteracaoDatasTypeORMRepository';
+import { SolicitarAlteracaoDatas } from '../../../application/use-cases/tarefa/SolicitarAlteracaoDatas';
+import { AprovarAlteracaoDatas } from '../../../application/use-cases/tarefa/AprovarAlteracaoDatas';
+import { ReprovarAlteracaoDatas } from '../../../application/use-cases/tarefa/ReprovarAlteracaoDatas';
+import { GetSolicitacaoAlteracaoDatas } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatas';
+import { GetSolicitacaoAlteracaoDatasPendente } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatasPendente';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
@@ -26,6 +32,8 @@ export function makeTarefaController() {
 
   const notificacaoRepository = new NotificacaoTypeORMRepository();
   const notificacaoService = new NotificacaoService(notificacaoRepository);
+  const solicitacaoAlteracaoDatasRepository =
+    new SolicitacaoAlteracaoDatasTypeORMRepository();
 
 
   return new TarefasController({
@@ -38,8 +46,30 @@ export function makeTarefaController() {
     adicionarChecklistItem: new AdicionarChecklistItem(repo),
     toggleChecklistItem: new ToggleChecklistItem(repo),
     alterarPrioridade: new AlterarPrioridadeTarefa(repo),
-    responsavelTarefa: new ResponsavelTarefa(repo, userRepo),
+    responsavelTarefa: new ResponsavelTarefa(repo, userRepo, notificacaoService),
     alterarDatas: new AlterarDatasTarefaUseCase(repo),
-    deleteTarefa: new DeleteTarefa(repo),
+    solicitarAlteracaoDatas: new SolicitarAlteracaoDatas(
+      repo,
+      userRepo,
+      solicitacaoAlteracaoDatasRepository,
+      notificacaoService,
+    ),
+    getSolicitacaoAlteracaoDatas: new GetSolicitacaoAlteracaoDatas(
+      solicitacaoAlteracaoDatasRepository,
+    ),
+    getSolicitacaoAlteracaoDatasPendente: new GetSolicitacaoAlteracaoDatasPendente(
+      solicitacaoAlteracaoDatasRepository,
+    ),
+    aprovarAlteracaoDatas: new AprovarAlteracaoDatas(
+      repo,
+      solicitacaoAlteracaoDatasRepository,
+      notificacaoService,
+    ),
+    reprovarAlteracaoDatas: new ReprovarAlteracaoDatas(
+      repo,
+      solicitacaoAlteracaoDatasRepository,
+      notificacaoService,
+    ),
+    deleteTarefa: new DeleteTarefa(repo, notificacaoService),
   });
 }

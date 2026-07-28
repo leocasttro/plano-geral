@@ -16,6 +16,12 @@ import { ResponsavelTarefa } from '../../../application/use-cases/tarefa/Respons
 import { AlterarDatasTarefaUseCase } from '../../../application/use-cases/tarefa/AlterarDatasTarefaUseCase';
 import {getAuthenticatedUser, getAuthenticatedUserId} from '../helpers/getAuthenticatedUser';
 import { DeleteTarefa } from '../../../application/use-cases/tarefa/DeleteTarefa';
+import { SolicitarAlteracaoDatas } from '../../../application/use-cases/tarefa/SolicitarAlteracaoDatas';
+import { AprovarAlteracaoDatas } from '../../../application/use-cases/tarefa/AprovarAlteracaoDatas';
+import { ReprovarAlteracaoDatas } from '../../../application/use-cases/tarefa/ReprovarAlteracaoDatas';
+import { GetSolicitacaoAlteracaoDatas } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatas';
+import { GetSolicitacaoAlteracaoDatasPendente } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatasPendente';
+import { SolicitacaoAlteracaoDatasDTO } from '../../../application/dtos/SolicitacaoAlteracaoDatasDTO';
 
 
 interface CriarTarefaBody {
@@ -36,6 +42,11 @@ type Deps = {
   alterarPrioridade: AlterarPrioridadeTarefa;
   responsavelTarefa: ResponsavelTarefa;
   alterarDatas: AlterarDatasTarefaUseCase; // NOVO
+  solicitarAlteracaoDatas: SolicitarAlteracaoDatas;
+  getSolicitacaoAlteracaoDatas: GetSolicitacaoAlteracaoDatas;
+  getSolicitacaoAlteracaoDatasPendente: GetSolicitacaoAlteracaoDatasPendente;
+  aprovarAlteracaoDatas: AprovarAlteracaoDatas;
+  reprovarAlteracaoDatas: ReprovarAlteracaoDatas;
   deleteTarefa: DeleteTarefa;
 };
 
@@ -215,9 +226,18 @@ export class TarefasController {
   async alterarDatas(req: Request, res: Response): Promise<Response> {
     try {
       if (!podeAprovarAlteracaoDatas(req.user?.perfil)) {
-        return res.status(403).json({
-          error: 'Alteração de datas precisa ser aprovada por um gestor ou administrador',
+        const tarefaAtual = await this.deps.getById.execute({
+          id: req.params.id,
+          usuarioId: req.user.id,
+          usuarioNome: req.user.nome,
+          perfil: req.user.perfil,
         });
+
+        if (tarefaAtual.dataInicio || tarefaAtual.dataFim) {
+          return res.status(403).json({
+            error: 'Alteração de datas precisa ser aprovada por um gestor ou administrador',
+          });
+        }
       }
 
       const { dataInicio, dataFim, justificativa } = req.body;
@@ -242,6 +262,103 @@ export class TarefasController {
     }
   }
 
+  async solicitarAlteracaoDatas(req: Request, res: Response): Promise<Response> {
+    try {
+      const { dataInicio, dataFim, justificativa } = req.body;
+
+      const solicitacao = await this.deps.solicitarAlteracaoDatas.execute({
+        tarefaId: req.params.id,
+        dataInicio: parseDateOnly(dataInicio),
+        dataFim: parseDateOnly(dataFim),
+        justificativa,
+        solicitanteId: getAuthenticatedUserId(req),
+        solicitanteNome: getAuthenticatedUser(req),
+      });
+
+      return res.status(201).json({
+        id: solicitacao.id,
+        status: solicitacao.obterStatus(),
+      });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async buscarSolicitacaoAlteracaoDatas(req: Request, res: Response): Promise<Response> {
+    try {
+      const solicitacao = await this.deps.getSolicitacaoAlteracaoDatas.execute({
+        solicitacaoId: req.params.solicitacaoId,
+      });
+
+      return res.json(SolicitacaoAlteracaoDatasDTO.fromDomain(solicitacao));
+    } catch (error: any) {
+      return res.status(404).json({ error: error.message });
+    }
+  }
+
+  async buscarSolicitacaoAlteracaoDatasPendente(req: Request, res: Response): Promise<Response> {
+    try {
+      await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+
+      const solicitacao =
+        await this.deps.getSolicitacaoAlteracaoDatasPendente.execute({
+          tarefaId: req.params.id,
+          solicitanteId: getAuthenticatedUserId(req),
+        });
+
+      return res.json(
+        solicitacao ? SolicitacaoAlteracaoDatasDTO.fromDomain(solicitacao) : null,
+      );
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async aprovarAlteracaoDatas(req: Request, res: Response): Promise<Response> {
+    try {
+      if (!podeAprovarAlteracaoDatas(req.user?.perfil)) {
+        return res.status(403).json({
+          error: 'Aprovação permitida apenas para gestor ou administrador',
+        });
+      }
+
+      const tarefa = await this.deps.aprovarAlteracaoDatas.execute({
+        solicitacaoId: req.params.solicitacaoId,
+        aprovadorId: getAuthenticatedUserId(req),
+        aprovadorNome: getAuthenticatedUser(req),
+      });
+
+      return res.json(TarefaDTO.fromDomain(tarefa));
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async reprovarAlteracaoDatas(req: Request, res: Response): Promise<Response> {
+    try {
+      if (!podeAprovarAlteracaoDatas(req.user?.perfil)) {
+        return res.status(403).json({
+          error: 'Reprovação permitida apenas para gestor ou administrador',
+        });
+      }
+
+      await this.deps.reprovarAlteracaoDatas.execute({
+        solicitacaoId: req.params.solicitacaoId,
+        aprovadorId: getAuthenticatedUserId(req),
+        aprovadorNome: getAuthenticatedUser(req),
+      });
+
+      return res.status(204).send();
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
   async excluir(req: Request, res: Response): Promise<Response> {
     try {
       await this.deps.getById.execute({
@@ -253,6 +370,7 @@ export class TarefasController {
 
       await this.deps.deleteTarefa.execute({
         tarefaId: req.params.id,
+        usuarioId: req.user.id,
       });
 
       return res.status(204).send();
