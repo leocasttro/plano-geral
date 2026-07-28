@@ -119,6 +119,9 @@ export class RelatoriosController {
         projetoId: this.getQueryParam(req.query.projetoId),
         inicio: this.getQueryParam(req.query.inicio),
         fim: this.getQueryParam(req.query.fim),
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
       });
 
       return res.json(resultado);

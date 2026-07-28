@@ -28,7 +28,7 @@ router.get('/projetos/metricas', ensureAdmin,
 router.get('/tarefas/tempo-medio-titulos', ensureAdmin,
   (req, res) =>
     controller.tempoMedioPorTitulo(req, res));
-router.get('/calendario', ensureAdmin,
+router.get('/calendario',
   (req, res) =>
     controller.calendarioTarefas(req, res));
 router.get('/tarefas/tempo-conclusao', ensureAdmin,
