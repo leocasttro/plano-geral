@@ -9,6 +9,7 @@ import {ensureAuthenticated} from './infra/http/middlewares/ensureAuthenticated'
 import projetosRoutes from './infra/http/routes/projetos.routes';
 import relatoriosRoutes from './infra/http/routes/relatorios.routes';
 import notificacoesRoutes from './infra/http/routes/notificacoes.routes';
+import titulosTarefaRoutes from './infra/http/routes/titulos-tarefa.routes';
 
 async function bootstrap() {
   await AppDataSource.initialize();
@@ -31,14 +32,15 @@ async function bootstrap() {
   app.use('/users', usersRoutes);
   app.use('/relatorios', relatoriosRoutes);
   app.use('/notificacoes', notificacoesRoutes);
+  app.use('/titulos-tarefa', titulosTarefaRoutes);
 
   const PORT = 3000;
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
   });
 }
 
 bootstrap().catch((err) => {
-  console.error("❌ Failed to start server:", err);
+  console.error("Failed to start server:", err);
   process.exit(1);
 });
