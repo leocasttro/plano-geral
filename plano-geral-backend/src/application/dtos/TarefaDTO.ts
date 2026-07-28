@@ -19,6 +19,7 @@ type ProjetoResumoDTO = {
 export interface TarefaDTOProps {
   id: string;
   titulo: string;
+  tituloCatalogoId?: string | null;
   descricao?: string;
   dataInicio?: string | null;
   dataFim?: string | null;
@@ -71,6 +72,7 @@ export class TarefaDTO {
     return {
       id: tarefa.id,
       titulo: tarefa.titulo,
+      tituloCatalogoId: tarefa.obterTituloCatalogoId(),
       descricao: tarefa.descricao,
       dataInicio: formatDateOnly(dataInicio),
       dataFim: formatDateOnly(dataFim),

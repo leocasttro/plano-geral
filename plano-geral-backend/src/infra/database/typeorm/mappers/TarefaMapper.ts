@@ -18,6 +18,7 @@ export class TarefaMapper {
 
     row.id = tarefa.id;
     row.titulo = tarefa.titulo;
+    row.tituloCatalogoId = tarefa.obterTituloCatalogoId();
     row.descricao = tarefa.descricao ?? (null as any);
     row.status = tarefa.obterStatus();
     row.prioridade = tarefa.obterPrioridade();
@@ -90,6 +91,7 @@ export class TarefaMapper {
     const tarefaBase = Tarefa.reconstituir({
       id: row.id,
       titulo: row.titulo,
+      tituloCatalogoId: row.tituloCatalogoId ?? null,
       descricao: row.descricao ?? undefined,
       responsavel: row.responsavel ?? undefined,
       criadorId: row.criadorId ?? undefined,

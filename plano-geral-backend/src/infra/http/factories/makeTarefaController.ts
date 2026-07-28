@@ -23,6 +23,9 @@ import { AprovarAlteracaoDatas } from '../../../application/use-cases/tarefa/Apr
 import { ReprovarAlteracaoDatas } from '../../../application/use-cases/tarefa/ReprovarAlteracaoDatas';
 import { GetSolicitacaoAlteracaoDatas } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatas';
 import { GetSolicitacaoAlteracaoDatasPendente } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatasPendente';
+import {
+  TituloTarefaCatalogoTypeORMRepository
+} from '../../database/typeorm/entities/repositories/TituloTarefaCatalogoTypeORMRepository';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
@@ -34,10 +37,11 @@ export function makeTarefaController() {
   const notificacaoService = new NotificacaoService(notificacaoRepository);
   const solicitacaoAlteracaoDatasRepository =
     new SolicitacaoAlteracaoDatasTypeORMRepository();
+  const tituloCatalogoRepo = new TituloTarefaCatalogoTypeORMRepository();
 
 
   return new TarefasController({
-    createTarefa: new CreateTarefa(repo, projetoRepo),
+    createTarefa: new CreateTarefa(repo, projetoRepo, tituloCatalogoRepo),
     getById: new GetTarefaById(repo, userRepo),
     getAllTarefas: new GetAllTarefas(repo, userRepo),
     addComentario: new AdicionarComentario(repo, notificacaoService),

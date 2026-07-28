@@ -10,6 +10,7 @@ import { Periodo } from '../value-objects/Periodo';
 type TarefaProps = {
   id: string;
   titulo: string;
+  tituloCatalogoId?: string | null;
   descricao?: string;
   status: StatusTarefa;
   prioridade: Prioridade;
@@ -27,6 +28,7 @@ type ProjetoResumo = {
 }
 
 export class Tarefa {
+  private tituloCatalogoId?: string | null;
   private status: StatusTarefa;
   private checklist: CheckListItem[] = [];
   private atividades: Atividade[] = [];
@@ -40,7 +42,8 @@ export class Tarefa {
     public readonly id: string,
     public titulo: string,
     public descricao: string | undefined,
-    projetoId: string
+    projetoId: string,
+    tituloCatalogoId?: string | null,
   ) {
     if (!titulo || titulo.trim().length === 0) {
       throw new Error('Tarefa precisa de um título válido');
@@ -62,6 +65,7 @@ export class Tarefa {
     tarefa.projeto = props.projeto ?? null;
     tarefa.checklist = props.checklist ?? [];
     tarefa.atividades = props.atividades ?? [];
+    tarefa.tituloCatalogoId = props.tituloCatalogoId ?? null;
 
     return tarefa;
   }
@@ -224,6 +228,10 @@ export class Tarefa {
     });
 
     return tarefaComPrazo;
+  }
+
+  obterTituloCatalogoId(): string | null {
+    return this.tituloCatalogoId ?? null;
   }
 
   obterProjeto(): ProjetoResumo | null {

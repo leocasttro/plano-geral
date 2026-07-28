@@ -56,6 +56,9 @@ export class TarefaORM {
   @Column({ name: 'data_fim', type: 'date', nullable: true })
   dataFim!: Date | string | null;
 
+  @Column({ name: 'titulo_catalogo_id', type: 'uuid', nullable: true })
+  tituloCatalogoId!: string | null;
+
   @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert'] })
   atividades!: AtividadeORM[];
 

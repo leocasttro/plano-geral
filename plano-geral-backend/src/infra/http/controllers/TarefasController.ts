@@ -26,6 +26,7 @@ import { SolicitacaoAlteracaoDatasDTO } from '../../../application/dtos/Solicita
 
 interface CriarTarefaBody {
   titulo: string;
+  tituloCatalogoId?: string | null;
   descricao?: string;
   projetoId: string;
 }
@@ -85,10 +86,11 @@ export class TarefasController {
   constructor(private deps: Deps) {}
 
   async criar(req: Request<{}, {}, CriarTarefaBody>, res: Response) {
-    const { titulo, descricao, projetoId } = req.body;
+    const { titulo, descricao, projetoId, tituloCatalogoId  } = req.body;
 
     const tarefa = await this.deps.createTarefa.execute({
       titulo,
+      tituloCatalogoId,
       descricao,
       projetoId,
       usuario: getAuthenticatedUserId(req),
