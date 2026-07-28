@@ -40,6 +40,61 @@
   ></button>
 </div>
 
+<section
+  class="date-approval-panel"
+  *ngIf="solicitacaoAlteracaoDatasId && podeAlterarDatas()"
+>
+  <div>
+    <strong>Solicitação de alteração de datas</strong>
+    <span *ngIf="solicitacaoAlteracaoDatas as solicitacao">
+      {{ solicitacao.solicitanteNome }} solicitou
+      {{ formatarDataSolicitacao(solicitacao.dataInicio) }} até
+      {{ formatarDataSolicitacao(solicitacao.dataFim) }}.
+    </span>
+    <p *ngIf="solicitacaoAlteracaoDatas as solicitacao">
+      {{ solicitacao.justificativa }}
+    </p>
+    <span *ngIf="!solicitacaoAlteracaoDatas">
+      Carregando justificativa da solicitação...
+    </span>
+  </div>
+
+  <div
+    class="date-approval-actions"
+    *ngIf="solicitacaoAlteracaoDatas?.status === 'PENDENTE'; else solicitacaoAvaliada"
+  >
+    <button
+      type="button"
+      class="btn btn-sm btn-success"
+      [disabled]="avaliandoSolicitacaoDatas"
+      (click)="aprovarSolicitacaoAlteracaoDatas()"
+    >
+      Aprovar
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-danger"
+      [disabled]="avaliandoSolicitacaoDatas"
+      (click)="reprovarSolicitacaoAlteracaoDatas()"
+    >
+      Reprovar
+    </button>
+  </div>
+
+  <ng-template #solicitacaoAvaliada>
+    <div
+      class="date-approval-status"
+      *ngIf="solicitacaoAlteracaoDatas as solicitacao"
+    >
+      <strong>{{ solicitacao.status }}</strong>
+      <span *ngIf="solicitacao.aprovadorNome">
+        por {{ solicitacao.aprovadorNome }}
+      </span>
+    </div>
+  </ng-template>
+</section>
+
 <!-- BODY -->
 <div class="drawer-body">
   <div class="row">
@@ -311,9 +366,8 @@
           <fa-icon
             [icon]="faCalendar"
             (click)="toggleCalendario($event)"
-            [title]="podeAlterarDatas() ? 'Alterar datas' : 'Alteração de datas precisa de aprovação'"
-            [style.opacity]="podeAlterarDatas() ? 1 : 0.45"
-            [style.cursor]="podeAlterarDatas() ? 'pointer' : 'not-allowed'"
+            [title]="podeAlterarDatas() ? 'Alterar datas' : 'Solicitar alteração de datas'"
+            [style.cursor]="'pointer'"
             style="font-size: 1.1rem; color: #6c757d"
           />
         </div>
@@ -336,6 +390,13 @@
 
         <!-- Editor de datas -->
         <div *ngIf="mostrandoCalendario" class="data-editor">
+          <div
+            class="alert alert-warning py-2 px-3 mb-3"
+            *ngIf="deveSolicitarAprovacaoDatas() && solicitacaoAlteracaoDatasPendente"
+          >
+            Existe uma solicitação de alteração de datas pendente para esta tarefa.
+          </div>
+
           <div class="mb-2">
             <label class="form-label form-label-sm">Início</label>
             <input
@@ -359,7 +420,7 @@
               <textarea
                 class="form-control form-control-sm"
                 rows="3"
-                placeholder="Informe o motivo da alteração das datas"
+                [placeholder]="deveSolicitarAprovacaoDatas() ? 'Informe o motivo para aprovação do gestor' : 'Informe o motivo da alteração das datas'"
                 [(ngModel)]="justificativaDatasTemp"
                 name="justificativaDatasTemp"
               ></textarea>
@@ -371,6 +432,7 @@
               class="btn btn-sm btn-primary w-100"
               [disabled]="
                   salvandoDatas ||
+                  (deveSolicitarAprovacaoDatas() && !!solicitacaoAlteracaoDatasPendente) ||
                   !validarDatas() ||
                   (deveInformarJustificativaDatas() && !justificativaDatasTemp.trim())
                 "
@@ -380,7 +442,7 @@
                 *ngIf="salvandoDatas"
                 class="spinner-border spinner-border-sm me-1"
               ></span>
-              Salvar
+              {{ deveSolicitarAprovacaoDatas() ? 'Solicitar aprovação' : 'Salvar' }}
             </button>
             <button
               class="btn btn-sm btn-outline-secondary"

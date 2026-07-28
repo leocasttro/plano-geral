@@ -1,4 +1,7 @@
-import { TarefaApi } from './../../domain/tarefa/tarefa.api';
+import {
+  SolicitacaoAlteracaoDatasDTO,
+  TarefaApi,
+} from './../../domain/tarefa/tarefa.api';
 import { AtividadeDTO, Usuario } from '../../domain/tarefa/tarefa.model';
 import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
@@ -38,6 +41,7 @@ import { AuthService } from '../../domain/auth/auth.service';
 })
 export class TarefaDrawersComponent implements OnInit {
   @Input() tarefa!: CardDataDrawer;
+  @Input() solicitacaoAlteracaoDatasId: string | null = null;
   @Output() tarefaAtualizada = new EventEmitter<CardDataDrawer>();
   @Output() tarefaExcluida = new EventEmitter<string>();
 
@@ -66,6 +70,9 @@ export class TarefaDrawersComponent implements OnInit {
 
   salvandoDatas = false;
   excluindoTarefa = false;
+  avaliandoSolicitacaoDatas = false;
+  solicitacaoAlteracaoDatas: SolicitacaoAlteracaoDatasDTO | null = null;
+  solicitacaoAlteracaoDatasPendente: SolicitacaoAlteracaoDatasDTO | null = null;
 
   constructor(
     private offcanvas: NgbOffcanvas,
@@ -81,6 +88,8 @@ export class TarefaDrawersComponent implements OnInit {
     this.tarefa.checklist = this.tarefa.checklist ?? [];
     this.listarAtividades();
     this.listarUsuarios();
+    this.carregarSolicitacaoAlteracaoDatas();
+    this.carregarSolicitacaoAlteracaoDatasPendente();
     this.participantes = [
       ...new Set(this.tarefa.atividades.map((a) => a.usuario)),
     ];
@@ -135,6 +144,109 @@ export class TarefaDrawersComponent implements OnInit {
         error: (err) => {
           console.error(err);
           this.toast.error('Erro ao adicionar comentário.');
+        },
+      });
+  }
+
+  carregarSolicitacaoAlteracaoDatas(): void {
+    if (!this.solicitacaoAlteracaoDatasId) {
+      this.solicitacaoAlteracaoDatas = null;
+      return;
+    }
+
+    this.tarefaApi
+      .buscarSolicitacaoAlteracaoDatas(this.solicitacaoAlteracaoDatasId)
+      .subscribe({
+        next: (solicitacao) => {
+          this.solicitacaoAlteracaoDatas = solicitacao;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Erro ao carregar solicitação de datas:', err);
+          this.solicitacaoAlteracaoDatas = null;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  carregarSolicitacaoAlteracaoDatasPendente(): void {
+    if (!this.tarefa.id || this.podeAlterarDatas()) {
+      this.solicitacaoAlteracaoDatasPendente = null;
+      return;
+    }
+
+    this.tarefaApi.buscarSolicitacaoAlteracaoDatasPendente(this.tarefa.id).subscribe({
+      next: (solicitacao) => {
+        this.solicitacaoAlteracaoDatasPendente = solicitacao;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.solicitacaoAlteracaoDatasPendente = null;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  aprovarSolicitacaoAlteracaoDatas(): void {
+    if (!this.solicitacaoAlteracaoDatasId || this.avaliandoSolicitacaoDatas) {
+      return;
+    }
+
+    this.avaliandoSolicitacaoDatas = true;
+
+    this.tarefaApi
+      .aprovarAlteracaoDatas(this.solicitacaoAlteracaoDatasId)
+      .subscribe({
+        next: (dto) => {
+          const atualizada = tarefaDtoToDrawer(dto);
+
+          this.tarefa = {
+            ...this.tarefa,
+            ...atualizada,
+            checklist: [...(atualizada.checklist ?? [])],
+            atividades: this.ordernarAtividade([
+              ...(atualizada.atividades ?? []),
+            ]),
+          };
+
+          this.solicitacaoAlteracaoDatasId = null;
+          this.solicitacaoAlteracaoDatas = null;
+          this.avaliandoSolicitacaoDatas = false;
+          this.tarefaAtualizada.emit(this.tarefa);
+          this.toast.success('Solicitação de datas aprovada.');
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error(err.error?.error ?? 'Erro ao aprovar solicitação.');
+          this.avaliandoSolicitacaoDatas = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  reprovarSolicitacaoAlteracaoDatas(): void {
+    if (!this.solicitacaoAlteracaoDatasId || this.avaliandoSolicitacaoDatas) {
+      return;
+    }
+
+    this.avaliandoSolicitacaoDatas = true;
+
+    this.tarefaApi
+      .reprovarAlteracaoDatas(this.solicitacaoAlteracaoDatasId)
+      .subscribe({
+        next: () => {
+          this.solicitacaoAlteracaoDatasId = null;
+          this.solicitacaoAlteracaoDatas = null;
+          this.avaliandoSolicitacaoDatas = false;
+          this.toast.success('Solicitação de datas reprovada.');
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error(err.error?.error ?? 'Erro ao reprovar solicitação.');
+          this.avaliandoSolicitacaoDatas = false;
+          this.cdr.detectChanges();
         },
       });
   }
@@ -260,13 +372,13 @@ export class TarefaDrawersComponent implements OnInit {
   salvarDatas() {
     if (!this.tarefa.id) return;
 
-    if (!this.podeAlterarDatas()) {
-      this.toast.warning('Alteração de datas precisa ser aprovada por um gestor ou administrador.');
+    if (!this.validarDatas()) {
+      this.toast.warning('A data de início não pode ser maior que a data de fim.');
       return;
     }
 
-    if (!this.validarDatas()) {
-      this.toast.warning('A data de início não pode ser maior que a data de fim.');
+    if (this.deveSolicitarAprovacaoDatas() && this.solicitacaoAlteracaoDatasPendente) {
+      this.toast.warning('Aguarde a aprovação ou reprovação da solicitação pendente.');
       return;
     }
 
@@ -280,13 +392,35 @@ export class TarefaDrawersComponent implements OnInit {
 
     this.salvandoDatas = true;
 
-    this.tarefaApi.alterarDatas(this.tarefa.id, {
+    const payload = {
       dataInicio: this.dataInicioTemp || undefined,
       dataFim: this.dataFimTemp || undefined,
       justificativa: this.deveInformarJustificativaDatas()
         ? this.justificativaDatasTemp.trim()
         : undefined,
-    }).subscribe({
+    };
+
+    if (this.deveSolicitarAprovacaoDatas()) {
+      this.tarefaApi.solicitarAlteracaoDatas(this.tarefa.id, payload).subscribe({
+        next: () => {
+          this.mostrandoCalendario = false;
+          this.salvandoDatas = false;
+          this.carregarSolicitacaoAlteracaoDatasPendente();
+          this.justificativaDatasTemp = '';
+          this.toast.success('Solicitação de alteração de datas enviada para aprovação.');
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error(err.error?.error ?? 'Erro ao solicitar alteração das datas.');
+          this.salvandoDatas = false;
+          this.cdr.detectChanges();
+        },
+      });
+      return;
+    }
+
+    this.tarefaApi.alterarDatas(this.tarefa.id, payload).subscribe({
       next: (dto) => {
         const atualizada = tarefaDtoToDrawer(dto);
 
@@ -482,11 +616,6 @@ export class TarefaDrawersComponent implements OnInit {
       event.stopPropagation();
     }
 
-    if (!this.mostrandoCalendario && !this.podeAlterarDatas()) {
-      this.toast.warning('Alteração de datas precisa ser aprovada por um gestor ou administrador.');
-      return;
-    }
-
     if (!this.mostrandoCalendario) {
       this.dataInicioTemp = this.tarefa.dataInicio || '';
       this.dataFimTemp = this.tarefa.dataFim || '';
@@ -516,6 +645,10 @@ export class TarefaDrawersComponent implements OnInit {
     return `${dia}/${mes}/${ano}`;
   }
 
+  formatarDataSolicitacao(data: string | null | undefined): string {
+    return this.formatarDataExibicao(data ?? undefined);
+  }
+
   // Validação básica das datas
   validarDatas(): boolean {
     if (this.dataInicioTemp && this.dataFimTemp) {
@@ -528,7 +661,11 @@ export class TarefaDrawersComponent implements OnInit {
   }
 
   deveInformarJustificativaDatas(): boolean {
-    return !!(this.tarefa.dataInicio || this.tarefa.dataFim);
+    return this.deveSolicitarAprovacaoDatas() || !!(this.tarefa.dataInicio || this.tarefa.dataFim);
+  }
+
+  deveSolicitarAprovacaoDatas(): boolean {
+    return !this.podeAlterarDatas() && !!(this.tarefa.dataInicio || this.tarefa.dataFim);
   }
 
   podeAlterarDatas(): boolean {

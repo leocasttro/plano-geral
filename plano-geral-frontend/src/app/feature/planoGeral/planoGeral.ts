@@ -30,6 +30,8 @@ import { TarefaDrawersComponent } from '../../shared/drawers/tarefa-drawers-comp
 import { tarefaDtoToCardData } from './planoGeral.mapper';
 import { KanbanSearchService } from '../../shared/services/kanban-search.service';
 import { Subscription } from 'rxjs';
+import { tarefaDtoToDrawer } from '../../shared/drawers/tarefa-drawer.mapper';
+import { TarefaDrawerNavigationService } from '../../shared/services/tarefa-drawer-navigation.service';
 
 @Component({
   selector: 'app-planoGeral',
@@ -62,6 +64,7 @@ export class Pedidos implements OnInit, OnDestroy {
 
   private itemSelecionadoParaUpload: ChecklistItem | null = null;
   private searchSub?: Subscription;
+  private drawerNavigationSub?: Subscription;
 
   constructor(
     private tarefaApi: TarefaApi,
@@ -69,17 +72,23 @@ export class Pedidos implements OnInit, OnDestroy {
     private modalService: NgbModal,
     private offcanvasService: NgbOffcanvas,
     private kanbanSearch: KanbanSearchService,
+    private tarefaDrawerNavigation: TarefaDrawerNavigationService,
   ) {}
 
   ngOnInit(): void {
     this.searchSub = this.kanbanSearch.openSearch$.subscribe(() => {
       this.abrirPesquisa();
     });
+    this.drawerNavigationSub = this.tarefaDrawerNavigation.abrirTarefa$.subscribe(
+      ({ tarefaId, solicitacaoAlteracaoDatasId }) =>
+        this.abrirDetalheTarefaPorId(tarefaId, solicitacaoAlteracaoDatasId),
+    );
     this.carregarTarefas();
   }
 
   ngOnDestroy(): void {
     this.searchSub?.unsubscribe();
+    this.drawerNavigationSub?.unsubscribe();
   }
 
   carregarTarefas(): void {
@@ -260,7 +269,10 @@ export class Pedidos implements OnInit, OnDestroy {
       });
   }
 
-  abrirDetalheTarefa(tarefa: CardData): void {
+  abrirDetalheTarefa(
+    tarefa: CardData,
+    solicitacaoAlteracaoDatasId?: string | null,
+  ): void {
     const ref = this.offcanvasService.open(TarefaDrawersComponent, {
       position: 'end',
       backdrop: true,
@@ -269,6 +281,8 @@ export class Pedidos implements OnInit, OnDestroy {
     });
 
     ref.componentInstance.tarefa = { ...tarefa };
+    ref.componentInstance.solicitacaoAlteracaoDatasId =
+      solicitacaoAlteracaoDatasId ?? null;
     ref.componentInstance.tarefaAtualizada.subscribe(
       (tarefaAtualizada: CardData) => {
         this.onTarefaAtualizada(tarefaAtualizada);
@@ -277,6 +291,37 @@ export class Pedidos implements OnInit, OnDestroy {
     ref.componentInstance.tarefaExcluida.subscribe((tarefaId: string) => {
       this.onTarefaExcluida(tarefaId);
     });
+  }
+
+  abrirDetalheTarefaPorId(
+    tarefaId: string,
+    solicitacaoAlteracaoDatasId?: string | null,
+  ): void {
+    const tarefaLocal = this.encontrarTarefaPorId(tarefaId);
+
+    if (tarefaLocal) {
+      this.abrirDetalheTarefa(tarefaLocal, solicitacaoAlteracaoDatasId);
+      return;
+    }
+
+    this.tarefaApi.buscarPorId(tarefaId).subscribe({
+      next: (tarefaDto) => {
+        const tarefaDrawer = tarefaDtoToDrawer(tarefaDto);
+        this.abrirDetalheTarefa(tarefaDrawer, solicitacaoAlteracaoDatasId);
+      },
+      error: (err) => {
+        console.error('Erro ao abrir tarefa da notificação:', err);
+      },
+    });
+  }
+
+  private encontrarTarefaPorId(tarefaId: string): CardData | null {
+    return [
+      ...this.tarefasPendentes,
+      ...this.tarefasEmAndamento,
+      ...this.tarefasConcluidas,
+      ...this.tarefasTeste,
+    ].find((tarefa) => tarefa.id === tarefaId) ?? null;
   }
 
   private normalizarTexto(valor?: string | null): string {

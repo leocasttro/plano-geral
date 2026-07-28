@@ -10,6 +10,21 @@ export interface CriarTarefaRequest {
   projetoId: string;
 }
 
+export interface SolicitacaoAlteracaoDatasDTO {
+  id: string;
+  tarefaId: string;
+  solicitanteId: string;
+  solicitanteNome: string;
+  dataInicio: string | null;
+  dataFim: string | null;
+  justificativa: string;
+  status: string;
+  aprovadorId: string | null;
+  aprovadorNome: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TarefaApi {
   private readonly apiUrl = `${environment.apiUrl}/tarefas`;
@@ -88,6 +103,50 @@ export class TarefaApi {
     },
   ): Observable<TarefaDTO> {
     return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/datas`, payload);
+  }
+
+  solicitarAlteracaoDatas(
+    id: string,
+    payload: {
+      dataInicio?: string;
+      dataFim?: string;
+      justificativa?: string;
+    },
+  ): Observable<{ id: string; status: string }> {
+    return this.http.post<{ id: string; status: string }>(
+      `${this.apiUrl}/${id}/solicitacoes-datas`,
+      payload,
+    );
+  }
+
+  buscarSolicitacaoAlteracaoDatas(
+    solicitacaoId: string,
+  ): Observable<SolicitacaoAlteracaoDatasDTO> {
+    return this.http.get<SolicitacaoAlteracaoDatasDTO>(
+      `${this.apiUrl}/solicitacoes-datas/${solicitacaoId}`,
+    );
+  }
+
+  buscarSolicitacaoAlteracaoDatasPendente(
+    tarefaId: string,
+  ): Observable<SolicitacaoAlteracaoDatasDTO | null> {
+    return this.http.get<SolicitacaoAlteracaoDatasDTO | null>(
+      `${this.apiUrl}/${tarefaId}/solicitacoes-datas/pendente`,
+    );
+  }
+
+  aprovarAlteracaoDatas(solicitacaoId: string): Observable<TarefaDTO> {
+    return this.http.post<TarefaDTO>(
+      `${this.apiUrl}/solicitacoes-datas/${solicitacaoId}/aprovar`,
+      {},
+    );
+  }
+
+  reprovarAlteracaoDatas(solicitacaoId: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/solicitacoes-datas/${solicitacaoId}/reprovar`,
+      {},
+    );
   }
 
   excluir(id: string): Observable<void> {
