@@ -33,25 +33,35 @@
 
             <div class="notification-menu" *ngIf="mostrarNotificacoes">
               <div class="notification-header">
-                <strong>Notificações</strong>
-                <span>{{ totalNaoLidas }} não lidas</span>
+                <div>
+                  <strong>Notificações</strong>
+                  <span>{{ totalNaoLidas }} não lidas</span>
+                </div>
+
+                <button
+                  type="button"
+                  class="notification-clear"
+                  [disabled]="totalNaoLidas === 0"
+                  (click)="limparNotificacoes()"
+                >
+                  Limpar
+                </button>
               </div>
 
               <div class="notification-empty" *ngIf="notificacoes.length === 0">
                 Nenhuma notificação.
               </div>
 
-              <button
-                type="button"
+              <div
                 class="notification-item"
                 [class.unread]="!notificacao.lida"
                 *ngFor="let notificacao of notificacoes"
-                (click)="marcarComoLida(notificacao)"
+                (click)="abrirNotificacao(notificacao)"
               >
                 <strong>{{ notificacao.titulo }}</strong>
                 <span>{{ notificacao.mensagem }}</span>
                 <small>{{ formatarDataNotificacao(notificacao.createdAt) }}</small>
-              </button>
+              </div>
             </div>
           </div>
 

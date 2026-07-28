@@ -72,8 +72,14 @@
   padding: 12px 14px;
   border-bottom: 1px solid #eef2f7;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.notification-header div {
+  display: grid;
+  gap: 2px;
 }
 
 .notification-header span,
@@ -82,6 +88,26 @@
 .notification-empty {
   color: #6b7280;
   font-size: 0.78rem;
+}
+
+.notification-clear {
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: #eef2f7;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.notification-clear:not(:disabled):hover {
+  background: #e7f1ff;
+  color: #0d6efd;
+}
+
+.notification-clear:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
 
 .notification-item {

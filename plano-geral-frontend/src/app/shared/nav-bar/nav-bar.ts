@@ -3,15 +3,24 @@ import {
   faMagnifyingGlass,
   faPlus,
 } from '@fortawesome/free-solid-svg-icons';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  effect,
+} from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { CommonModule } from '@angular/common';
-import { interval, of, Subscription } from 'rxjs';
-import { catchError, filter, startWith, switchMap } from 'rxjs/operators';
+import { forkJoin, interval, of, Subscription } from 'rxjs';
+import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { KanbanSearchService } from '../services/kanban-search.service';
 import { NotificacaoApi } from '../../domain/notificacao/notificacao.api';
 import { NotificacaoDTO } from '../../domain/notificacao/notificacao.model';
+import { TarefaDrawerNavigationService } from '../services/tarefa-drawer-navigation.service';
+import { AuthService } from '../../domain/auth/auth.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -72,7 +81,25 @@ export class NavBar {
     private activatedRoute: ActivatedRoute,
     private kanbanSearch: KanbanSearchService,
     private notificacaoApi: NotificacaoApi,
-  ) {}
+    private tarefaDrawerNavigation: TarefaDrawerNavigationService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+  ) {
+    effect(() => {
+      const usuario = this.authService.usuario();
+
+      if (usuario) {
+        this.sincronizarContadorNotificacoes();
+        this.iniciarPollingNotificacoes();
+        return;
+      }
+
+      this.pararPollingNotificacoes();
+      this.notificacoes = [];
+      this.totalNaoLidas = 0;
+      this.cdr.markForCheck();
+    });
+  }
 
   ngOnInit() {
     this.routerSubscription = this.router.events.pipe(filter(
@@ -82,7 +109,11 @@ export class NavBar {
     });
 
     this.atualizarTitulo();
-    this.iniciarPollingNotificacoes();
+
+    if (this.authService.usuario()) {
+      this.sincronizarContadorNotificacoes();
+      this.iniciarPollingNotificacoes();
+    }
   }
 
   ngOnDestroy() {
@@ -90,7 +121,7 @@ export class NavBar {
       this.routerSubscription.unsubscribe()
     }
 
-    this.notificacoesSubscription?.unsubscribe();
+    this.pararPollingNotificacoes();
   }
   onNovaTarefaClick() {
     this.novaTarefa.emit();
@@ -124,13 +155,35 @@ export class NavBar {
 
   toggleNotificacoes(): void {
     this.mostrarNotificacoes = !this.mostrarNotificacoes;
+
+    if (this.mostrarNotificacoes) {
+      this.carregarNotificacoes();
+    }
   }
 
-  marcarComoLida(notificacao: NotificacaoDTO): void {
-    if (notificacao.lida) {
+  abrirNotificacao(notificacao: NotificacaoDTO): void {
+    this.mostrarNotificacoes = false;
+
+    if (!notificacao.lida) {
+      this.marcarComoLida(notificacao);
+    }
+
+    const tarefaId = this.extrairTarefaIdDaNotificacao(notificacao);
+
+    if (!tarefaId) {
       return;
     }
 
+    const solicitacaoId = this.extrairSolicitacaoIdDaNotificacao(notificacao);
+
+    this.router.navigate(['/planoGeral']).then(() => {
+      setTimeout(() =>
+        this.tarefaDrawerNavigation.abrirTarefa(tarefaId, solicitacaoId),
+      );
+    });
+  }
+
+  marcarComoLida(notificacao: NotificacaoDTO): void {
     this.notificacaoApi.marcarComoLida(notificacao.id).subscribe({
       next: (atualizada) => {
         this.notificacoes = this.notificacoes.map((item) =>
@@ -138,10 +191,43 @@ export class NavBar {
         );
 
         this.atualizarTotalNaoLidas();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erro ao marcar notificação como lida:', err);
       },
+    });
+  }
+
+  limparNotificacoes(): void {
+    const naoLidas = this.notificacoes.filter((item) => !item.lida);
+
+    if (!naoLidas.length) {
+      return;
+    }
+
+    forkJoin(
+      naoLidas.map((notificacao) =>
+        this.notificacaoApi.marcarComoLida(notificacao.id).pipe(
+          catchError((err) => {
+            console.error('Erro ao limpar notificação:', err);
+            return of(null);
+          }),
+        ),
+      ),
+    ).subscribe((atualizadas) => {
+      const atualizadasMap = new Map(
+        atualizadas
+          .filter((item): item is NotificacaoDTO => !!item)
+          .map((item) => [item.id, item]),
+      );
+
+      this.notificacoes = this.notificacoes.map((item) =>
+        atualizadasMap.get(item.id) ?? item,
+      );
+
+      this.atualizarTotalNaoLidas();
+      this.cdr.detectChanges();
     });
   }
 
@@ -156,26 +242,82 @@ export class NavBar {
   }
 
   private iniciarPollingNotificacoes(): void {
-    this.notificacoesSubscription = interval(60000)
+    if (this.notificacoesSubscription) {
+      return;
+    }
+
+    this.notificacoesSubscription = interval(15000)
       .pipe(
         startWith(0),
-        switchMap(() =>
-          this.notificacaoApi.listar().pipe(
-            catchError((err) => {
-              console.error('Erro ao carregar notificações:', err);
-              return of([]);
-            }),
-          ),
-        ),
+        switchMap(() => this.buscarTotalNaoLidas()),
       )
-      .subscribe((notificacoes) => {
-        this.notificacoes = notificacoes;
-        this.atualizarTotalNaoLidas();
+      .subscribe((total) => {
+        this.totalNaoLidas = total;
+        this.cdr.detectChanges();
       });
+  }
+
+  private pararPollingNotificacoes(): void {
+    this.notificacoesSubscription?.unsubscribe();
+    this.notificacoesSubscription = undefined;
+  }
+
+  private carregarNotificacoes(): void {
+    this.buscarNotificacoes().subscribe((notificacoes) => {
+      this.notificacoes = notificacoes;
+      this.atualizarTotalNaoLidas();
+      this.cdr.detectChanges();
+    });
+  }
+
+  private buscarNotificacoes() {
+    return this.notificacaoApi.listar().pipe(
+      catchError((err) => {
+        console.error('Erro ao carregar notificações:', err);
+        return of([]);
+      }),
+    );
+  }
+
+  private sincronizarContadorNotificacoes(): void {
+    this.buscarTotalNaoLidas().subscribe((total) => {
+      this.totalNaoLidas = total;
+      this.cdr.detectChanges();
+    });
+  }
+
+  private buscarTotalNaoLidas() {
+    return this.notificacaoApi.totalNaoLidas().pipe(
+      map((resultado) => resultado.total),
+      catchError((err) => {
+        console.error('Erro ao carregar total de notificações:', err);
+        return of(0);
+      }),
+    );
   }
 
   private atualizarTotalNaoLidas(): void {
     this.totalNaoLidas = this.notificacoes.filter((item) => !item.lida).length;
+  }
+
+  private extrairTarefaIdDaNotificacao(notificacao: NotificacaoDTO): string | null {
+    if (!notificacao.link) {
+      return null;
+    }
+
+    const match = notificacao.link.match(/\/tarefas\/([^/?#]+)/);
+
+    return match?.[1] ?? null;
+  }
+
+  private extrairSolicitacaoIdDaNotificacao(notificacao: NotificacaoDTO): string | null {
+    if (!notificacao.link) {
+      return null;
+    }
+
+    const match = notificacao.link.match(/\/solicitacoes-datas\/([^/?#]+)/);
+
+    return match?.[1] ?? null;
   }
 
   private extrairTituloDaRota() {
