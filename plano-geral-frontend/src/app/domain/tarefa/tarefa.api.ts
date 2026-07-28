@@ -6,6 +6,7 @@ import { TarefaDTO, AtividadeDTO } from './tarefa.model';
 
 export interface CriarTarefaRequest {
   titulo: string;
+  tituloCatalogoId?: string | null;
   descricao?: string;
   projetoId: string;
 }

@@ -6,17 +6,102 @@
   </div>
 
   <form>
-    <!-- TÍTULO -->
     <div class="mb-3">
-      <label for="titulo" class="fw-bold text-secondary">Título</label>
+      <label for="componente" class="fw-bold text-secondary">Componente</label>
+      <select
+        class="form-select"
+        id="componente"
+        [(ngModel)]="componenteSelecionado"
+        name="componente"
+        [disabled]="carregandoTitulos || componentes.length === 0"
+        (ngModelChange)="onComponenteChange()"
+      >
+        <option value="">
+          {{ carregandoTitulos ? 'Carregando componentes...' : 'Selecione um componente' }}
+        </option>
+        <option *ngFor="let componente of componentes" [value]="componente">
+          {{ componente }}
+        </option>
+      </select>
+      <small class="text-danger d-block mt-1" *ngIf="erroTitulos">
+        {{ erroTitulos }}
+      </small>
+    </div>
+
+    <div class="mb-3">
+      <label for="atividadePrincipal" class="fw-bold text-secondary">
+        Atividade principal
+      </label>
+      <select
+        class="form-select"
+        id="atividadePrincipal"
+        [(ngModel)]="atividadePrincipalSelecionada"
+        name="atividadePrincipal"
+        [disabled]="!componenteSelecionado"
+        (ngModelChange)="onAtividadePrincipalChange()"
+      >
+        <option value="">Selecione uma atividade</option>
+        <option *ngFor="let atividade of atividadesPrincipais" [value]="atividade">
+          {{ atividade }}
+        </option>
+      </select>
+    </div>
+
+    <div
+      class="mb-3"
+      *ngIf="atividadePrincipalSelecionada && !devePreencherTituloManual()"
+    >
+      <label for="subatividade" class="fw-bold text-secondary">
+        Subatividade
+      </label>
+
+      <select
+        *ngIf="subatividades.length > 0"
+        class="form-select"
+        id="subatividade"
+        [(ngModel)]="subatividadeSelecionada"
+        name="subatividade"
+        (ngModelChange)="onSubatividadeChange()"
+      >
+        <option value="">Selecione uma subatividade</option>
+        <option *ngFor="let item of subatividades" [value]="item.subatividade">
+          {{ item.subatividade }}
+        </option>
+      </select>
+
+      <input
+        *ngIf="subatividades.length === 0"
+        type="text"
+        class="form-control"
+        id="subatividadeManual"
+        [(ngModel)]="subatividadeManual"
+        name="subatividadeManual"
+        (ngModelChange)="onSubatividadeManualChange()"
+        placeholder="Informe a subatividade"
+      />
+    </div>
+
+    <div class="mb-3">
+      <label for="titulo" class="fw-bold text-secondary">
+        {{ devePreencherTituloManual() ? 'Título' : 'Título gerado' }}
+      </label>
       <input
         type="text"
         class="form-control"
         id="titulo"
         [(ngModel)]="titulo"
         name="titulo"
-        required
+        [readonly]="!devePreencherTituloManual()"
+        [placeholder]="devePreencherTituloManual() ? 'Informe o título da tarefa' : ''"
       />
+
+      <small class="text-muted" *ngIf="tituloCatalogoSelecionado">
+        Título vinculado ao catálogo.
+      </small>
+
+      <small class="text-muted" *ngIf="!tituloCatalogoSelecionado && titulo">
+        Título livre, sem vínculo com catálogo.
+      </small>
     </div>
 
     <div class="mb-3">

@@ -26,6 +26,7 @@ export interface AtividadeDTO {
 export interface TarefaDTO {
   id: string;
   titulo: string;
+  tituloCatalogoId?: string | null;
   descricao?: string;
   dataInicio?: string | null;
   dataFim?: string | null;
