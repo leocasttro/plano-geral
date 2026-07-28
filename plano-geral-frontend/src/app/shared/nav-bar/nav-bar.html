@@ -17,7 +17,44 @@
           Novo projeto
         </button>
         <div class="icons d-inline-flex">
-          <fa-icon class="mx-2 text-secondary" [icon]="faNotification" />
+          <div class="notification-wrapper">
+            <button
+              type="button"
+              class="nav-icon-btn notification-btn"
+              (click)="toggleNotificacoes()"
+              title="Notificações"
+            >
+              <fa-icon class="text-secondary" [icon]="faNotification" />
+
+              <span class="notification-badge" *ngIf="totalNaoLidas > 0">
+                {{ totalNaoLidas }}
+              </span>
+            </button>
+
+            <div class="notification-menu" *ngIf="mostrarNotificacoes">
+              <div class="notification-header">
+                <strong>Notificações</strong>
+                <span>{{ totalNaoLidas }} não lidas</span>
+              </div>
+
+              <div class="notification-empty" *ngIf="notificacoes.length === 0">
+                Nenhuma notificação.
+              </div>
+
+              <button
+                type="button"
+                class="notification-item"
+                [class.unread]="!notificacao.lida"
+                *ngFor="let notificacao of notificacoes"
+                (click)="marcarComoLida(notificacao)"
+              >
+                <strong>{{ notificacao.titulo }}</strong>
+                <span>{{ notificacao.mensagem }}</span>
+                <small>{{ formatarDataNotificacao(notificacao.createdAt) }}</small>
+              </button>
+            </div>
+          </div>
+
           <button
             type="button"
             class="nav-icon-btn"
