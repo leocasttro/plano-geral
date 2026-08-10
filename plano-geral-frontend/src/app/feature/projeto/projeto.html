@@ -31,6 +31,9 @@
               <div class="small text-muted">
                 {{ projeto.descricao || 'Sem descrição' }}
               </div>
+              <div class="small text-muted" *ngIf="projeto.coordenadorNome">
+                <strong>Coordenador:</strong> {{ projeto.coordenadorNome }}
+              </div>
             </div>
 
             <span class="badge bg-dark">
@@ -97,6 +100,13 @@
 
             <div class="small text-muted">
               {{ projetoModalSelecionado?.descricao || 'Sem descrição' }}
+            </div>
+
+            <div
+              class="small text-muted"
+              *ngIf="projetoModalSelecionado?.coordenadorNome"
+            >
+              <strong>Coordenador:</strong> {{ projetoModalSelecionado?.coordenadorNome }}
             </div>
 
             <div

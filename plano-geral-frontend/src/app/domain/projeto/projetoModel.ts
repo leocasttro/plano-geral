@@ -6,6 +6,7 @@ export interface ProjetoDTO {
   descricao?: string;
   centroCusto?: string | null;
   coordenadorId?: string | null;
+  coordenadorNome?: string | null;
   status: string;
   progresso: number;
   totalTarefas: number;
