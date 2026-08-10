@@ -1,0 +1,20 @@
+@use '../login/login.scss';
+
+.field input[readonly] {
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.back-link {
+  display: block;
+  margin-top: 24px;
+  color: #0057df;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}

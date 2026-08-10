@@ -2,7 +2,7 @@ import {Injectable, signal} from '@angular/core';
 import {environment} from '../../../environments/environment';
 import {HttpClient} from '@angular/common/http';
 import {Router} from '@angular/router';
-import {LoginRequest, LoginResponse} from './auth.types';
+import {ConfirmPasswordChangeRequest, LoginRequest, LoginResponse} from './auth.types';
 import {tap} from 'rxjs';
 import {UsuarioDTO} from '../usuario/usuario.model';
 
@@ -37,6 +37,10 @@ export class AuthService {
         this.usuario.set(response.user);
       })
     );
+  }
+
+  confirmPasswordChange(payload: ConfirmPasswordChangeRequest) {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/confirm-password-change`, payload);
   }
 
   logout() {

@@ -6,9 +6,11 @@ import {authGuard} from './domain/auth/auth.guard';
 import {Relatorio} from './feature/relatorio/relatorio';
 import { Calendario } from './feature/calendario/calendario';
 import { Configuracoes } from './feature/configuracoes/configuracoes';
+import { TrocarSenha } from './feature/trocar-senha/trocar-senha';
 
 export const routes: Routes = [
   { path: 'login', component: Login, title: 'Login | Prosul' },
+  { path: 'trocar-senha', component: TrocarSenha, title: 'Trocar senha | Prosul' },
   { path: '', redirectTo: '/planoGeral', pathMatch: 'full' },
   {
     path: 'planoGeral',

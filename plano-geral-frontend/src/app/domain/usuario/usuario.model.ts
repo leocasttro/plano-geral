@@ -4,6 +4,7 @@ export interface UsuarioDTO {
   email: string;
   perfil?: string;
   ativo: boolean;
+  mustChangePassword: boolean;
 }
 
 export interface CriarUsuarioDTO {

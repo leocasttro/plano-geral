@@ -23,9 +23,13 @@ export class App {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        this.isLoginRoute = event.urlAfterRedirects.startsWith('/login');
+        this.isLoginRoute = this.isPublicAuthRoute(event.urlAfterRedirects);
         this.atualizarBotaoPorRota(event.urlAfterRedirects);
       });
+  }
+
+  private isPublicAuthRoute(url: string): boolean {
+    return url.startsWith('/login') || url.startsWith('/trocar-senha');
   }
 
   private atualizarBotaoPorRota(url: string) {
