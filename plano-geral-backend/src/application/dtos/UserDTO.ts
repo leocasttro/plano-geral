@@ -4,6 +4,7 @@ export interface UserResponseDTO {
   email: string;
   perfil?: string;
   ativo: boolean;
+  mustChangePassword: boolean;
 }
 
 export interface CreateUserDTO {
@@ -19,4 +20,11 @@ export interface UpdateUserDTO {
   perfil?: string;
   ativo?: boolean;
   senha?: string;
+}
+
+export interface ConfirmPasswordChangeDTO {
+  email: string;
+  token: string;
+  novaSenha: string;
+  confirmacaoSenha: string;
 }

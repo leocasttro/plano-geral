@@ -12,6 +12,9 @@ export class UserMapper {
       senha: orm.senha_hash,
       perfil: orm.perfil_id as PerfilUsuario,
       ativo: orm.ativo,
+      mustChangePassword: orm.must_change_password,
+      passwordChangeTokenHash: orm.password_change_token_hash,
+      passwordChangeTokenExpiresAt: orm.password_change_token_expires_at,
       createdAt: orm.created_at,
       updatedAt: orm.updated_at,
     });
@@ -25,6 +28,9 @@ export class UserMapper {
     orm.senha_hash = domain.senhaHash;
     orm.perfil_id = domain.perfil;
     orm.ativo = domain.ativo;
+    orm.must_change_password = domain.mustChangePassword;
+    orm.password_change_token_hash = domain.passwordChangeTokenHash ?? null;
+    orm.password_change_token_expires_at = domain.passwordChangeTokenExpiresAt ?? null;
     return orm;
   }
 }

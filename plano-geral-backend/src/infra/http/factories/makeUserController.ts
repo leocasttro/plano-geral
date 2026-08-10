@@ -5,12 +5,14 @@ import { AlterarStatusUsuario } from "../../../application/use-cases/usuario/Alt
 import { GetAllUsersAdmin } from "../../../application/use-cases/usuario/GetAllUsersAdmin";
 import { UserTypeORMRepository } from "../../database/typeorm/entities/repositories/UserTypeORMRepository";
 import { UsersController } from "../controllers/UsersController";
+import { MailService } from "../../../application/services/MailService";
 
 export function makeUserController() {
   const repo = new UserTypeORMRepository();
+  const mailService = new MailService();
 
   return new UsersController({
-    createUser: new CreateUser(repo),
+    createUser: new CreateUser(repo, mailService),
     getAllUsers: new GetAllUsers(repo),
     getAllUsersAdmin: new GetAllUsersAdmin(repo),
     alterarPerfilUsuario: new AlterarPerfilUsuario(repo),

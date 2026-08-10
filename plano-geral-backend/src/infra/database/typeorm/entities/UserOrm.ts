@@ -20,6 +20,15 @@ export class UserORM {
   @Column({ default: true })
   ativo!: boolean;
 
+  @Column({ name: 'must_change_password', default: false })
+  must_change_password!: boolean;
+
+  @Column({ name: 'password_change_token_hash', type: 'varchar', length: 255, nullable: true })
+  password_change_token_hash?: string | null;
+
+  @Column({ name: 'password_change_token_expires_at', type: 'timestamp', nullable: true })
+  password_change_token_expires_at?: Date | null;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;
 

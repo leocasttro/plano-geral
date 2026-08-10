@@ -8,6 +8,9 @@ type UserProps = {
   senha: string;
   perfil?: PerfilUsuario;
   ativo: boolean;
+  mustChangePassword?: boolean;
+  passwordChangeTokenHash?: string | null;
+  passwordChangeTokenExpiresAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -15,6 +18,9 @@ type UserProps = {
 export class User {
   private _perfil: string;
   private _ativo: boolean;
+  private _mustChangePassword: boolean;
+  private _passwordChangeTokenHash?: string | null;
+  private _passwordChangeTokenExpiresAt?: Date | null;
   private _updatedAt: Date;
 
   constructor(
@@ -24,6 +30,9 @@ export class User {
     private _senhaHash: string,
     perfil?: string,
     ativo?: boolean,
+    mustChangePassword?: boolean,
+    passwordChangeTokenHash?: string | null,
+    passwordChangeTokenExpiresAt?: Date | null,
   ) {
     if (!_nome || _nome.trim().length === 0) {
       throw new Error('Nome do usuário é obrigatório');
@@ -41,6 +50,9 @@ export class User {
 
     this._perfil = perfilUpper;
     this._ativo = ativo ?? true;
+    this._mustChangePassword = mustChangePassword ?? false;
+    this._passwordChangeTokenHash = passwordChangeTokenHash ?? null;
+    this._passwordChangeTokenExpiresAt = passwordChangeTokenExpiresAt ?? null;
     this._updatedAt = new Date();
   }
 
@@ -52,6 +64,9 @@ export class User {
       props.senha,
       props.perfil,
       props.ativo,
+      props.mustChangePassword,
+      props.passwordChangeTokenHash,
+      props.passwordChangeTokenExpiresAt,
     );
     return user;
   }
@@ -78,6 +93,18 @@ export class User {
 
   get updatedAt(): Date {
     return this._updatedAt;
+  }
+
+  get mustChangePassword(): boolean {
+    return this._mustChangePassword;
+  }
+
+  get passwordChangeTokenHash(): string | null | undefined {
+    return this._passwordChangeTokenHash;
+  }
+
+  get passwordChangeTokenExpiresAt(): Date | null | undefined {
+    return this._passwordChangeTokenExpiresAt;
   }
 
   ativar(usuarioAcao?: string) {
@@ -110,6 +137,25 @@ export class User {
     this._updatedAt = new Date();
   }
 
+  definirTokenTrocaSenha(tokenHash: string, expiresAt: Date) {
+    this._mustChangePassword = true;
+    this._passwordChangeTokenHash = tokenHash;
+    this._passwordChangeTokenExpiresAt = expiresAt;
+    this._updatedAt = new Date();
+  }
+
+  alterarSenha(novaSenhaHash: string) {
+    this._senhaHash = novaSenhaHash;
+    this._updatedAt = new Date();
+  }
+
+  confirmarTrocaSenha() {
+    this._mustChangePassword = false;
+    this._passwordChangeTokenHash = null;
+    this._passwordChangeTokenExpiresAt = null;
+    this._updatedAt = new Date();
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -117,6 +163,7 @@ export class User {
       email: this._email,
       perfil: this._perfil,
       ativo: this._ativo,
+      mustChangePassword: this._mustChangePassword,
       updatedAt: this._updatedAt,
     };
   }
