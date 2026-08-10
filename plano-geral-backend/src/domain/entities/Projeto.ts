@@ -5,6 +5,7 @@ export interface ProjetoProps {
   id: string;
   centroCusto?:  string | null;
   coordenadorId?: string | null;
+  coordenadorNome?: string | null;
   nome: string;
   descricao?: string;
   status: StatusProjeto;
@@ -18,6 +19,7 @@ export class Projeto {
   private status: StatusProjeto;
   private centroCusto?: string | null;
   private coordenadorId?: string | null;
+  private coordenadorNome?: string | null;
   private createdAt: Date;
   private updatedAt: Date;
 
@@ -27,6 +29,7 @@ export class Projeto {
     public descricao?: string,
     centroCusto?: string | null,
     coordenadorId?: string | null,
+    coordenadorNome?: string | null,
   ) {
     if (!nome || nome.trim().length === 0) {
       throw new Error('Projeto precisa de um nome válido');
@@ -35,6 +38,7 @@ export class Projeto {
     this.status = StatusProjeto.ATIVO;
     this.centroCusto = centroCusto ?? null;
     this.coordenadorId = coordenadorId ?? null;
+    this.coordenadorNome = coordenadorNome ?? null;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
@@ -46,6 +50,7 @@ export class Projeto {
     projeto.tarefas = props.tarefas ?? [];
     projeto.centroCusto = props.centroCusto ?? null;
     projeto.coordenadorId = props.coordenadorId ?? null;
+    projeto.coordenadorNome = props.coordenadorNome ?? null;
     projeto.createdAt = props.createdAt ?? new Date();
     projeto.updatedAt = props.updatedAt ?? new Date();
 
@@ -132,6 +137,10 @@ export class Projeto {
 
   obterCoordenadorId(): string | null {
     return this.coordenadorId ?? null;
+  }
+
+  obterCoordenadorNome(): string | null {
+    return this.coordenadorNome ?? null;
   }
 
   obterCreatedAt(): Date {

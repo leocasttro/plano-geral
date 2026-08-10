@@ -34,6 +34,7 @@ export class ProjetoMapper {
       tarefas: tarefas,
       centroCusto: row.centroCusto,
       coordenadorId: row.coordenadorId,
+      coordenadorNome: row.coordenadorUsuario?.nome ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     });
