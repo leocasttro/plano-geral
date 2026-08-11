@@ -1,4 +1,4 @@
-name: CI Plano Geral
+name: CI/CD Plano Geral
 
 on:
   pull_request:
@@ -100,7 +100,9 @@ jobs:
           fi
 
       - name: Empacotar frontend
-        run: tar -czf ../plano-geral-frontend.tar.gz -C dist/crm/browser .
+        run: |
+          tar -czf ../plano-geral-frontend.tar.gz \
+            -C dist/crm/browser .
 
       - name: Armazenar frontend
         uses: actions/upload-artifact@v4
@@ -109,3 +111,61 @@ jobs:
           path: plano-geral-frontend.tar.gz
           if-no-files-found: error
           retention-days: 7
+
+  deploy:
+    name: Publicar no servidor
+    needs:
+      - backend
+      - frontend
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+      - plano-geral
+
+    timeout-minutes: 20
+
+    concurrency:
+      group: plano-geral-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Limpar pacotes anteriores
+        run: |
+          rm -f \
+            /opt/deploy/plano-geral/incoming/plano-geral-backend.tar.gz \
+            /opt/deploy/plano-geral/incoming/plano-geral-frontend.tar.gz
+
+      - name: Baixar backend compilado
+        uses: actions/download-artifact@v4
+        with:
+          name: plano-geral-backend
+          path: /opt/deploy/plano-geral/incoming
+
+      - name: Baixar frontend compilado
+        uses: actions/download-artifact@v4
+        with:
+          name: plano-geral-frontend
+          path: /opt/deploy/plano-geral/incoming
+
+      - name: Conferir pacotes
+        run: |
+          test -f /opt/deploy/plano-geral/incoming/plano-geral-backend.tar.gz
+          test -f /opt/deploy/plano-geral/incoming/plano-geral-frontend.tar.gz
+          ls -lh /opt/deploy/plano-geral/incoming
+
+      - name: Executar deploy
+        run: sudo -n /usr/local/sbin/deploy-plano-geral
+
+      - name: Validar aplicação publicada
+        run: |
+          curl -fsS -o /dev/null --max-time 5 \
+            http://127.0.0.1/plano-geral/
+
+          curl -sS -o /dev/null --max-time 5 \
+            http://127.0.0.1:3000/auth/login
+
+          echo "Backend e frontend publicados."
