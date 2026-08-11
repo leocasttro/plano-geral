@@ -22,11 +22,12 @@ import {
   MetricaCatalogoGrupoDTO,
 } from '../../domain/relatorio/relatorio.model';
 import { TarefaApi } from '../../domain/tarefa/tarefa.api';
-import { ProductivityChartComponent } from '../../shared/dashboard/productivity-chart/productivity-chart';
+import { ProjetoApi } from '../../domain/projeto/projeto.api';
+import { ProjetoDTO } from '../../domain/projeto/projetoModel';
+import { TituloTarefaApi } from '../../domain/titulo-tarefa/titulo-tarefa.api';
+import { TituloTarefaCatalogoDTO } from '../../domain/titulo-tarefa/titulo-tarefa.model';
 import { ProjectStatusChartComponent } from '../../shared/dashboard/project-status-chart/project-status-chart';
-import { StatusMixChartComponent } from '../../shared/dashboard/status-mix-chart/status-mix-chart';
 import { UserPerformanceChartComponent } from '../../shared/dashboard/user-performance-chart/user-performance-chart';
-import { CumulativeFlowChartComponent } from '../../shared/dashboard/cumulative-flow-chart/cumulative-flow-chart';
 import { ProjectRadarChartComponent } from '../../shared/dashboard/project-radar-chart/project-radar-chart';
 
 type UsuarioCarga = RelatorioCargaUsuariosDTO['usuarios'][number];
@@ -40,11 +41,8 @@ type PeriodoThroughput = '15d' | '30d' | '90d' | 'ano';
   imports: [
     CommonModule,
     FormsModule,
-    ProductivityChartComponent,
     ProjectStatusChartComponent,
-    StatusMixChartComponent,
     UserPerformanceChartComponent,
-    CumulativeFlowChartComponent,
     ProjectRadarChartComponent,
   ],
   templateUrl: './relatorio.html',
@@ -85,6 +83,8 @@ export class Relatorio implements OnInit {
   cargaUsuarios: RelatorioCargaUsuariosDTO | null = null;
   metricasProjetos: RelatorioMetricasProjetosDTO | null = null;
   metricasTitulos: RelatorioTempoMedioPorTituloDTO | null = null;
+  projetosFiltro: ProjetoDTO[] = [];
+  catalogosFiltro: TituloTarefaCatalogoDTO[] = [];
 
   usuarioSelecionado: UsuarioCarga | null = null;
   projetoSelecionado: MetricaProjeto | null = null;
@@ -92,6 +92,12 @@ export class Relatorio implements OnInit {
   tarefasUsuario: TarefaUsuarioDetalhe[] = [];
 
   periodoThroughput: PeriodoThroughput = '15d';
+  filtroProjetoId = '';
+  filtroComponente = '';
+  filtroAtividadePrincipal = '';
+  filtroSubatividade = '';
+  filtroInicio = '';
+  filtroFim = '';
 
   buscaTituloMetrica = '';
 
@@ -108,6 +114,8 @@ export class Relatorio implements OnInit {
   constructor(
     private relatorioApi: RelatorioApi,
     private tarefaApi: TarefaApi,
+    private projetoApi: ProjetoApi,
+    private tituloTarefaApi: TituloTarefaApi,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -118,20 +126,33 @@ export class Relatorio implements OnInit {
   carregarTela(exibirLoading = true): void {
     this.loading = exibirLoading;
     this.error = '';
+    const filtros = this.filtrosRelatorioRequest();
 
     forkJoin({
-      dashboard: this.relatorioApi.dashboard(this.periodoThroughput),
-      cargaUsuarios: this.relatorioApi.cargaUsuarios(),
-      metricasProjetos: this.relatorioApi.metricasProjetos().pipe(
+      dashboard: this.relatorioApi.dashboard(this.periodoThroughput, filtros),
+      cargaUsuarios: this.relatorioApi.cargaUsuarios(filtros),
+      metricasProjetos: this.relatorioApi.metricasProjetos(filtros).pipe(
         catchError((err) => {
           console.error('Erro ao buscar métricas dos projetos:', err);
           return of({ projetos: [] });
         }),
       ),
-      metricasTitulos: this.relatorioApi.tempoMedioPorTitulo().pipe(
+      metricasTitulos: this.relatorioApi.tempoMedioPorTitulo(filtros).pipe(
         catchError((err) => {
           console.error('Erro ao buscar métricas por título:', err);
           return of({ totalTitulos: 0, componentes: [], atividadesPrincipais: [], subatividades: [], titulos: [] });
+        }),
+      ),
+      projetosFiltro: this.projetoApi.buscarTodos().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar projetos para filtro:', err);
+          return of([]);
+        }),
+      ),
+      catalogosFiltro: this.tituloTarefaApi.listar().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar catálogo para filtro:', err);
+          return of([]);
         }),
       ),
       leadTime: this.relatorioApi.leadTime().pipe(
@@ -172,6 +193,8 @@ export class Relatorio implements OnInit {
           cargaUsuarios,
           metricasProjetos,
           metricasTitulos,
+          projetosFiltro,
+          catalogosFiltro,
           leadTime,
           disponibilidadeUsuarios,
         }) => {
@@ -179,6 +202,8 @@ export class Relatorio implements OnInit {
           this.cargaUsuarios = cargaUsuarios;
           this.metricasProjetos = metricasProjetos;
           this.metricasTitulos = metricasTitulos;
+          this.projetosFiltro = projetosFiltro;
+          this.catalogosFiltro = catalogosFiltro;
           this.leadTime = leadTime;
           this.disponibilidadeUsuarios = disponibilidadeUsuarios;
         },
@@ -196,6 +221,37 @@ export class Relatorio implements OnInit {
 
     this.periodoThroughput = periodo;
     this.carregarTela(false);
+  }
+
+  aplicarFiltrosRelatorio(): void {
+    this.carregarTela(false);
+  }
+
+  limparFiltrosRelatorio(): void {
+    this.filtroProjetoId = '';
+    this.filtroComponente = '';
+    this.filtroAtividadePrincipal = '';
+    this.filtroSubatividade = '';
+    this.filtroInicio = '';
+    this.filtroFim = '';
+    this.carregarTela(false);
+  }
+
+  projetoFiltroLabel(projeto: ProjetoDTO): string {
+    return projeto.centroCusto
+      ? `${projeto.nome} · CC ${projeto.centroCusto}`
+      : projeto.nome;
+  }
+
+  aoAlterarComponente(): void {
+    this.filtroAtividadePrincipal = '';
+    this.filtroSubatividade = '';
+    this.aplicarFiltrosRelatorio();
+  }
+
+  aoAlterarAtividadePrincipal(): void {
+    this.filtroSubatividade = '';
+    this.aplicarFiltrosRelatorio();
   }
 
   abrirModalDashboard(tipo: string): void {
@@ -455,6 +511,98 @@ export class Relatorio implements OnInit {
     return itens.filter(
       (item) => item.totalTarefas > 0 && (item.tempoMedioHoras ?? 0) > 0,
     ).length;
+  }
+
+  tempoTotalCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): number {
+    return Number(
+      catalogo.titulos
+        .reduce(
+          (total, item) => total + ((item.tempoMedioHoras ?? 0) * item.totalTarefas),
+          0,
+        )
+        .toFixed(2),
+    );
+  }
+
+  mediaTempoCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): number {
+    const totalTarefas = catalogo.titulos.reduce((total, item) => total + item.totalTarefas, 0);
+
+    if (!totalTarefas) return 0;
+
+    return Number((this.tempoTotalCatalogo(catalogo) / totalTarefas).toFixed(2));
+  }
+
+  totalTarefasCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): number {
+    return catalogo.titulos.reduce((total, item) => total + item.totalTarefas, 0);
+  }
+
+  topComponentesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
+    return this.gruposMaiorTempo(catalogo.componentes, 6);
+  }
+
+  topAtividadesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
+    return this.gruposMaiorTempo(catalogo.atividadesPrincipais, 6);
+  }
+
+  topSubatividadesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
+    return this.gruposMaiorTempo(catalogo.subatividades, 6);
+  }
+
+  distribuicaoAtividadesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
+    return [...catalogo.atividadesPrincipais]
+      .filter((item) => item.totalTarefas > 0)
+      .sort(
+        (a, b) =>
+          b.totalTarefas - a.totalTarefas ||
+          (b.tempoMedioHoras ?? 0) - (a.tempoMedioHoras ?? 0) ||
+          a.nome.localeCompare(b.nome),
+      );
+  }
+
+  catalogoDonutStyle(catalogo: RelatorioTempoMedioPorTituloDTO): string {
+    const itens = this.distribuicaoAtividadesCatalogo(catalogo);
+    const total = itens.reduce((soma, item) => soma + item.totalTarefas, 0);
+    const cores = [
+      '#e40046',
+      '#6d28d9',
+      '#10b981',
+      '#0d6efd',
+      '#f59e0b',
+      '#14b8a6',
+      '#8b5cf6',
+      '#f97316',
+      '#475569',
+      '#06b6d4',
+    ];
+    let atual = 0;
+
+    if (!total) {
+      return 'conic-gradient(#e5e7eb 0 360deg)';
+    }
+
+    const partes = itens.map((item, index) => {
+      const inicio = atual;
+      const fim = atual + (item.totalTarefas / total) * 360;
+      atual = fim;
+      return `${cores[index]} ${inicio}deg ${fim}deg`;
+    });
+
+    return `conic-gradient(${partes.join(', ')})`;
+  }
+
+  catalogoCorIndice(index: number): string {
+    return [
+      '#e40046',
+      '#6d28d9',
+      '#10b981',
+      '#0d6efd',
+      '#f59e0b',
+      '#14b8a6',
+      '#8b5cf6',
+      '#f97316',
+      '#475569',
+      '#06b6d4',
+    ][index % 10];
   }
 
   classeTempoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): string {
@@ -871,6 +1019,26 @@ export class Relatorio implements OnInit {
     );
   }
 
+  indiceRiscoNormalizado(projeto: MetricaProjeto): number {
+    return Math.min(10, this.indiceRiscoProjeto(projeto));
+  }
+
+  riscoIndiceLabel(projeto: MetricaProjeto): string {
+    const indice = this.indiceRiscoNormalizado(projeto);
+
+    if (indice >= 7) return 'Alto';
+    if (indice >= 3) return 'Médio';
+    return 'Baixo';
+  }
+
+  riscoIndiceClasse(projeto: MetricaProjeto): string {
+    const indice = this.indiceRiscoNormalizado(projeto);
+
+    if (indice >= 7) return 'high';
+    if (indice >= 3) return 'medium';
+    return 'low';
+  }
+
   larguraRiscoProjeto(valor: number, projeto: MetricaProjeto): number {
     const base = Math.max(
       projeto.tarefasAtrasadas,
@@ -963,6 +1131,66 @@ export class Relatorio implements OnInit {
     return titulos.filter((item) =>
       item.titulo.toLowerCase().includes(busca),
     );
+  }
+
+  get componentesFiltro(): string[] {
+    return this.valoresUnicosCatalogo('componente', this.catalogosFiltro);
+  }
+
+  get atividadesPrincipaisFiltro(): string[] {
+    if (!this.filtroComponente) {
+      return [];
+    }
+
+    return this.valoresUnicosCatalogo(
+      'atividadePrincipal',
+      this.catalogosFiltro.filter((item) =>
+        this.valorCatalogoIgual(item.componente, this.filtroComponente),
+      ),
+    );
+  }
+
+  get subatividadesFiltro(): string[] {
+    if (!this.filtroComponente || !this.filtroAtividadePrincipal) {
+      return [];
+    }
+
+    return this.valoresUnicosCatalogo(
+      'subatividade',
+      this.catalogosFiltro.filter(
+        (item) =>
+          this.valorCatalogoIgual(item.componente, this.filtroComponente) &&
+          this.valorCatalogoIgual(item.atividadePrincipal, this.filtroAtividadePrincipal),
+      ),
+    );
+  }
+
+  private valoresUnicosCatalogo(
+    campo: 'componente' | 'atividadePrincipal' | 'subatividade',
+    catalogos: TituloTarefaCatalogoDTO[],
+  ): string[] {
+    return Array.from(
+      new Set(
+        catalogos
+          .map((item) => item[campo]?.trim())
+          .filter((valor): valor is string => !!valor),
+      ),
+    ).sort((a, b) => a.localeCompare(b));
+  }
+
+  private valorCatalogoIgual(valor: string | null | undefined, filtro: string): boolean {
+    return (valor ?? '').trim() === filtro.trim();
+  }
+
+  private filtrosRelatorioRequest() {
+    return {
+      projetoId: this.filtroProjetoId || undefined,
+      componente: this.filtroComponente || undefined,
+      atividadePrincipal: this.filtroAtividadePrincipal || undefined,
+      subatividade: this.filtroSubatividade || undefined,
+      inicio: this.filtroInicio || undefined,
+      fim: this.filtroFim || undefined,
+    };
   }
 
   totalHorasUsuario(): number {

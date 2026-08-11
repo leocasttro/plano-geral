@@ -32,4 +32,8 @@ export class UsuarioApi {
   alterarStatus(id: string, ativo: boolean): Observable<UsuarioDTO> {
     return this.http.patch<UsuarioDTO>(`${this.apiUrl}/${id}/status`, { ativo });
   }
+
+  excluir(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

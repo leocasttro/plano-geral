@@ -9,6 +9,7 @@ router.get('/admin/all', ensureAdmin, (req, res) => controller.listAdmin(req, re
 router.post('/createUser', ensureAdmin, (req, res) => controller.create(req, res));
 router.patch('/:id/perfil', ensureAdmin, (req, res) => controller.alterarPerfil(req, res));
 router.patch('/:id/status', ensureAdmin, (req, res) => controller.alterarStatus(req, res));
+router.delete('/:id', ensureAdmin, (req, res) => controller.delete(req, res));
 router.get('/', (req, res) => controller.list(req, res));
 
 export default router;

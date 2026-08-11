@@ -7,6 +7,12 @@ import {TipoAtividade} from '../../../domain/value-objects/TipoAtividade';
 import {StatusProjeto} from '../../../domain/value-objects/StatusProjeto';
 import {RelatorioDashboardDTO} from '../../dtos/RelatorioDashboardDTO';
 import {CalcularFluxoCumulativoService} from '../../services/CalcularFluxoCumulativoService';
+import {
+  criarResolverCatalogoRelatorio,
+  filtrarTarefasRelatorio,
+  RelatorioFiltros,
+} from './RelatorioFiltros';
+import { TituloTarefaCatalogoRepository } from '../../../domain/repositories/TituloTarefaCatalogoRepository';
 
 export type PeriodoThroughput = '15d' | '30d' | '90d' | 'ano';
 
@@ -15,18 +21,41 @@ export class GetDashboardRelatorio {
     private projetoRepository: ProjetoRepository,
     private tarefaRepository: TarefaRepository,
     private userRepository: UserRepository,
-    private calcularFluxoCumulativoService: CalcularFluxoCumulativoService
+    private calcularFluxoCumulativoService: CalcularFluxoCumulativoService,
+    private tituloTarefaCatalogoRepository?: TituloTarefaCatalogoRepository,
   ) {}
 
-  async execute(periodo: PeriodoThroughput = '15d'): Promise<RelatorioDashboardDTO> {
-    const [projetos, tarefas, usuarios, usuariosAtivos] = await Promise.all([
+  async execute(
+    periodo: PeriodoThroughput = '15d',
+    filtros: RelatorioFiltros = {},
+  ): Promise<RelatorioDashboardDTO> {
+    const [todosProjetos, todasTarefas, usuarios, usuariosAtivos, catalogos] = await Promise.all([
       this.projetoRepository.findAll(),
       this.tarefaRepository.list(),
       this.userRepository.findAll(),
-      this.userRepository.findAllActive()
+      this.userRepository.findAllActive(),
+      this.tituloTarefaCatalogoRepository?.list({ ativo: true }) ?? Promise.resolve([]),
     ]);
 
-    const periodoFiltro = this.calcularPeriodoThroughput(periodo);
+    const tarefas = filtrarTarefasRelatorio(
+      todasTarefas,
+      filtros,
+      criarResolverCatalogoRelatorio(catalogos),
+    );
+    const projetosIdsComTarefas = new Set(tarefas.map((tarefa) => tarefa.obterProjetoId()));
+    const projetos = filtros.projetoId
+      ? todosProjetos.filter((projeto) => projeto.id === filtros.projetoId)
+      : filtros.componente || filtros.atividadePrincipal || filtros.subatividade || filtros.inicio || filtros.fim
+        ? todosProjetos.filter((projeto) => projetosIdsComTarefas.has(projeto.id))
+        : todosProjetos;
+
+    const periodoFiltro = filtros.inicio || filtros.fim
+      ? {
+          inicio: filtros.inicio ?? new Date(-8640000000000000),
+          fim: filtros.fim ?? new Date(8640000000000000),
+          label: this.formatarPeriodoPersonalizado(filtros.inicio, filtros.fim),
+        }
+      : this.calcularPeriodoThroughput(periodo);
 
     const dataLimite = new Date();
     dataLimite.setDate(dataLimite.getDate() - 15);
@@ -157,5 +186,23 @@ export class GetDashboardRelatorio {
       fim,
       label: `Últimos ${dias} dias`,
     };
+  }
+
+  private formatarPeriodoPersonalizado(inicio?: Date, fim?: Date): string {
+    const formatar = (data: Date) => data.toISOString().slice(0, 10).split('-').reverse().join('/');
+
+    if (inicio && fim) {
+      return `${formatar(inicio)} até ${formatar(fim)}`;
+    }
+
+    if (inicio) {
+      return `A partir de ${formatar(inicio)}`;
+    }
+
+    if (fim) {
+      return `Até ${formatar(fim)}`;
+    }
+
+    return 'Período completo';
   }
 }

@@ -16,14 +16,26 @@ import {
   RelatorioPessoalDTO,
 } from './relatorio.model';
 
+export interface RelatorioFiltrosRequest {
+  projetoId?: string;
+  componente?: string;
+  atividadePrincipal?: string;
+  subatividade?: string;
+  inicio?: string;
+  fim?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class RelatorioApi {
   private readonly apiUrl = `${environment.apiUrl}/relatorios`;
 
   constructor(private http: HttpClient) {}
 
-  dashboard(periodo: '15d' | '30d' | '90d' | 'ano' = '15d'): Observable<RelatorioDashboardDTO> {
-    const params = new HttpParams().set('periodo', periodo);
+  dashboard(
+    periodo: '15d' | '30d' | '90d' | 'ano' = '15d',
+    filtros?: RelatorioFiltrosRequest,
+  ): Observable<RelatorioDashboardDTO> {
+    const params = this.buildFiltrosParams(filtros).set('periodo', periodo);
 
     return this.http.get<RelatorioDashboardDTO>(
       `${this.apiUrl}/dashboard`,
@@ -31,9 +43,10 @@ export class RelatorioApi {
     );
   }
 
-  cargaUsuarios(): Observable<RelatorioCargaUsuariosDTO> {
+  cargaUsuarios(filtros?: RelatorioFiltrosRequest): Observable<RelatorioCargaUsuariosDTO> {
     return this.http.get<RelatorioCargaUsuariosDTO>(
       `${this.apiUrl}/usuarios/carga`,
+      { params: this.buildFiltrosParams(filtros) },
     );
   }
 
@@ -43,9 +56,10 @@ export class RelatorioApi {
     );
   }
 
-  metricasProjetos(): Observable<RelatorioMetricasProjetosDTO> {
+  metricasProjetos(filtros?: RelatorioFiltrosRequest): Observable<RelatorioMetricasProjetosDTO> {
     return this.http.get<RelatorioMetricasProjetosDTO>(
       `${this.apiUrl}/projetos/metricas`,
+      { params: this.buildFiltrosParams(filtros) },
     );
   }
 
@@ -101,9 +115,10 @@ export class RelatorioApi {
     );
   }
 
-  tempoMedioPorTitulo(): Observable<RelatorioTempoMedioPorTituloDTO> {
+  tempoMedioPorTitulo(filtros?: RelatorioFiltrosRequest): Observable<RelatorioTempoMedioPorTituloDTO> {
     return this.http.get<RelatorioTempoMedioPorTituloDTO>(
       `${this.apiUrl}/tarefas/tempo-medio-titulos`,
+      { params: this.buildFiltrosParams(filtros) },
     );
   }
 
@@ -123,5 +138,17 @@ export class RelatorioApi {
     return this.http.get<RelatorioPessoalDTO>(
       `${this.apiUrl}/pessoal`,
     );
+  }
+
+  private buildFiltrosParams(filtros?: RelatorioFiltrosRequest): HttpParams {
+    let params = new HttpParams();
+
+    Object.entries(filtros ?? {}).forEach(([key, value]) => {
+      if (value) {
+        params = params.set(key, value);
+      }
+    });
+
+    return params;
   }
 }

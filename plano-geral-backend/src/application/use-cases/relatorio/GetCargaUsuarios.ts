@@ -3,15 +3,31 @@ import {UserRepository} from '../../../domain/repositories/UserRepository';
 import {StatusTarefa} from '../../../domain/value-objects/StatusTarefa';
 import {TarefaComPrazo} from '../../../domain/entities/TarefaComPrazo';
 import {CargaUsuarioDTO, RelatorioCargaUsuariosDTO} from '../../dtos/RelatorioCargaUsuariosDTO';
+import {
+  criarResolverCatalogoRelatorio,
+  filtrarTarefasRelatorio,
+  RelatorioFiltros,
+} from './RelatorioFiltros';
+import { TituloTarefaCatalogoRepository } from '../../../domain/repositories/TituloTarefaCatalogoRepository';
 
 export class GetCargaUsuarios {
-  constructor(private tarefaRepository: TarefaRepository, private userRepository: UserRepository) {}
+  constructor(
+    private tarefaRepository: TarefaRepository,
+    private userRepository: UserRepository,
+    private tituloTarefaCatalogoRepository?: TituloTarefaCatalogoRepository,
+  ) {}
 
-  async execute(): Promise<RelatorioCargaUsuariosDTO> {
-    const [tarefas, usuarios] = await Promise.all([
+  async execute(filtros: RelatorioFiltros = {}): Promise<RelatorioCargaUsuariosDTO> {
+    const [todasTarefas, usuarios, catalogos] = await Promise.all([
       this.tarefaRepository.list(),
       this.userRepository.findAllActive(),
+      this.tituloTarefaCatalogoRepository?.list({ ativo: true }) ?? Promise.resolve([]),
     ]);
+    const tarefas = filtrarTarefasRelatorio(
+      todasTarefas,
+      filtros,
+      criarResolverCatalogoRelatorio(catalogos),
+    );
 
     const usuariosMap = new Map<string, CargaUsuarioDTO>();
 

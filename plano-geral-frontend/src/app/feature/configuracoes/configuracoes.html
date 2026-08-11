@@ -95,7 +95,7 @@
             <span>Usuário</span>
             <span>Perfil</span>
             <span>Status</span>
-            <span>Ação</span>
+            <span>Ações</span>
           </div>
 
           <div class="user-row" *ngFor="let usuario of usuarios">
@@ -125,14 +125,25 @@
               {{ usuario.ativo ? 'Ativo' : 'Inativo' }}
             </span>
 
-            <button
-              type="button"
-              class="row-action"
-              [class.danger]="usuario.ativo"
-              (click)="alterarStatus(usuario)"
-            >
-              {{ usuario.ativo ? 'Desativar' : 'Ativar' }}
-            </button>
+            <div class="row-actions">
+              <button
+                type="button"
+                class="row-action"
+                [class.danger]="usuario.ativo"
+                (click)="alterarStatus(usuario)"
+              >
+                {{ usuario.ativo ? 'Desativar' : 'Ativar' }}
+              </button>
+
+              <button
+                type="button"
+                class="row-action delete"
+                [disabled]="usuarioLogadoId() === usuario.id"
+                (click)="excluirUsuario(usuario)"
+              >
+                Excluir
+              </button>
+            </div>
           </div>
         </div>
       </section>

@@ -4,16 +4,37 @@ import {StatusTarefa} from '../../../domain/value-objects/StatusTarefa';
 import {TarefaComPrazo} from '../../../domain/entities/TarefaComPrazo';
 import {Tarefa} from '../../../domain/entities/Tarefa';
 import {TipoAtividade} from '../../../domain/value-objects/TipoAtividade';
+import {
+  criarResolverCatalogoRelatorio,
+  filtrarTarefasRelatorio,
+  RelatorioFiltros,
+} from './RelatorioFiltros';
+import { TituloTarefaCatalogoRepository } from '../../../domain/repositories/TituloTarefaCatalogoRepository';
 
 export class GetMetricasProjetos {
-  constructor(private projetoRepository: ProjetoRepository) {}
+  constructor(
+    private projetoRepository: ProjetoRepository,
+    private tituloTarefaCatalogoRepository?: TituloTarefaCatalogoRepository,
+  ) {}
 
-  async execute(): Promise<RelatorioMetricasProjetosDTO> {
-    const projetos = await this.projetoRepository.findAll();
+  async execute(filtros: RelatorioFiltros = {}): Promise<RelatorioMetricasProjetosDTO> {
+    const [projetos, catalogos] = await Promise.all([
+      this.projetoRepository.findAll(),
+      this.tituloTarefaCatalogoRepository?.list({ ativo: true }) ?? Promise.resolve([]),
+    ]);
+    const projetosFiltrados = filtros.projetoId
+      ? projetos.filter((projeto) => projeto.id === filtros.projetoId)
+      : projetos;
+    const resolverCatalogo = criarResolverCatalogoRelatorio(catalogos);
 
     return {
-      projetos: projetos.map((projeto) => {
-        const tarefas = projeto.obterTarefas();
+      projetos: projetosFiltrados
+        .map((projeto) => {
+        const tarefas = filtrarTarefasRelatorio(
+          projeto.obterTarefas(),
+          { ...filtros, projetoId: undefined },
+          resolverCatalogo,
+        );
         const totalTarefas = tarefas.length;
         const tarefasPendentes = this.contarPorStatus(tarefas, StatusTarefa.PENDENTE);
         const tarefasEmAndamento = this.contarPorStatus(tarefas, StatusTarefa.EM_ANDAMENTO);

@@ -5,6 +5,7 @@ import { GetAllUsersAdmin } from '../../../application/use-cases/usuario/GetAllU
 import { AlterarPerfilUsuario } from '../../../application/use-cases/usuario/AlterarPerfilUsuario';
 import { AlterarStatusUsuario } from '../../../application/use-cases/usuario/AlterarStatusUsuario';
 import { getAuthenticatedUser } from '../helpers/getAuthenticatedUser';
+import { DeleteUser } from '../../../application/use-cases/usuario/DeleteUser';
 
 
 type Deps = {
@@ -13,6 +14,7 @@ type Deps = {
   getAllUsersAdmin: GetAllUsersAdmin,
   alterarPerfilUsuario: AlterarPerfilUsuario,
   alterarStatusUsuario: AlterarStatusUsuario,
+  deleteUser: DeleteUser,
 };
 
 export class UsersController {
@@ -68,6 +70,19 @@ export class UsersController {
       });
 
       res.json(user);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
+  async delete(req: Request, res: Response) {
+    try {
+      await this.deps.deleteUser.execute({
+        userId: req.params.id,
+        usuarioAcaoId: req.user.id,
+      });
+
+      res.status(204).send();
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }

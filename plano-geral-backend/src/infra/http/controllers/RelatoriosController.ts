@@ -11,6 +11,7 @@ import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio
 import {GetLeadTimeRelatorio} from '../../../application/use-cases/GetLeadTimeRelatorio';
 import {GetDisponibilidadeUsuarios} from '../../../application/use-cases/relatorio/GetDisponibilidadeUsuarios';
 import { GetRelatorioPessoal } from '../../../application/use-cases/relatorio/GetRelatorioPessoal';
+import { RelatorioFiltros } from '../../../application/use-cases/relatorio/RelatorioFiltros';
 
 type Deps = {
   getTempoTarefaPorResponsavel: GetTempoTarefaPorResponsavel;
@@ -67,7 +68,9 @@ export class RelatoriosController {
 
   async cargaUsuarios(req: Request, res: Response) {
     try {
-      const resultado = await this.deps.getCargaUsuarios.execute();
+      const resultado = await this.deps.getCargaUsuarios.execute(
+        this.getFiltrosRelatorio(req),
+      );
 
       return res.json(resultado);
     } catch (error: any) {
@@ -99,7 +102,10 @@ export class RelatoriosController {
           ? periodo
           : '15d';
 
-      const resultado = await this.deps.getDashboardRelatorio.execute(periodoValido);
+      const resultado = await this.deps.getDashboardRelatorio.execute(
+        periodoValido,
+        this.getFiltrosRelatorio(req),
+      );
 
       return res.json(resultado);
     } catch (error: any) {
@@ -109,7 +115,9 @@ export class RelatoriosController {
 
   async metricasProjetos(req: Request, res: Response) {
     try {
-      const resultado = await this.deps.getMetricasProjetos.execute();
+      const resultado = await this.deps.getMetricasProjetos.execute(
+        this.getFiltrosProjetoRelatorio(req),
+      );
 
       return res.json(resultado);
     } catch (error: any) {
@@ -119,7 +127,9 @@ export class RelatoriosController {
 
   async tempoMedioPorTitulo(req: Request, res: Response) {
     try {
-      const resultado = await this.deps.getTempoMedioPorTitulo.execute();
+      const resultado = await this.deps.getTempoMedioPorTitulo.execute(
+        this.getFiltrosRelatorio(req),
+      );
 
       return res.json(resultado);
     } catch (error: any) {
@@ -146,6 +156,35 @@ export class RelatoriosController {
 
   private getQueryParam(value: unknown): string | undefined {
     return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
+
+  private getFiltrosRelatorio(req: Request): RelatorioFiltros {
+    return {
+      projetoId: this.getQueryParam(req.query.projetoId),
+      componente: this.getQueryParam(req.query.componente),
+      atividadePrincipal: this.getQueryParam(req.query.atividadePrincipal),
+      subatividade: this.getQueryParam(req.query.subatividade),
+      inicio: this.parseDateParam(this.getQueryParam(req.query.inicio), false),
+      fim: this.parseDateParam(this.getQueryParam(req.query.fim), true),
+    };
+  }
+
+  private getFiltrosProjetoRelatorio(req: Request): RelatorioFiltros {
+    return {
+      projetoId: this.getQueryParam(req.query.projetoId),
+      inicio: this.parseDateParam(this.getQueryParam(req.query.inicio), false),
+      fim: this.parseDateParam(this.getQueryParam(req.query.fim), true),
+    };
+  }
+
+  private parseDateParam(value?: string, endOfDay = false): Date | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const date = new Date(`${value}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}`);
+
+    return Number.isNaN(date.getTime()) ? undefined : date;
   }
 
   async tempoConclusaoPorTitulo(req: Request, res: Response) {

@@ -6,6 +6,7 @@ import {
   TituloTarefaCatalogo,
 } from '../../../domain/entities/TituloTarefaCatalogo';
 import { TituloTarefaCatalogoRepository } from '../../../domain/repositories/TituloTarefaCatalogoRepository';
+import { filtrarTarefasRelatorio, RelatorioFiltros } from './RelatorioFiltros';
 
 type TarefaTituloDetalheDTO = {
   tarefaId: string;
@@ -67,10 +68,15 @@ export class GetTempoMedioPorTitulo {
     private tituloTarefaCatalogoRepository?: TituloTarefaCatalogoRepository,
   ) {}
 
-  async execute(): Promise<RelatorioTempoMedioPorTituloDTO> {
-    const tarefas = await this.tarefaRepository.list();
+  async execute(filtros: RelatorioFiltros = {}): Promise<RelatorioTempoMedioPorTituloDTO> {
+    const todasTarefas = await this.tarefaRepository.list();
     const catalogos = await this.listarCatalogos();
     const catalogoPorTitulo = this.indexarCatalogoPorTitulo(catalogos);
+    const tarefas = filtrarTarefasRelatorio(
+      todasTarefas,
+      filtros,
+      (tarefa) => this.resolverCatalogoTarefa(tarefa, catalogoPorTitulo),
+    );
     const grupos = new Map<string, typeof tarefas>();
 
     tarefas.forEach((tarefa) => {

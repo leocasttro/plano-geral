@@ -163,7 +163,7 @@
 .table-head,
 .user-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 140px 100px 110px;
+  grid-template-columns: minmax(220px, 1fr) 140px 100px 190px;
   gap: 12px;
   align-items: center;
 }
@@ -232,6 +232,22 @@
 .row-action.danger {
   background: #fff1f2;
   color: #dc3545;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.row-action.delete {
+  background: #7f1d1d;
+  color: #fff;
+}
+
+.row-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .profiles-grid {

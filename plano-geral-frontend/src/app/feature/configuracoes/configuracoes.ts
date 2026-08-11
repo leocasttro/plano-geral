@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { finalize, take } from 'rxjs';
 import { CriarUsuarioDTO, UsuarioDTO } from '../../domain/usuario/usuario.model';
 import { UsuarioApi } from '../../domain/usuario/usuario.api';
+import { AuthService } from '../../domain/auth/auth.service';
 
 type AbaConfiguracao = 'usuarios' | 'perfis';
 
@@ -70,6 +71,7 @@ export class Configuracoes implements OnInit {
 
   constructor(
     private usuarioApi: UsuarioApi,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -187,6 +189,40 @@ export class Configuracoes implements OnInit {
       });
   }
 
+  excluirUsuario(usuario: UsuarioDTO): void {
+    this.error = '';
+    this.success = '';
+
+    if (this.usuarioLogadoId() === usuario.id) {
+      this.error = 'Não é possível excluir o próprio usuário logado.';
+      return;
+    }
+
+    const confirmado = window.confirm(
+      `Excluir o usuário ${usuario.nome}? Esta ação remove o acesso dele do sistema.`,
+    );
+
+    if (!confirmado) {
+      return;
+    }
+
+    this.usuarioApi
+      .excluir(usuario.id)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.usuarios = this.usuarios.filter((item) => item.id !== usuario.id);
+          this.success = 'Usuário excluído.';
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.error = err.error?.error ?? 'Erro ao excluir usuário.';
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
   contarPerfil(perfil: string): number {
     return this.usuarios.filter((usuario) => usuario.perfil === perfil).length;
   }
@@ -201,6 +237,10 @@ export class Configuracoes implements OnInit {
 
   totalAtivos(): number {
     return this.usuarios.filter((usuario) => usuario.ativo).length;
+  }
+
+  usuarioLogadoId(): string | null {
+    return this.authService.usuario()?.id ?? null;
   }
 
   private atualizarUsuario(usuario: UsuarioDTO): void {
