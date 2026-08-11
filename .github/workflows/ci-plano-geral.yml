@@ -1,0 +1,110 @@
+name: CI Plano Geral
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Compilar backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: plano-geral-backend
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: plano-geral-backend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Compilar TypeScript
+        run: npm run build
+
+      - name: Verificar arquivo principal
+        run: test -f dist/server.js
+
+      - name: Empacotar backend
+        run: |
+          tar -czf ../plano-geral-backend.tar.gz \
+            dist \
+            package.json \
+            package-lock.json
+
+      - name: Armazenar backend
+        uses: actions/upload-artifact@v4
+        with:
+          name: plano-geral-backend
+          path: plano-geral-backend.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  frontend:
+    name: Compilar frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: plano-geral-frontend
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: plano-geral-frontend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificar endereço da API
+        run: grep -F "apiUrl: '/plano-geral-api'" src/environments/environment.ts
+
+      - name: Compilar Angular
+        run: npm run build -- --configuration production --base-href /plano-geral/
+
+      - name: Verificar resultado
+        run: test -f dist/crm/browser/index.html
+
+      - name: Impedir localhost no build
+        run: |
+          if grep -R -F "http://localhost:3000" dist/crm/browser; then
+            echo "ERRO: o frontend compilado contém localhost:3000"
+            exit 1
+          fi
+
+      - name: Empacotar frontend
+        run: tar -czf ../plano-geral-frontend.tar.gz -C dist/crm/browser .
+
+      - name: Armazenar frontend
+        uses: actions/upload-artifact@v4
+        with:
+          name: plano-geral-frontend
+          path: plano-geral-frontend.tar.gz
+          if-no-files-found: error
+          retention-days: 7
