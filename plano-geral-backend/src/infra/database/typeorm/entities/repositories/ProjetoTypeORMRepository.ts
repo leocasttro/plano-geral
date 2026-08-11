@@ -22,7 +22,9 @@ export class ProjetoTypeORMRepository implements ProjetoRepository {
     const row = await this.ormRepo.findOne({
       where: { id },
       relations: {
-        tarefas: true,
+        tarefas: {
+          atividades: true,
+        },
         coordenadorUsuario: true,
       }
     });
@@ -33,7 +35,12 @@ export class ProjetoTypeORMRepository implements ProjetoRepository {
 
   async findAll(): Promise<Projeto[]> {
     const rows = await this.ormRepo.find({
-      relations: { tarefas: true, coordenadorUsuario: true },
+      relations: {
+        tarefas: {
+          atividades: true,
+        },
+        coordenadorUsuario: true,
+      },
       order: { createdAt: 'DESC' }
     });
     return rows.map(ProjetoMapper.toDomain)
@@ -46,7 +53,12 @@ export class ProjetoTypeORMRepository implements ProjetoRepository {
   async findByStatus(status: StatusProjeto): Promise<Projeto[]> {
     const rows = await this.ormRepo.find({
       where: { status },
-      relations: { tarefas: true, coordenadorUsuario: true },
+      relations: {
+        tarefas: {
+          atividades: true,
+        },
+        coordenadorUsuario: true,
+      },
     });
 
     return rows.map(ProjetoMapper.toDomain);

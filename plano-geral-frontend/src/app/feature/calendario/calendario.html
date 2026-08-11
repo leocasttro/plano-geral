@@ -70,7 +70,11 @@
         </button>
       </div>
 
-      <div *ngSwitchCase="'semana'" class="calendar-week-board">
+      <div
+        *ngSwitchCase="'semana'"
+        class="calendar-week-board"
+        [style.minHeight.px]="alturaSemanaCalendario()"
+      >
         <button
           type="button"
           class="calendar-week-day"
@@ -80,7 +84,6 @@
         >
           <span>{{ calendarioSemanaDias[dia.data.getDay()] }}</span>
           <strong>{{ dia.numero }}</strong>
-          <small *ngIf="dia.tarefas.length">{{ dia.tarefas.length }}</small>
         </button>
 
         <div class="calendar-range-layer week-range-layer">
@@ -97,7 +100,13 @@
             [title]="resumoTarefaCalendario(faixa.tarefa)"
             (click)="abrirTarefaNoDia(faixa.tarefa)"
           >
-            {{ faixa.tarefa.titulo }}
+            <span
+              class="calendar-assignee-avatar"
+              [style.backgroundColor]="corResponsavelCalendario(faixa.tarefa)"
+            >
+              {{ iniciaisResponsavelCalendario(faixa.tarefa) }}
+            </span>
+            <span class="calendar-range-title">{{ faixa.tarefa.titulo }}</span>
           </button>
         </div>
       </div>
@@ -117,6 +126,15 @@
             <div>
               <strong>{{ tarefa.titulo }}</strong>
               <small>{{ resumoTarefaCalendario(tarefa) }}</small>
+              <div class="day-task-assignee">
+                <span
+                  class="calendar-assignee-avatar"
+                  [style.backgroundColor]="corResponsavelCalendario(tarefa)"
+                >
+                  {{ iniciaisResponsavelCalendario(tarefa) }}
+                </span>
+                <span>{{ nomeResponsavelCalendario(tarefa) }}</span>
+              </div>
             </div>
             <span>{{ tarefa.diasDuracao }}d</span>
           </div>
@@ -148,7 +166,6 @@
             >
               <div class="day-number-row">
                 <span>{{ dia.numero }}</span>
-                <strong *ngIf="dia.tarefas.length">{{ dia.tarefas.length }}</strong>
               </div>
             </button>
 

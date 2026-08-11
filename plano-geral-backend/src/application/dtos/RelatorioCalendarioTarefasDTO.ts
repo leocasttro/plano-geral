@@ -8,6 +8,7 @@ export type RelatorioCalendarioTarefaItemDTO = {
   status: StatusTarefa;
   prioridade: Prioridade;
   responsavelId: string | null;
+  responsavelNome: string | null;
   projetoId: string | null;
   projeto: {
     id: string;

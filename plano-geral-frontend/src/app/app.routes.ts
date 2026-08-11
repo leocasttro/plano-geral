@@ -7,6 +7,7 @@ import {Relatorio} from './feature/relatorio/relatorio';
 import { Calendario } from './feature/calendario/calendario';
 import { Configuracoes } from './feature/configuracoes/configuracoes';
 import { TrocarSenha } from './feature/trocar-senha/trocar-senha';
+import { RelatorioPessoal } from './feature/relatorio-pessoal/relatorio-pessoal';
 
 export const routes: Routes = [
   { path: 'login', component: Login, title: 'Login | Prosul' },
@@ -34,6 +35,12 @@ export const routes: Routes = [
     path: 'relatorios',
     component: Relatorio,
     title: 'Relatórios | Prosul',
+    canActivate: [authGuard],
+  },
+  {
+    path: 'meu-relatorio',
+    component: RelatorioPessoal,
+    title: 'Meu relatório | Prosul',
     canActivate: [authGuard],
   },
   {

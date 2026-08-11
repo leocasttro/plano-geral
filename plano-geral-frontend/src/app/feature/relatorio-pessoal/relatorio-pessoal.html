@@ -1,0 +1,209 @@
+<div class="personal-report-page">
+  <section class="report-header">
+    <div>
+      <h2>Meu relatório</h2>
+      <p>{{ nomeUsuario }} · desempenho e tarefas vinculadas ao seu usuário</p>
+    </div>
+
+    <button type="button" (click)="carregar()" [disabled]="loading">
+      Atualizar
+    </button>
+  </section>
+
+  <div *ngIf="loading" class="state-card">Carregando seu relatório...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="relatorio as dados">
+    <section class="kpi-grid">
+      <article class="kpi-card highlighted">
+        <span class="kpi-label">Total de tarefas</span>
+        <strong>{{ dados.resumo.totalTarefas }}</strong>
+        <small>vinculadas a você</small>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">Pendentes</span>
+        <strong>{{ dados.resumo.pendentes }}</strong>
+        <small>aguardando início</small>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">Em andamento</span>
+        <strong>{{ dados.resumo.emAndamento }}</strong>
+        <small>em execução</small>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-label">Concluídas</span>
+        <strong>{{ dados.resumo.concluidas }}</strong>
+        <small>finalizadas</small>
+      </article>
+      <article class="kpi-card danger">
+        <span class="kpi-label">Atrasadas</span>
+        <strong>{{ dados.resumo.atrasadas }}</strong>
+        <small>com prazo vencido</small>
+      </article>
+    </section>
+
+    <section class="overview-grid">
+      <article class="report-panel performance-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Desempenho geral</h3>
+            <span>Conclusão das tarefas atribuídas</span>
+          </div>
+          <strong class="performance-tag">{{ indicadorDesempenho() }}</strong>
+        </div>
+
+        <div class="performance-layout">
+          <div class="donut-chart" [style.background]="donutStyle()">
+            <div>
+              <strong>{{ dados.resumo.percentualConclusao }}%</strong>
+              <span>concluído</span>
+            </div>
+          </div>
+
+          <div class="performance-lines">
+            <div class="status-line">
+              <span>Concluídas</span>
+              <strong>{{ dados.resumo.concluidas }}</strong>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill done" [style.width.%]="dados.resumo.percentualConclusao"></div>
+            </div>
+
+            <div class="status-line">
+              <span>Abertas</span>
+              <strong>{{ dados.resumo.pendentes + dados.resumo.emAndamento }}</strong>
+            </div>
+            <div class="bar-track">
+              <div
+                class="bar-fill progress"
+                [style.width.%]="dados.resumo.totalTarefas ? ((dados.resumo.pendentes + dados.resumo.emAndamento) / dados.resumo.totalTarefas) * 100 : 0"
+              ></div>
+            </div>
+
+            <div class="status-line">
+              <span>Atrasadas</span>
+              <strong>{{ dados.resumo.atrasadas }}</strong>
+            </div>
+            <div class="bar-track">
+              <div
+                class="bar-fill danger"
+                [style.width.%]="dados.resumo.totalTarefas ? (dados.resumo.atrasadas / dados.resumo.totalTarefas) * 100 : 0"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="report-panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Status das tarefas</h3>
+            <span>Distribuição por andamento</span>
+          </div>
+        </div>
+
+        <div class="column-chart status-chart">
+          <div class="column-item" *ngFor="let item of statusChart()">
+            <strong>{{ item.value }}</strong>
+            <div class="column-track">
+              <div
+                class="column-fill"
+                [ngClass]="item.className"
+                [style.height.%]="alturaColuna(item.value, statusChart())"
+              ></div>
+            </div>
+            <span>{{ item.label }}</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="chart-grid">
+      <article class="report-panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Prioridade</h3>
+            <span>Volume por criticidade</span>
+          </div>
+        </div>
+
+        <div class="column-chart">
+          <div class="column-item" *ngFor="let item of prioridadeChart()">
+            <strong>{{ item.value }}</strong>
+            <div class="column-track">
+              <div
+                class="column-fill"
+                [ngClass]="item.className"
+                [style.height.%]="alturaColuna(item.value, prioridadeChart())"
+              ></div>
+            </div>
+            <span>{{ item.label }}</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="report-panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Projetos</h3>
+            <span>Onde suas tarefas estão concentradas</span>
+          </div>
+        </div>
+
+        <div class="horizontal-bars">
+          <div class="horizontal-row" *ngFor="let item of projetoChart()">
+            <div class="row-label">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.value }}</strong>
+            </div>
+            <div class="bar-track">
+              <div
+                class="bar-fill created"
+                [style.width.%]="alturaColuna(item.value, projetoChart())"
+              ></div>
+            </div>
+          </div>
+          <div class="empty-state compact" *ngIf="!projetoChart().length">
+            Sem projetos vinculados.
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="report-panel tasks-panel">
+      <div class="panel-header">
+        <div>
+          <h3>Minhas tarefas</h3>
+          <span>{{ dados.tarefas.length }} tarefas</span>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!dados.tarefas.length">
+        Nenhuma tarefa vinculada ao seu usuário.
+      </div>
+
+      <div class="task-table" *ngIf="dados.tarefas.length">
+        <div class="table-head">
+          <span>Tarefa</span>
+          <span>Projeto</span>
+          <span>Status</span>
+          <span>Prazo</span>
+        </div>
+
+        <div class="table-row" *ngFor="let tarefa of dados.tarefas">
+          <div>
+            <strong>{{ tarefa.titulo }}</strong>
+            <small>{{ tarefa.prioridade }}</small>
+          </div>
+          <span>{{ tarefa.projetoNome || 'Sem projeto' }}</span>
+          <span class="status-pill" [class.done]="statusIgual(tarefa.status, 'CONCLUIDA')">
+            {{ statusLabel(tarefa.status) }}
+          </span>
+          <span [class.overdue]="tarefa.atrasada">
+            {{ formatarData(tarefa.dataInicio) }} até {{ formatarData(tarefa.dataFim) }}
+          </span>
+        </div>
+      </div>
+    </section>
+  </ng-container>
+</div>

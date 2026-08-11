@@ -70,6 +70,10 @@ export class NavBar {
       titulo: 'Relatórios',
       subtitulo: 'Acompanhe indicadores dos projetos, tarefas e usuários',
     },
+    '/meu-relatorio': {
+      titulo: 'Meu relatório',
+      subtitulo: 'Acompanhe suas tarefas e seu desempenho',
+    },
     '/configuracoes': {
       titulo: 'Configurações',
       subtitulo: 'Gerencie usuários, perfis e permissões',

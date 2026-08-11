@@ -4,7 +4,6 @@ import { StatusTarefa } from '../value-objects/StatusTarefa';
 import { TipoAtividade } from '../value-objects/TipoAtividade';
 import { Atividade } from './Atividade';
 import { CheckListItem } from './ChecklistItem';
-import { TarefaComPrazo } from './TarefaComPrazo';
 import { Periodo } from '../value-objects/Periodo';
 
 type TarefaProps = {
@@ -18,6 +17,7 @@ type TarefaProps = {
   criadorId?: string;
   projetoId: string;
   projeto?: ProjetoResumo | null;
+  tituloCatalogo?: TituloCatalogoResumo | null;
   checklist?: CheckListItem[];
   atividades?: Atividade[];
 };
@@ -25,6 +25,13 @@ type TarefaProps = {
 type ProjetoResumo = {
   id: string;
   nome: string;
+}
+
+type TituloCatalogoResumo = {
+  id: string;
+  componente: string | null;
+  atividadePrincipal: string | null;
+  subatividade: string | null;
 }
 
 export class Tarefa {
@@ -37,6 +44,7 @@ export class Tarefa {
   private projetoId: string;
   private prioridade: Prioridade;
   private projeto?: ProjetoResumo | null;
+  private tituloCatalogo?: TituloCatalogoResumo | null;
 
   constructor(
     public readonly id: string,
@@ -52,6 +60,7 @@ export class Tarefa {
     this.status = StatusTarefa.PENDENTE;
     this.prioridade = Prioridade.BAIXA;
     this.projetoId = projetoId;
+    this.tituloCatalogoId = tituloCatalogoId ?? null;
   }
 
   static reconstituir(props: TarefaProps): Tarefa {
@@ -63,6 +72,7 @@ export class Tarefa {
     tarefa.criadorId = props.criadorId;
     tarefa.projetoId = props.projetoId;
     tarefa.projeto = props.projeto ?? null;
+    tarefa.tituloCatalogo = props.tituloCatalogo ?? null;
     tarefa.checklist = props.checklist ?? [];
     tarefa.atividades = props.atividades ?? [];
     tarefa.tituloCatalogoId = props.tituloCatalogoId ?? null;
@@ -205,7 +215,8 @@ export class Tarefa {
     this.atividades.push(atividade);
   }
 
-  converterParaPrazo(dataInicio?: Date, dataFim?: Date): TarefaComPrazo {
+  converterParaPrazo(dataInicio?: Date, dataFim?: Date): import('./TarefaComPrazo').TarefaComPrazo {
+    const { TarefaComPrazo } = require('./TarefaComPrazo') as typeof import('./TarefaComPrazo');
     const periodo = new Periodo(dataInicio, dataFim);
 
     const tarefaComPrazo = new TarefaComPrazo(
@@ -214,6 +225,7 @@ export class Tarefa {
       this.descricao,
       this.projetoId,
       periodo,
+      this.tituloCatalogoId,
     );
 
     // Copiar os dados
@@ -223,6 +235,8 @@ export class Tarefa {
       responsavel: this.responsavel,
       criadorId: this.criadorId,
       projeto: this.projeto,
+      tituloCatalogoId: this.tituloCatalogoId,
+      tituloCatalogo: this.tituloCatalogo,
       checklist: [...this.checklist],
       atividades: [...this.atividades],
     });
@@ -232,6 +246,10 @@ export class Tarefa {
 
   obterTituloCatalogoId(): string | null {
     return this.tituloCatalogoId ?? null;
+  }
+
+  obterTituloCatalogo(): TituloCatalogoResumo | null {
+    return this.tituloCatalogo ?? null;
   }
 
   obterProjeto(): ProjetoResumo | null {

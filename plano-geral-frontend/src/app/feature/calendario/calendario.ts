@@ -180,6 +180,17 @@ export class Calendario implements OnInit {
     return this.criarFaixasPeriodo(this.diasDaSemanaCalendario());
   }
 
+  linhasDaSemanaCalendario(): number {
+    return Math.max(
+      ...this.faixasDaSemanaCalendario().map((faixa) => faixa.linha),
+      1,
+    );
+  }
+
+  alturaSemanaCalendario(): number {
+    return Math.max(340, 112 + this.linhasDaSemanaCalendario() * 37);
+  }
+
   tarefasDoDiaCalendario(): TarefaCalendarioDTO[] {
     return this.tarefasNaData(this.dataCalendario);
   }
@@ -244,8 +255,41 @@ export class Calendario implements OnInit {
 
   resumoTarefaCalendario(tarefa: TarefaCalendarioDTO): string {
     const projeto = tarefa.projeto?.nome ?? 'Sem projeto';
+    const responsavel = this.nomeResponsavelCalendario(tarefa);
 
-    return `${projeto} · ${this.formatarDataBrasil(tarefa.dataInicio)} até ${this.formatarDataBrasil(tarefa.dataFim)}`;
+    return `${projeto} · ${responsavel} · ${this.formatarDataBrasil(tarefa.dataInicio)} até ${this.formatarDataBrasil(tarefa.dataFim)}`;
+  }
+
+  nomeResponsavelCalendario(tarefa: TarefaCalendarioDTO): string {
+    return tarefa.responsavelNome?.trim() || 'Sem responsável';
+  }
+
+  iniciaisResponsavelCalendario(tarefa: TarefaCalendarioDTO): string {
+    const nome = this.nomeResponsavelCalendario(tarefa);
+
+    if (nome === 'Sem responsável') {
+      return 'SR';
+    }
+
+    return nome
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0])
+      .join('')
+      .toUpperCase();
+  }
+
+  corResponsavelCalendario(tarefa: TarefaCalendarioDTO): string {
+    const base = tarefa.responsavelId ?? tarefa.responsavelNome ?? 'sem-responsavel';
+    let hash = 0;
+
+    for (let index = 0; index < base.length; index += 1) {
+      hash = base.charCodeAt(index) + ((hash << 5) - hash);
+    }
+
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 68%, 38%)`;
   }
 
   estiloFaixaCalendario(faixa: CalendarioFaixa): Record<string, string> {

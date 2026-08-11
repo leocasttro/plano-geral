@@ -14,11 +14,14 @@ import { GetTempoConclusaoPorTitulo } from '../../../application/use-cases/relat
 import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
 import { GetLeadTimeRelatorio } from '../../../application/use-cases/GetLeadTimeRelatorio';
 import {GetDisponibilidadeUsuarios} from '../../../application/use-cases/relatorio/GetDisponibilidadeUsuarios';
+import { TituloTarefaCatalogoTypeORMRepository } from '../../database/typeorm/entities/repositories/TituloTarefaCatalogoTypeORMRepository';
+import { GetRelatorioPessoal } from '../../../application/use-cases/relatorio/GetRelatorioPessoal';
 
 export function makeRelatoriosController() {
   const tarefaRepository = new TarefaTypeORMRepository();
   const projetoRepository = new ProjetoTypeORMRepository();
   const userRepository = new UserTypeORMRepository();
+  const tituloTarefaCatalogoRepository = new TituloTarefaCatalogoTypeORMRepository();
   const calcularFluxoCumulativoService = new CalcularFluxoCumulativoService();
 
   return new RelatoriosController({
@@ -29,10 +32,11 @@ export function makeRelatoriosController() {
     getDashboardRelatorio: new GetDashboardRelatorio(projetoRepository, tarefaRepository,
       userRepository, calcularFluxoCumulativoService),
     getMetricasProjetos: new GetMetricasProjetos(projetoRepository),
-    getCalendarioTarefas: new GetCalendarioTarefas(tarefaRepository),
+    getCalendarioTarefas: new GetCalendarioTarefas(tarefaRepository, userRepository),
     getTempoConclusaoPorTitulo: new GetTempoConclusaoPorTitulo(tarefaRepository),
-    getTempoMedioPorTitulo: new GetTempoMedioPorTitulo(tarefaRepository),
+    getTempoMedioPorTitulo: new GetTempoMedioPorTitulo(tarefaRepository, tituloTarefaCatalogoRepository),
     getLeadTimeRelatorio: new GetLeadTimeRelatorio(tarefaRepository, userRepository),
     getDisponibilidadeUsuarios: new GetDisponibilidadeUsuarios(tarefaRepository, userRepository),
+    getRelatorioPessoal: new GetRelatorioPessoal(tarefaRepository),
   });
 }

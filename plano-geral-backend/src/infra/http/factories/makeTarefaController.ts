@@ -26,6 +26,8 @@ import { GetSolicitacaoAlteracaoDatasPendente } from '../../../application/use-c
 import {
   TituloTarefaCatalogoTypeORMRepository
 } from '../../database/typeorm/entities/repositories/TituloTarefaCatalogoTypeORMRepository';
+import { MailService } from '../../../application/services/MailService';
+import { GestorProjetoNotificacaoService } from '../../../application/services/GestorProjetoNotificacaoService';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
@@ -35,6 +37,13 @@ export function makeTarefaController() {
 
   const notificacaoRepository = new NotificacaoTypeORMRepository();
   const notificacaoService = new NotificacaoService(notificacaoRepository);
+  const mailService = new MailService();
+  const gestorProjetoNotificacaoService = new GestorProjetoNotificacaoService(
+    projetoRepo,
+    userRepo,
+    notificacaoService,
+    mailService,
+  );
   const solicitacaoAlteracaoDatasRepository =
     new SolicitacaoAlteracaoDatasTypeORMRepository();
   const tituloCatalogoRepo = new TituloTarefaCatalogoTypeORMRepository();
@@ -44,8 +53,15 @@ export function makeTarefaController() {
     createTarefa: new CreateTarefa(repo, projetoRepo, tituloCatalogoRepo),
     getById: new GetTarefaById(repo, userRepo),
     getAllTarefas: new GetAllTarefas(repo, userRepo),
-    addComentario: new AdicionarComentario(repo, notificacaoService),
-    alterarStatus: new AlterarStatusTarefa(repo),
+    addComentario: new AdicionarComentario(
+      repo,
+      notificacaoService,
+      userRepo,
+      gestorProjetoNotificacaoService,
+    ),
+    alterarStatus: new AlterarStatusTarefa(repo, {
+      gestorProjetoNotificacaoService,
+    }),
     getAtividadeByTarefa: new GetAtividadeByTarefa(repoAtividade),
     adicionarChecklistItem: new AdicionarChecklistItem(repo),
     toggleChecklistItem: new ToggleChecklistItem(repo),
@@ -57,6 +73,7 @@ export function makeTarefaController() {
       userRepo,
       solicitacaoAlteracaoDatasRepository,
       notificacaoService,
+      gestorProjetoNotificacaoService,
     ),
     getSolicitacaoAlteracaoDatas: new GetSolicitacaoAlteracaoDatas(
       solicitacaoAlteracaoDatasRepository,

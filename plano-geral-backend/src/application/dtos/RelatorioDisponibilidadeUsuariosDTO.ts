@@ -13,6 +13,12 @@ export type DisponibilidadeUsuarioDTO = {
   tarefasAtrasadas: number;
   ocupadoAte: string | null;
   disponivelEm: string;
+  proximaTarefaProgramada: {
+    tarefaId: string;
+    titulo: string;
+    dataInicio: string;
+    dataFim: string;
+  } | null;
   statusDisponibilidade: StatusDisponibilidade;
 };
 

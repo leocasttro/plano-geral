@@ -251,6 +251,10 @@ export class TarefaDrawersComponent implements OnInit {
       });
   }
 
+  estaAvaliandoSolicitacaoAlteracaoDatas(): boolean {
+    return !!this.solicitacaoAlteracaoDatasId;
+  }
+
   listarAtividades() {
     this.tarefaApi.buscarAtividades(this.tarefa.id!).subscribe({
       next: (atividades: AtividadeDTO[]) => {
@@ -507,6 +511,11 @@ export class TarefaDrawersComponent implements OnInit {
   }
 
   abrirSelecaoResponsavel() {
+    if (this.estaAvaliandoSolicitacaoAlteracaoDatas()) {
+      this.toast.error('Não é possível alterar o responsável ao avaliar alteração de datas.');
+      return;
+    }
+
     this.mostrarSelecaoResponsavel = true;
     this.filtroUsuario = '';
     if (this.listaUsuarios.length === 0) {
@@ -528,6 +537,12 @@ export class TarefaDrawersComponent implements OnInit {
   }
 
   selecionarResponsavel(usuario: Usuario) {
+    if (this.estaAvaliandoSolicitacaoAlteracaoDatas()) {
+      this.mostrarSelecaoResponsavel = false;
+      this.toast.error('Não é possível alterar o responsável ao avaliar alteração de datas.');
+      return;
+    }
+
     this.responsavelSelecionado = usuario;
     this.mostrarSelecaoResponsavel = false;
 

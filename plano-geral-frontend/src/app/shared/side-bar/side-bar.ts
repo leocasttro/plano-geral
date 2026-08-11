@@ -27,6 +27,10 @@ export class SideBar {
     return this.authService.usuario()?.perfil === 'ADMIN';
   }
 
+  get isColaborador(): boolean {
+    return !this.isAdmin;
+  }
+
   logout(): void {
     this.authService.logout();
   }

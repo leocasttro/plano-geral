@@ -12,6 +12,7 @@ import { AtividadeORM } from './AtividadeORM';
 import { ChecklistItemORM } from './ChecklistItemORM';
 import { ProjetoORM } from './ProjetoORM';
 import {UserORM} from './UserOrm';
+import { TituloTarefaCatalogoORM } from './TituloTarefaCatalogoORM';
 
 @Entity('tb_tarefas')
 export class TarefaORM {
@@ -58,6 +59,10 @@ export class TarefaORM {
 
   @Column({ name: 'titulo_catalogo_id', type: 'uuid', nullable: true })
   tituloCatalogoId!: string | null;
+
+  @ManyToOne(() => TituloTarefaCatalogoORM, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'titulo_catalogo_id' })
+  tituloCatalogo?: TituloTarefaCatalogoORM | null;
 
   @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert'] })
   atividades!: AtividadeORM[];

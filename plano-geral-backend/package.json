@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
+    "test:manual-title": "ts-node tests/manual-title-rule.test.ts",
     "start": "node dist/server.js",
     "typeorm": "npx typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm -- migration:generate ./src/database/migrations/CreateTarefasTable -d ./src/database/data-source.ts",

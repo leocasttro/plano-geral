@@ -6,6 +6,11 @@ import { ProjetoApi} from '../../domain/projeto/projeto.api';
 import { ProjetoDTO } from '../../domain/projeto/projetoModel';
 import { TituloTarefaApi } from '../../domain/titulo-tarefa/titulo-tarefa.api';
 import { TituloTarefaCatalogoDTO } from '../../domain/titulo-tarefa/titulo-tarefa.model';
+import {
+  ehSubatividadeTituloManual,
+  montarTituloAutomaticoTarefa,
+  subatividadeUnicaExigeTituloManual,
+} from '../../domain/titulo-tarefa/titulo-tarefa-manual-title';
 
 @Component({
   selector: 'app-modal-cadastro-tarefa',
@@ -15,9 +20,6 @@ import { TituloTarefaCatalogoDTO } from '../../domain/titulo-tarefa/titulo-taref
   styleUrls: ['./modal-cadastro-tarefa.scss'],
 })
 export class ModalCadastroTarefa implements OnInit{
-  private readonly subatividadeTituloManual =
-    'Abrir campo para preenchimento pelo responsável';
-
   titulo = '';
   descricao = '';
   projetoId = '';
@@ -25,7 +27,6 @@ export class ModalCadastroTarefa implements OnInit{
   componenteSelecionado = '';
   atividadePrincipalSelecionada = '';
   subatividadeSelecionada = '';
-  subatividadeManual = '';
 
   titulosCatalogo: TituloTarefaCatalogoDTO[] = [];
   componentes: string[] = [];
@@ -94,7 +95,6 @@ export class ModalCadastroTarefa implements OnInit{
   onComponenteChange(): void {
     this.atividadePrincipalSelecionada = '';
     this.subatividadeSelecionada = '';
-    this.subatividadeManual = '';
     this.tituloCatalogoSelecionado = null;
 
     const titulosDoComponente = this.titulosCatalogo.filter(
@@ -111,7 +111,6 @@ export class ModalCadastroTarefa implements OnInit{
 
   onAtividadePrincipalChange(): void {
     this.subatividadeSelecionada = '';
-    this.subatividadeManual = '';
     this.titulo = '';
     this.tituloCatalogoSelecionado = null;
 
@@ -129,10 +128,10 @@ export class ModalCadastroTarefa implements OnInit{
       (item) => !item.subatividade?.trim(),
     );
 
-    const itemTituloManual = this.obterItemTituloManual();
-
-    if (itemTituloManual) {
-      this.tituloCatalogoSelecionado = itemTituloManual;
+    if (subatividadeUnicaExigeTituloManual(this.subatividades)) {
+      this.subatividadeSelecionada = this.subatividades[0].subatividade ?? '';
+      this.tituloCatalogoSelecionado = this.subatividades[0];
+      this.titulo = '';
       return;
     }
 
@@ -144,8 +143,6 @@ export class ModalCadastroTarefa implements OnInit{
   }
 
   onSubatividadeChange(): void {
-    this.subatividadeManual = '';
-
     this.tituloCatalogoSelecionado =
       this.titulosCatalogo.find(
         (item) =>
@@ -154,26 +151,24 @@ export class ModalCadastroTarefa implements OnInit{
           item.subatividade === this.subatividadeSelecionada,
       ) ?? null;
 
-    this.atualizarTitulo();
-  }
+    if (this.devePreencherTituloManual()) {
+      this.titulo = '';
+      return;
+    }
 
-  onSubatividadeManualChange(): void {
-    this.subatividadeSelecionada = '';
-    this.tituloCatalogoSelecionado = null;
     this.atualizarTitulo();
   }
 
   atualizarTitulo(): void {
     if (this.devePreencherTituloManual()) {
+      this.titulo = '';
       return;
     }
 
-    const partes = [
+    this.titulo = montarTituloAutomaticoTarefa(
       this.atividadePrincipalSelecionada,
-      this.subatividadeSelecionada || this.subatividadeManual,
-    ].filter((item) => !!item?.trim());
-
-    this.titulo = partes.join(' - ');
+      this.subatividadeSelecionada,
+    );
   }
 
   salvar() {
@@ -183,7 +178,7 @@ export class ModalCadastroTarefa implements OnInit{
 
     const titulo = this.titulo.trim();
 
-    if (!titulo) return;
+    if (!this.podeSalvar()) return;
 
     this.activeModal.close({
       titulo,
@@ -228,23 +223,34 @@ export class ModalCadastroTarefa implements OnInit{
   }
 
   devePreencherTituloManual(): boolean {
-    return !!this.obterItemTituloManual();
+    return this.ehSubatividadeTituloManual(this.subatividadeSelecionada);
   }
 
-  private obterItemTituloManual(): TituloTarefaCatalogoDTO | null {
-    if (this.subatividades.length !== 1) {
-      return null;
-    }
-
-    const [item] = this.subatividades;
-
-    return this.ehSubatividadeTituloManual(item.subatividade) ? item : null;
-  }
-
-  private ehSubatividadeTituloManual(value: string | null): boolean {
+  temSubatividadeUnicaDeTituloManual(): boolean {
     return (
-      value?.trim().toLowerCase() ===
-      this.subatividadeTituloManual.toLowerCase()
+      subatividadeUnicaExigeTituloManual(this.subatividades)
     );
+  }
+
+  deveSelecionarSubatividade(): boolean {
+    return (
+      !!this.atividadePrincipalSelecionada &&
+      this.subatividades.length > 0 &&
+      !this.temSubatividadeUnicaDeTituloManual()
+    );
+  }
+
+  podeSalvar(): boolean {
+    return (
+      !!this.projetoId &&
+      !!this.componenteSelecionado &&
+      !!this.atividadePrincipalSelecionada &&
+      !!this.tituloCatalogoSelecionado &&
+      !!this.titulo.trim()
+    );
+  }
+
+  ehSubatividadeTituloManual(value: string | null | undefined): boolean {
+    return ehSubatividadeTituloManual(value);
   }
 }

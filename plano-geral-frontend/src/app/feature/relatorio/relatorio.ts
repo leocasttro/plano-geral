@@ -19,6 +19,7 @@ import {
   TarefaUsuarioDetalhe,
   RelatorioLeadTimeDTO,
   RelatorioDisponibilidadeUsuariosDTO,
+  MetricaCatalogoGrupoDTO,
 } from '../../domain/relatorio/relatorio.model';
 import { TarefaApi } from '../../domain/tarefa/tarefa.api';
 import { ProductivityChartComponent } from '../../shared/dashboard/productivity-chart/productivity-chart';
@@ -130,7 +131,7 @@ export class Relatorio implements OnInit {
       metricasTitulos: this.relatorioApi.tempoMedioPorTitulo().pipe(
         catchError((err) => {
           console.error('Erro ao buscar métricas por título:', err);
-          return of({ totalTitulos: 0, titulos: [] });
+          return of({ totalTitulos: 0, componentes: [], atividadesPrincipais: [], subatividades: [], titulos: [] });
         }),
       ),
       leadTime: this.relatorioApi.leadTime().pipe(
@@ -404,6 +405,118 @@ export class Relatorio implements OnInit {
     return Math.min(horas, 100);
   }
 
+  larguraGrupoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): number {
+    const maior = Math.max(...itens.map((grupo) => grupo.totalTarefas), 1);
+    return Math.max(item.totalTarefas > 0 ? 4 : 0, Math.round((item.totalTarefas / maior) * 100));
+  }
+
+  larguraTituloMetrica(item: MetricaTitulo): number {
+    const maior = Math.max(...this.metricasTitulosFiltradas.map((titulo) => titulo.totalTarefas), 1);
+    return Math.max(item.totalTarefas > 0 ? 4 : 0, Math.round((item.totalTarefas / maior) * 100));
+  }
+
+  tamanhoBolhaCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): number {
+    const maior = Math.max(...itens.map((grupo) => grupo.totalTarefas), 1);
+    const proporcao = item.totalTarefas / maior;
+
+    return Math.round(82 + proporcao * 58);
+  }
+
+  larguraTempoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): number {
+    const maiorTempo = Math.max(...itens.map((grupo) => grupo.tempoMedioHoras ?? 0), 1);
+    const tempo = item.tempoMedioHoras ?? 0;
+
+    return Math.max(tempo > 0 ? 6 : 0, Math.round((tempo / maiorTempo) * 100));
+  }
+
+  alturaTempoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): number {
+    const maiorTempo = Math.max(...itens.map((grupo) => grupo.tempoMedioHoras ?? 0), 1);
+    const tempo = item.tempoMedioHoras ?? 0;
+
+    return Math.max(tempo > 0 ? 8 : 0, Math.round((tempo / maiorTempo) * 100));
+  }
+
+  gruposMaiorTempo(
+    itens: MetricaCatalogoGrupoDTO[],
+    limite = 6,
+  ): MetricaCatalogoGrupoDTO[] {
+    return [...itens]
+      .filter((item) => item.totalTarefas > 0 && (item.tempoMedioHoras ?? 0) > 0)
+      .sort(
+        (a, b) =>
+          (b.tempoMedioHoras ?? 0) - (a.tempoMedioHoras ?? 0) ||
+          b.totalTarefas - a.totalTarefas ||
+          a.nome.localeCompare(b.nome),
+      )
+      .slice(0, limite);
+  }
+
+  totalGruposComTempo(itens: MetricaCatalogoGrupoDTO[]): number {
+    return itens.filter(
+      (item) => item.totalTarefas > 0 && (item.tempoMedioHoras ?? 0) > 0,
+    ).length;
+  }
+
+  classeTempoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): string {
+    return this.classeTempoPorReferencia(
+      item.tempoMedioHoras,
+      itens.map((grupo) => grupo.tempoMedioHoras ?? 0),
+    );
+  }
+
+  tamanhoBolhaTitulo(item: MetricaTitulo): number {
+    const maior = Math.max(...this.metricasTitulosFiltradas.map((titulo) => titulo.totalTarefas), 1);
+    const proporcao = item.totalTarefas / maior;
+
+    return Math.round(78 + proporcao * 60);
+  }
+
+  larguraTempoTitulo(item: MetricaTitulo): number {
+    const maiorTempo = Math.max(
+      ...this.metricasTitulosFiltradas.map((titulo) => titulo.tempoMedioHoras ?? 0),
+      1,
+    );
+    const tempo = item.tempoMedioHoras ?? 0;
+
+    return Math.max(tempo > 0 ? 6 : 0, Math.round((tempo / maiorTempo) * 100));
+  }
+
+  alturaTempoTitulo(item: MetricaTitulo): number {
+    const maiorTempo = Math.max(
+      ...this.metricasTitulosFiltradas.map((titulo) => titulo.tempoMedioHoras ?? 0),
+      1,
+    );
+    const tempo = item.tempoMedioHoras ?? 0;
+
+    return Math.max(tempo > 0 ? 8 : 0, Math.round((tempo / maiorTempo) * 100));
+  }
+
+  classeTempoTitulo(item: MetricaTitulo): string {
+    return this.classeTempoPorReferencia(
+      item.tempoMedioHoras,
+      this.metricasTitulosFiltradas.map((titulo) => titulo.tempoMedioHoras ?? 0),
+    );
+  }
+
+  private classeTempoPorReferencia(tempo?: number | null, referencias: number[] = []): string {
+    if (!tempo || tempo <= 0) {
+      return 'empty';
+    }
+
+    const maiorTempo = Math.max(...referencias.filter((valor) => valor > 0), 1);
+    const proporcao = tempo / maiorTempo;
+
+    if (proporcao >= 0.66) {
+      return 'slow';
+    }
+
+    if (proporcao >= 0.33) {
+      return 'medium';
+    }
+
+    return 'fast';
+  }
+
   larguraLeadTimeTitulo(
     horas: number | null,
     titulo: MetricaTitulo,
@@ -504,6 +617,339 @@ export class Relatorio implements OnInit {
       default:
         return 'created';
     }
+  }
+
+  saudeLabel(saude: string): string {
+    switch (saude) {
+      case 'SAUDAVEL':
+        return 'Saudável';
+      case 'ATENCAO':
+        return 'Atenção';
+      case 'CRITICO':
+        return 'Crítico';
+      default:
+        return saude;
+    }
+  }
+
+  riscoLabel(risco: string): string {
+    switch (risco) {
+      case 'BAIXO':
+        return 'Risco baixo';
+      case 'MEDIO':
+        return 'Risco médio';
+      case 'ALTO':
+        return 'Risco alto';
+      default:
+        return risco;
+    }
+  }
+
+  sinalClasse(valor: string): string {
+    switch (String(valor).toUpperCase()) {
+      case 'SAUDAVEL':
+      case 'BAIXO':
+        return 'done';
+      case 'ATENCAO':
+      case 'MEDIO':
+        return 'pending';
+      case 'CRITICO':
+      case 'ALTO':
+        return 'danger';
+      default:
+        return 'created';
+    }
+  }
+
+  nomeUsuario(usuarioId: string): string {
+    return this.cargaUsuarios?.usuarios.find((usuario) => usuario.usuarioId === usuarioId)?.nome ?? usuarioId;
+  }
+
+  projetosPorSaude(saude: MetricaProjeto['saudeProjeto']): MetricaProjeto[] {
+    return this.projetosComTarefas
+      .filter((projeto) => projeto.saudeProjeto === saude)
+      .sort((a, b) =>
+        this.indiceRiscoProjeto(b) - this.indiceRiscoProjeto(a) ||
+        b.percentualTarefasAtrasadas - a.percentualTarefasAtrasadas ||
+        b.totalTarefas - a.totalTarefas,
+      );
+  }
+
+  get projetosComTarefas(): MetricaProjeto[] {
+    return (this.metricasProjetos?.projetos ?? []).filter(
+      (projeto) => projeto.totalTarefas > 0,
+    );
+  }
+
+  get projetosRiscoGrafico(): MetricaProjeto[] {
+    return [...this.projetosComTarefas]
+      .sort((a, b) =>
+        this.indiceRiscoProjeto(b) - this.indiceRiscoProjeto(a) ||
+        b.percentualTarefasAtrasadas - a.percentualTarefasAtrasadas ||
+        b.totalTarefas - a.totalTarefas,
+      )
+      .slice(0, 8);
+  }
+
+  totalProjetosComTarefas(): number {
+    return this.projetosComTarefas.length;
+  }
+
+  maiorRestanteBurndown(projeto: MetricaProjeto): number {
+    return Math.max(
+      ...(projeto.burndown ?? []).flatMap((item) => [
+        item.restantes,
+        item.restanteIdeal,
+      ]),
+      1,
+    );
+  }
+
+  alturaBurndown(item: MetricaProjeto['burndown'][number], projeto: MetricaProjeto): number {
+    return Math.max(6, Math.round((item.restantes / this.maiorRestanteBurndown(projeto)) * 100));
+  }
+
+  alturaBurndownIdeal(item: MetricaProjeto['burndown'][number], projeto: MetricaProjeto): number {
+    return Math.max(6, Math.round((item.restanteIdeal / this.maiorRestanteBurndown(projeto)) * 100));
+  }
+
+  pontosBurndownLinha(
+    projeto: MetricaProjeto,
+    campo: 'restantes' | 'restanteIdeal',
+  ): string {
+    const pontos = projeto.burndown ?? [];
+    const maximo = this.maiorRestanteBurndown(projeto);
+
+    if (!pontos.length) return '';
+
+    return pontos
+      .map((item, indice) => {
+        const x = pontos.length === 1 ? 14 : 14 + (indice / (pontos.length - 1)) * 78;
+        const y = 82 - ((item[campo] ?? 0) / maximo) * 64;
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(' ');
+  }
+
+  areaDesvioBurndown(projeto: MetricaProjeto): string {
+    const real = this.pontosBurndownLinha(projeto, 'restantes');
+    const ideal = this.pontosBurndownLinha(projeto, 'restanteIdeal')
+      .split(' ')
+      .reverse()
+      .join(' ');
+
+    return `${real} ${ideal}`.trim();
+  }
+
+  pontosBurndownMarcadores(
+    projeto: MetricaProjeto,
+    campo: 'restantes' | 'restanteIdeal',
+  ) {
+    const pontos = projeto.burndown ?? [];
+    const maximo = this.maiorRestanteBurndown(projeto);
+
+    return pontos
+      .filter((_, indice) => indice === 0 || indice === pontos.length - 1 || indice % 7 === 0)
+      .map((item) => {
+        const indice = pontos.indexOf(item);
+        const x = pontos.length === 1 ? 14 : 14 + (indice / (pontos.length - 1)) * 78;
+        const y = 82 - ((item[campo] ?? 0) / maximo) * 64;
+
+        return {
+          x,
+          y,
+          valor: item[campo],
+          data: item.data,
+        };
+      });
+  }
+
+  burndownEixoY(projeto: MetricaProjeto) {
+    const maximo = this.maiorRestanteBurndown(projeto);
+    const meio = Math.round(maximo / 2);
+
+    return [
+      { label: maximo, y: 18 },
+      { label: meio, y: 50 },
+      { label: 0, y: 82 },
+    ];
+  }
+
+  burndownEixoX(projeto: MetricaProjeto) {
+    const pontos = projeto.burndown ?? [];
+
+    if (!pontos.length) return [];
+
+    const meio = Math.floor((pontos.length - 1) / 2);
+    const indices = [...new Set([0, meio, pontos.length - 1])];
+
+    return indices.map((indice) => ({
+      x: pontos.length === 1 ? 14 : 14 + (indice / (pontos.length - 1)) * 78,
+      label: this.formatarDiaMes(pontos[indice].data),
+    }));
+  }
+
+  private formatarDiaMes(data: string): string {
+    const [ano, mes, dia] = data.split('-').map(Number);
+
+    if (!ano || !mes || !dia) return data;
+
+    return `${String(dia).padStart(2, '0')}/${String(mes).padStart(2, '0')}`;
+  }
+
+  burndownAtual(projeto: MetricaProjeto): MetricaProjeto['burndown'][number] | null {
+    return projeto.burndown?.[projeto.burndown.length - 1] ?? null;
+  }
+
+  burndownCriadasPeriodo(projeto: MetricaProjeto): number {
+    return (projeto.burndown ?? []).reduce((total, item) => total + item.criadas, 0);
+  }
+
+  burndownConcluidasPeriodo(projeto: MetricaProjeto): number {
+    return (projeto.burndown ?? []).reduce((total, item) => total + item.concluidas, 0);
+  }
+
+  burndownDesvioClasse(desvio: number): string {
+    if (desvio > 0) return 'danger';
+    if (desvio < 0) return 'done';
+    return 'neutral';
+  }
+
+  burndownDesvioDescricao(desvio: number): string {
+    if (desvio > 0) return `${desvio} acima do ideal`;
+    if (desvio < 0) return `${Math.abs(desvio)} abaixo do ideal`;
+    return 'no ideal';
+  }
+
+  burndownInterpretacao(projeto: MetricaProjeto): string {
+    const atual = this.burndownAtual(projeto);
+
+    if (!atual) return 'Sem dados suficientes para avaliar o ritmo.';
+    if (atual.restantes < atual.restanteIdeal) return 'Linha real abaixo da ideal: execução adiantada.';
+    if (atual.restantes === atual.restanteIdeal) return 'Linha real próxima da ideal: execução no ritmo planejado.';
+    if (atual.restantes > atual.restanteIdeal) return 'Linha real acima da ideal: existe risco de atraso.';
+
+    return 'Sem variação relevante no período.';
+  }
+
+  posicaoAvancoProjeto(projeto: MetricaProjeto): number {
+    return this.escalarParaMapa(projeto.indiceAvanco);
+  }
+
+  posicaoAtrasoProjeto(projeto: MetricaProjeto): number {
+    const atraso = projeto.percentualTarefasAtrasadas;
+
+    if (atraso <= 0 && this.indiceRiscoProjeto(projeto) > 0) {
+      return 18;
+    }
+
+    return this.escalarParaMapa(atraso);
+  }
+
+  tamanhoBolhaProjeto(projeto: MetricaProjeto): number {
+    return Math.max(34, Math.min(58, 30 + projeto.totalTarefas * 3));
+  }
+
+  nomeCurtoProjeto(nome: string): string {
+    const clean = nome.trim();
+
+    if (clean.length <= 18) {
+      return clean;
+    }
+
+    return `${clean.slice(0, 16)}...`;
+  }
+
+  indiceRiscoProjeto(projeto: MetricaProjeto): number {
+    return (
+      projeto.tarefasAtrasadas * 3 +
+      projeto.tarefasCriticasAbertas * 3 +
+      projeto.tarefasVencemEm7Dias * 2 +
+      projeto.tarefasParadasMaisDe7Dias * 2 +
+      projeto.tarefasSemResponsavel +
+      projeto.tarefasSemData
+    );
+  }
+
+  larguraRiscoProjeto(valor: number, projeto: MetricaProjeto): number {
+    const base = Math.max(
+      projeto.tarefasAtrasadas,
+      projeto.tarefasCriticasAbertas,
+      projeto.tarefasVencemEm7Dias,
+      projeto.tarefasParadasMaisDe7Dias,
+      projeto.tarefasSemResponsavel,
+      projeto.tarefasSemData,
+      1,
+    );
+
+    return Math.max(valor > 0 ? 6 : 0, Math.round((valor / base) * 100));
+  }
+
+  riscoColunasProjeto(projeto: MetricaProjeto) {
+    return [
+      { label: 'Atrasadas', valor: projeto.tarefasAtrasadas, classe: 'danger' },
+      { label: 'Críticas', valor: projeto.tarefasCriticasAbertas, classe: 'danger' },
+      { label: 'Vencem 7d', valor: projeto.tarefasVencemEm7Dias, classe: 'pending' },
+      { label: 'Paradas', valor: projeto.tarefasParadasMaisDe7Dias, classe: 'progress' },
+      { label: 'Sem resp.', valor: projeto.tarefasSemResponsavel, classe: 'muted' },
+    ];
+  }
+
+  prioridadeColunasProjeto(projeto: MetricaProjeto) {
+    return [
+      { label: 'Crítica', valor: projeto.prioridade.CRITICA, classe: 'danger' },
+      { label: 'Alta', valor: projeto.prioridade.ALTA, classe: 'pending' },
+      { label: 'Média', valor: projeto.prioridade.MEDIA, classe: 'progress' },
+      { label: 'Baixa', valor: projeto.prioridade.BAIXA, classe: 'muted' },
+    ];
+  }
+
+  alturaColunaProjeto(valor: number, colunas: { valor: number }[]): number {
+    const maior = Math.max(...colunas.map((item) => item.valor), 1);
+
+    return Math.max(valor > 0 ? 8 : 0, Math.round((valor / maior) * 100));
+  }
+
+  larguraIndiceRiscoProjeto(projeto: MetricaProjeto): number {
+    const maior = Math.max(
+      ...this.projetosRiscoGrafico.map((item) => this.indiceRiscoProjeto(item)),
+      1,
+    );
+
+    const indice = this.indiceRiscoProjeto(projeto);
+    return Math.max(indice > 0 ? 6 : 2, Math.round((indice / maior) * 100));
+  }
+
+  larguraComponenteRiscoProjeto(valor: number, projeto: MetricaProjeto): number {
+    const total = this.indiceRiscoProjeto(projeto);
+
+    if (!valor || total <= 0) {
+      return 0;
+    }
+
+    return Math.max(3, Math.round((valor / total) * 100));
+  }
+
+  private limitarPercentual(valor: number): number {
+    return Math.max(0, Math.min(100, valor));
+  }
+
+  private escalarParaMapa(valor: number): number {
+    return 8 + this.limitarPercentual(valor) * 0.84;
+  }
+
+  get projetosCriticos(): MetricaProjeto[] {
+    return [...(this.metricasProjetos?.projetos ?? [])]
+      .sort((a, b) => {
+        const peso = (item: MetricaProjeto) =>
+          item.saudeProjeto === 'CRITICO' ? 3 :
+            item.saudeProjeto === 'ATENCAO' ? 2 : 1;
+
+        return peso(b) - peso(a) ||
+          b.percentualTarefasAtrasadas - a.percentualTarefasAtrasadas ||
+          b.tarefasCriticasAbertas - a.tarefasCriticasAbertas;
+      })
+      .slice(0, 5);
   }
 
   get metricasTitulosFiltradas() {

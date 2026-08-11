@@ -10,6 +10,7 @@ import {GetTempoConclusaoPorTitulo} from '../../../application/use-cases/relator
 import { GetTempoMedioPorTitulo } from '../../../application/use-cases/relatorio/GetTempoMedioPorTitulo';
 import {GetLeadTimeRelatorio} from '../../../application/use-cases/GetLeadTimeRelatorio';
 import {GetDisponibilidadeUsuarios} from '../../../application/use-cases/relatorio/GetDisponibilidadeUsuarios';
+import { GetRelatorioPessoal } from '../../../application/use-cases/relatorio/GetRelatorioPessoal';
 
 type Deps = {
   getTempoTarefaPorResponsavel: GetTempoTarefaPorResponsavel;
@@ -23,6 +24,7 @@ type Deps = {
   getTempoMedioPorTitulo: GetTempoMedioPorTitulo;
   getLeadTimeRelatorio: GetLeadTimeRelatorio;
   getDisponibilidadeUsuarios: GetDisponibilidadeUsuarios;
+  getRelatorioPessoal: GetRelatorioPessoal;
 };
 
 export class RelatoriosController {
@@ -66,6 +68,18 @@ export class RelatoriosController {
   async cargaUsuarios(req: Request, res: Response) {
     try {
       const resultado = await this.deps.getCargaUsuarios.execute();
+
+      return res.json(resultado);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async relatorioPessoal(req: Request, res: Response) {
+    try {
+      const resultado = await this.deps.getRelatorioPessoal.execute({
+        usuarioId: req.user.id,
+      });
 
       return res.json(resultado);
     } catch (error: any) {

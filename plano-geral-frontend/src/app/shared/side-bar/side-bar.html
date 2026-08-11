@@ -55,6 +55,17 @@
         </a>
 
         <a
+          *ngIf="isColaborador"
+          class="nav-link"
+          routerLink="/meu-relatorio"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <fa-icon class="fs-5 me-2" [icon]="faChart" />
+          Meu relatório
+        </a>
+
+        <a
           *ngIf="isAdmin"
           class="nav-link"
           routerLink="/configuracoes"

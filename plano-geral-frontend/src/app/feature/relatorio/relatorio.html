@@ -153,6 +153,14 @@
                 <small>
                   {{ projeto.totalTarefas }} tarefas · {{ projeto.tarefasEmAndamento }} em andamento · {{ projeto.tarefasAtrasadas }} atrasadas
                 </small>
+                <div class="signal-row">
+                  <span class="status-pill" [ngClass]="sinalClasse(projeto.saudeProjeto)">
+                    {{ saudeLabel(projeto.saudeProjeto) }}
+                  </span>
+                  <span class="status-pill" [ngClass]="sinalClasse(projeto.riscoAtraso)">
+                    {{ riscoLabel(projeto.riscoAtraso) }}
+                  </span>
+                </div>
               </div>
 
               <div class="project-metric-bars">
@@ -184,98 +192,245 @@
       </div>
     </section>
 
-    <section class="report-panel mb-3" *ngIf="leadTime as leadTimeData">
+    <section class="report-panel project-health-panel" *ngIf="metricasProjetos?.projetos?.length">
       <div class="panel-header">
         <div>
-          <h3>Lead time</h3>
-          <span>Tempo entre criação e conclusão das tarefas</span>
-        </div>
-
-        <span class="panel-count">
-          {{ leadTimeData.geral.tarefasComLeadTime }} tarefas medidas
-        </span>
-      </div>
-
-      <div class="modal-summary">
-        <div class="summary-card">
-          <span>Média geral</span>
-          <strong>{{ formatarHorasBrasil(leadTimeData.geral.tempoMedioHoras) }}</strong>
-        </div>
-
-        <div class="summary-card">
-          <span>Total de tarefas</span>
-          <strong>{{ leadTimeData.geral.totalTarefas }}</strong>
-        </div>
-
-        <div class="summary-card">
-          <span>Sem conclusão</span>
-          <strong>{{ leadTimeData.geral.tarefasSemLeadTime }}</strong>
+          <h3>Matriz de risco dos projetos</h3>
+          <span>Avanço, atraso, saúde e volume de trabalho</span>
         </div>
       </div>
 
-      <div class="lower-grid">
-        <section>
-          <div class="modal-section-title">
-            <strong>Por projeto</strong>
+      <div class="risk-charts" *ngIf="projetosComTarefas.length; else semProjetosComTarefas">
+        <section class="risk-donut-chart">
+          <div class="risk-chart-title">
+            <strong>Saúde dos projetos</strong>
+            <span>{{ totalProjetosComTarefas() }} com tarefas</span>
           </div>
 
-          <div class="modal-task-card" *ngFor="let item of leadTimeData.porProjeto">
-            <div class="task-line">
+          <div class="health-donut">
+            <div
+              class="donut-ring"
+              [style.--done.%]="percentualTitulo(projetosPorSaude('SAUDAVEL').length, totalProjetosComTarefas())"
+              [style.--watch.%]="percentualTitulo(projetosPorSaude('ATENCAO').length, totalProjetosComTarefas())"
+            >
               <div>
-                <strong>{{ item.projetoNome }}</strong>
-                <small>
-                  {{ item.tarefasComLeadTime }} medidas ·
-                  {{ item.tarefasSemLeadTime }} sem conclusão
-                </small>
+                <strong>{{ totalProjetosComTarefas() }}</strong>
+                <span>projetos</span>
               </div>
+            </div>
 
-              <strong class="task-time">
-                {{ formatarHorasBrasil(item.tempoMedioHoras) }}
-              </strong>
+            <div class="donut-legend">
+              <span><i class="legend-dot done"></i>Saudável {{ projetosPorSaude('SAUDAVEL').length }}</span>
+              <span><i class="legend-dot pending"></i>Atenção {{ projetosPorSaude('ATENCAO').length }}</span>
+              <span><i class="legend-dot danger"></i>Crítico {{ projetosPorSaude('CRITICO').length }}</span>
             </div>
           </div>
         </section>
 
-        <section>
-          <div class="modal-section-title">
-            <strong>Por responsável</strong>
+        <section class="risk-bar-chart">
+          <div class="risk-chart-title">
+            <strong>Risco operacional por projeto</strong>
+            <span>quanto maior a barra, maior a atenção necessária</span>
           </div>
 
-          <div class="modal-task-card" *ngFor="let item of leadTimeData.porResponsavel">
-            <div class="task-line">
-              <div>
-                <strong>{{ item.responsavelNome }}</strong>
-                <small>
-                  {{ item.tarefasComLeadTime }} medidas ·
-                  {{ item.tarefasSemLeadTime }} sem conclusão
-                </small>
-              </div>
+          <div class="risk-bar-axis">
+            <span>Baixo</span>
+            <span>Médio</span>
+            <span>Alto</span>
+          </div>
 
-              <strong class="task-time">
-                {{ formatarHorasBrasil(item.tempoMedioHoras) }}
-              </strong>
-            </div>
+          <div class="risk-ranking">
+            <button
+              type="button"
+              class="risk-ranking-row"
+              *ngFor="let projeto of projetosRiscoGrafico"
+              (click)="abrirProjetoMetricas(projeto)"
+            >
+              <span class="ranking-name">{{ projeto.nome }}</span>
+              <span class="ranking-score">{{ indiceRiscoProjeto(projeto) }}</span>
+              <div class="ranking-track">
+                <div
+                  class="ranking-fill-base"
+                  [style.width.%]="larguraIndiceRiscoProjeto(projeto)"
+                >
+                  <span
+                    class="risk-segment overdue"
+                    [style.width.%]="larguraComponenteRiscoProjeto(projeto.tarefasAtrasadas * 3, projeto)"
+                  ></span>
+                  <span
+                    class="risk-segment critical"
+                    [style.width.%]="larguraComponenteRiscoProjeto(projeto.tarefasCriticasAbertas * 3, projeto)"
+                  ></span>
+                  <span
+                    class="risk-segment due"
+                    [style.width.%]="larguraComponenteRiscoProjeto(projeto.tarefasVencemEm7Dias * 2, projeto)"
+                  ></span>
+                  <span
+                    class="risk-segment stopped"
+                    [style.width.%]="larguraComponenteRiscoProjeto(projeto.tarefasParadasMaisDe7Dias * 2, projeto)"
+                  ></span>
+                  <span
+                    class="risk-segment missing"
+                    [style.width.%]="larguraComponenteRiscoProjeto(projeto.tarefasSemResponsavel + projeto.tarefasSemData, projeto)"
+                  ></span>
+                </div>
+              </div>
+              <small>
+                {{ projeto.tarefasAtrasadas }} atrasadas ·
+                {{ projeto.tarefasCriticasAbertas }} críticas ·
+                {{ projeto.tarefasParadasMaisDe7Dias }} paradas
+              </small>
+            </button>
+          </div>
+
+          <div class="risk-segment-legend">
+            <span><i class="risk-segment-dot overdue"></i>Atrasadas</span>
+            <span><i class="risk-segment-dot critical"></i>Críticas</span>
+            <span><i class="risk-segment-dot due"></i>Vencem em 7d</span>
+            <span><i class="risk-segment-dot stopped"></i>Paradas</span>
+            <span><i class="risk-segment-dot missing"></i>Sem dados</span>
           </div>
         </section>
       </div>
 
-      <section style="margin-top: 16px">
-        <div class="modal-section-title">
-          <strong>Por período</strong>
+      <ng-template #semProjetosComTarefas>
+        <div class="empty-projects-list compact">
+          Nenhum projeto com tarefas para medir risco.
         </div>
+      </ng-template>
+    </section>
 
-        <div class="modal-task-card" *ngFor="let item of leadTimeData.porPeriodo">
-          <div class="task-line">
-            <div>
-              <strong>{{ formatarMesAno(item.periodoLabel) }}</strong>
-              <small>{{ item.tarefasComLeadTime }} tarefas concluídas</small>
-            </div>
+    <section class="report-panel catalog-analytics-panel" *ngIf="metricasTitulos as catalogo">
+      <div class="panel-header">
+        <div>
+          <h3>Análise do catálogo de tarefas</h3>
+          <span>Componentes, atividades, subatividades e títulos executados</span>
+        </div>
+        <span class="panel-count">{{ catalogo.totalTitulos }} títulos</span>
+      </div>
 
-            <strong class="task-time">
-              {{ formatarHorasBrasil(item.tempoMedioHoras) }}
-            </strong>
+      <div class="catalog-chart-grid time-chart-grid">
+        <section class="catalog-chart-block time-chart-block">
+          <div class="catalog-chart-title">
+            <strong>Maiores tempos por componente</strong>
+            <span>Top {{ gruposMaiorTempo(catalogo.componentes).length }} de {{ totalGruposComTempo(catalogo.componentes) }}</span>
           </div>
+
+          <div class="time-column-chart" *ngIf="gruposMaiorTempo(catalogo.componentes).length; else semComponentesCatalogo">
+            <div class="time-column-item" *ngFor="let item of gruposMaiorTempo(catalogo.componentes); let i = index">
+              <strong class="time-column-value">{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+              <div class="time-column-plot">
+                <div
+                  class="time-column-fill"
+                  [ngClass]="classeTempoCatalogo(item, gruposMaiorTempo(catalogo.componentes))"
+                  [style.height.%]="alturaTempoCatalogo(item, gruposMaiorTempo(catalogo.componentes))"
+                ></div>
+              </div>
+              <span class="time-column-rank">{{ i + 1 }}</span>
+              <small>{{ item.nome }}</small>
+              <em>{{ item.totalTarefas }} tarefas</em>
+            </div>
+          </div>
+
+          <ng-template #semComponentesCatalogo>
+            <div class="empty-projects-list compact">Nenhum componente com tempo de conclusão.</div>
+          </ng-template>
+        </section>
+
+        <section class="catalog-chart-block time-chart-block">
+          <div class="catalog-chart-title">
+            <strong>Maiores tempos por atividade principal</strong>
+            <span>Top {{ gruposMaiorTempo(catalogo.atividadesPrincipais).length }} de {{ totalGruposComTempo(catalogo.atividadesPrincipais) }}</span>
+          </div>
+
+          <div class="time-column-chart" *ngIf="gruposMaiorTempo(catalogo.atividadesPrincipais).length; else semAtividadesCatalogo">
+            <div class="time-column-item" *ngFor="let item of gruposMaiorTempo(catalogo.atividadesPrincipais); let i = index">
+              <strong class="time-column-value">{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+              <div class="time-column-plot">
+                <div
+                  class="time-column-fill"
+                  [ngClass]="classeTempoCatalogo(item, gruposMaiorTempo(catalogo.atividadesPrincipais))"
+                  [style.height.%]="alturaTempoCatalogo(item, gruposMaiorTempo(catalogo.atividadesPrincipais))"
+                ></div>
+              </div>
+              <span class="time-column-rank">{{ i + 1 }}</span>
+              <small>{{ item.nome }}</small>
+              <em>{{ item.totalTarefas }} tarefas</em>
+            </div>
+          </div>
+
+          <ng-template #semAtividadesCatalogo>
+            <div class="empty-projects-list compact">Nenhuma atividade com tempo de conclusão.</div>
+          </ng-template>
+        </section>
+
+        <section class="catalog-chart-block time-chart-block">
+          <div class="catalog-chart-title">
+            <strong>Maiores tempos por subatividade</strong>
+            <span>Top {{ gruposMaiorTempo(catalogo.subatividades).length }} de {{ totalGruposComTempo(catalogo.subatividades) }}</span>
+          </div>
+
+          <div class="time-column-chart" *ngIf="gruposMaiorTempo(catalogo.subatividades).length; else semSubatividadesCatalogo">
+            <div class="time-column-item" *ngFor="let item of gruposMaiorTempo(catalogo.subatividades); let i = index">
+              <strong class="time-column-value">{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+              <div class="time-column-plot">
+                <div
+                  class="time-column-fill"
+                  [ngClass]="classeTempoCatalogo(item, gruposMaiorTempo(catalogo.subatividades))"
+                  [style.height.%]="alturaTempoCatalogo(item, gruposMaiorTempo(catalogo.subatividades))"
+                ></div>
+              </div>
+              <span class="time-column-rank">{{ i + 1 }}</span>
+              <small>{{ item.nome }}</small>
+              <em>{{ item.totalTarefas }} tarefas</em>
+            </div>
+          </div>
+
+          <ng-template #semSubatividadesCatalogo>
+            <div class="empty-projects-list compact">Nenhuma subatividade com tempo de conclusão.</div>
+          </ng-template>
+        </section>
+      </div>
+
+      <section class="catalog-title-chart title-bar-section">
+        <div class="catalog-title-header">
+          <div>
+            <strong>Por título</strong>
+            <span>Pesquise e clique na coluna para abrir os dados detalhados</span>
+          </div>
+
+          <input
+            type="text"
+            [(ngModel)]="buscaTituloMetrica"
+            placeholder="Buscar título"
+          />
         </div>
+
+        <div class="title-time-column-chart" *ngIf="metricasTitulosFiltradas.length; else semMetricasTitulos">
+          <button
+            type="button"
+            class="title-time-column-item"
+            *ngFor="let item of metricasTitulosFiltradas"
+            (click)="abrirTituloMetricas(item)"
+          >
+            <strong class="time-column-value">{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+            <div class="time-column-plot">
+              <div
+                class="time-column-fill"
+                [ngClass]="classeTempoTitulo(item)"
+                [style.height.%]="alturaTempoTitulo(item)"
+              ></div>
+            </div>
+            <small>{{ item.titulo }}</small>
+            <em>{{ item.totalTarefas }} tarefas · {{ item.percentualConclusao }}%</em>
+          </button>
+        </div>
+
+        <ng-template #semMetricasTitulos>
+          <div class="empty-projects-list compact">
+            Nenhuma métrica por título encontrada.
+          </div>
+        </ng-template>
       </section>
     </section>
 
@@ -320,19 +475,25 @@
             </div>
           </button>
         </div>
+      </section>
 
-        <section style="margin-top: 18px" *ngIf="disponibilidadeUsuarios as disponibilidade">
-          <div class="modal-section-title">
-            <strong>Disponibilidade dos usuários</strong>
+      <section class="report-panel availability-panel" *ngIf="disponibilidadeUsuarios as disponibilidade">
+        <div class="panel-header">
+          <div>
+            <h3>Disponibilidade dos usuários</h3>
+            <span>Previsão de liberação e carga aberta</span>
           </div>
+          <span class="panel-count">{{ disponibilidade.totalUsuarios }} membros</span>
+        </div>
 
-          <div class="empty-projects-list" *ngIf="disponibilidade.usuarios.length === 0; else listaDisponibilidade">
-            Nenhuma disponibilidade encontrada.
-          </div>
+        <div class="empty-projects-list" *ngIf="disponibilidade.usuarios.length === 0; else listaDisponibilidade">
+          Nenhuma disponibilidade encontrada.
+        </div>
 
-          <ng-template #listaDisponibilidade>
+        <ng-template #listaDisponibilidade>
+          <div class="availability-list">
             <div
-              class="modal-task-card"
+              class="modal-task-card availability-row"
               *ngFor="let usuario of disponibilidade.usuarios"
             >
               <div class="task-line">
@@ -355,73 +516,13 @@
                     <ng-container *ngIf="usuario.ocupadoAte">
                       · ocupado até {{ formatarDataBrasil(usuario.ocupadoAte) }}
                     </ng-container>
+                    <ng-container *ngIf="usuario.proximaTarefaProgramada as proxima">
+                      · próxima tarefa: {{ proxima.titulo }} em {{ formatarDataBrasil(proxima.dataInicio) }}
+                    </ng-container>
                   </small>
                 </div>
               </div>
             </div>
-          </ng-template>
-        </section>
-      </section>
-
-      <section class="report-panel">
-        <div class="panel-header">
-          <div>
-            <h3>Métricas por título</h3>
-            <span>Tempo médio de avanço até conclusão</span>
-          </div>
-          <span class="panel-count">{{ metricasTitulos?.totalTitulos ?? 0 }} títulos</span>
-        </div>
-
-        <div class="title-report-form">
-          <input
-            type="text"
-            [(ngModel)]="buscaTituloMetrica"
-            placeholder="Buscar título da tarefa"
-          />
-        </div>
-
-        <div class="projects-list title-metrics-list" *ngIf="metricasTitulosFiltradas.length; else semMetricasTitulos">
-          <button
-            type="button"
-            class="project-metric-row"
-            *ngFor="let item of metricasTitulosFiltradas"
-            (click)="abrirTituloMetricas(item)"
-          >
-            <div class="project-main">
-              <div class="project-title-line">
-                <strong>{{ item.titulo }}</strong>
-              </div>
-              <small>
-                {{ item.totalTarefas }} tarefas · {{ item.emAndamento }} em andamento · {{ item.pendentes }} pendentes
-              </small>
-            </div>
-
-            <div class="project-metric-bars">
-              <div class="metric-line">
-                <span>Conclusão</span>
-                <strong>{{ item.percentualConclusao }}%</strong>
-                <div class="bar-track">
-                  <div class="bar-fill done" [style.width.%]="item.percentualConclusao"></div>
-                </div>
-              </div>
-
-              <div class="metric-line">
-                <span>Tempo médio</span>
-                <strong>{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
-                <div class="bar-track">
-                  <div
-                    class="bar-fill progress"
-                    [style.width.%]="larguraTempoMedio(item.tempoMedioHoras)"
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </button>
-        </div>
-
-        <ng-template #semMetricasTitulos>
-          <div class="empty-projects-list">
-            Nenhuma métrica por título encontrada.
           </div>
         </ng-template>
       </section>
@@ -518,6 +619,14 @@
                 <span>No prazo</span>
                 <strong>{{ projetoModal.percentualRespeitoPrazo }}%</strong>
               </div>
+              <div class="summary-card" [ngClass]="sinalClasse(projetoModal.saudeProjeto)">
+                <span>Saúde</span>
+                <strong>{{ saudeLabel(projetoModal.saudeProjeto) }}</strong>
+              </div>
+              <div class="summary-card" [ngClass]="sinalClasse(projetoModal.riscoAtraso)">
+                <span>Risco</span>
+                <strong>{{ riscoLabel(projetoModal.riscoAtraso) }}</strong>
+              </div>
             </div>
 
             <div class="project-modal-grid">
@@ -557,6 +666,18 @@
                       <span>Atrasadas</span>
                       <strong>{{ projetoModal.tarefasAtrasadas }}</strong>
                     </div>
+                    <div>
+                      <span>Críticas abertas</span>
+                      <strong>{{ projetoModal.tarefasCriticasAbertas }}</strong>
+                    </div>
+                    <div>
+                      <span>Sem responsável</span>
+                      <strong>{{ projetoModal.tarefasSemResponsavel }}</strong>
+                    </div>
+                    <div>
+                      <span>Paradas +7d</span>
+                      <strong>{{ projetoModal.tarefasParadasMaisDe7Dias }}</strong>
+                    </div>
                   </div>
                 </div>
 
@@ -579,6 +700,200 @@
                       <span>Projeto avançou</span>
                       <strong>{{ projetoModal.avancou ? 'Sim' : 'Não' }}</strong>
                     </div>
+                    <div>
+                      <span>Vencem em 7 dias</span>
+                      <strong>{{ projetoModal.tarefasVencemEm7Dias }}</strong>
+                    </div>
+                    <div>
+                      <span>Sem data</span>
+                      <strong>{{ projetoModal.tarefasSemData }}</strong>
+                    </div>
+                    <div>
+                      <span>Replanejamentos</span>
+                      <strong>{{ projetoModal.totalAlteracoesDatas }}</strong>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="project-insight-grid burndown-insight-grid">
+              <section class="project-summary-card">
+                <div class="project-summary-header">
+                  <strong>Composição do risco</strong>
+                  <span>fatores que puxam atenção</span>
+                </div>
+
+                <div class="project-column-chart risk-columns">
+                  <div class="project-column-item" *ngFor="let item of riscoColunasProjeto(projetoModal)">
+                    <strong>{{ item.valor }}</strong>
+                    <div class="project-column-track">
+                      <div
+                        class="project-column-fill"
+                        [ngClass]="item.classe"
+                        [style.height.%]="alturaColunaProjeto(item.valor, riscoColunasProjeto(projetoModal))"
+                      ></div>
+                    </div>
+                    <span>{{ item.label }}</span>
+                  </div>
+                </div>
+
+                <div class="risk-total">
+                  <span>Índice operacional</span>
+                  <strong>{{ indiceRiscoProjeto(projetoModal) }}</strong>
+                </div>
+              </section>
+
+              <section class="project-summary-card">
+                <div class="project-summary-header">
+                  <strong>Prioridade</strong>
+                  <span>distribuição das tarefas</span>
+                </div>
+
+                <div class="project-column-chart priority-columns">
+                  <div class="project-column-item" *ngFor="let item of prioridadeColunasProjeto(projetoModal)">
+                    <strong>{{ item.valor }}</strong>
+                    <div class="project-column-track">
+                      <div
+                        class="project-column-fill"
+                        [ngClass]="item.classe"
+                        [style.height.%]="alturaColunaProjeto(item.valor, prioridadeColunasProjeto(projetoModal))"
+                      ></div>
+                    </div>
+                    <span>{{ item.label }}</span>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="project-insight-grid">
+              <section class="project-summary-card">
+                <div class="project-summary-header">
+                  <strong>Burndown operacional</strong>
+                  <span>trabalho restante real x ideal nos últimos 30 dias</span>
+                </div>
+
+                <div class="burndown-chart line" *ngIf="projetoModal.burndown.length">
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Burndown ideal e real">
+                    <text class="axis-title y-title" x="14" y="8">Tarefas restantes</text>
+                    <text class="axis-title x-title" x="53" y="98">Período analisado</text>
+
+                    <line x1="14" y1="18" x2="92" y2="18"></line>
+                    <line x1="14" y1="50" x2="92" y2="50"></line>
+                    <line x1="14" y1="82" x2="92" y2="82"></line>
+                    <line class="axis-line" x1="14" y1="18" x2="14" y2="82"></line>
+                    <line class="axis-line" x1="14" y1="82" x2="92" y2="82"></line>
+
+                    <text
+                      *ngFor="let tick of burndownEixoY(projetoModal)"
+                      class="axis-label y-label"
+                      x="11"
+                      [attr.y]="tick.y + 1.5"
+                    >
+                      {{ tick.label }}
+                    </text>
+
+                    <text
+                      *ngFor="let tick of burndownEixoX(projetoModal)"
+                      class="axis-label x-label"
+                      [attr.x]="tick.x"
+                      y="91"
+                    >
+                      {{ tick.label }}
+                    </text>
+
+                    <polygon
+                      class="area-desvio"
+                      [attr.points]="areaDesvioBurndown(projetoModal)"
+                    ></polygon>
+
+                    <polyline
+                      class="line-ideal"
+                      [attr.points]="pontosBurndownLinha(projetoModal, 'restanteIdeal')"
+                    ></polyline>
+                    <polyline
+                      class="line-real"
+                      [attr.points]="pontosBurndownLinha(projetoModal, 'restantes')"
+                    ></polyline>
+
+                    <circle
+                      *ngFor="let ponto of pontosBurndownMarcadores(projetoModal, 'restanteIdeal')"
+                      class="point-ideal"
+                      [attr.cx]="ponto.x"
+                      [attr.cy]="ponto.y"
+                      r="1.4"
+                    ></circle>
+                    <circle
+                      *ngFor="let ponto of pontosBurndownMarcadores(projetoModal, 'restantes')"
+                      class="point-real"
+                      [attr.cx]="ponto.x"
+                      [attr.cy]="ponto.y"
+                      r="1.7"
+                    ></circle>
+                  </svg>
+                </div>
+
+                <div class="burndown-color-summary" *ngIf="burndownAtual(projetoModal) as atual">
+                  <span class="summary-chip real">Real {{ atual.restantes }}</span>
+                  <span class="summary-chip ideal">Ideal {{ atual.restanteIdeal }}</span>
+                  <span class="summary-chip done">{{ burndownConcluidasPeriodo(projetoModal) }} concluídas</span>
+                  <span class="summary-chip created">{{ burndownCriadasPeriodo(projetoModal) }} criadas</span>
+                  <span class="summary-chip" [ngClass]="burndownDesvioClasse(atual.desvio)">
+                    Desvio {{ atual.desvio > 0 ? '+' : '' }}{{ atual.desvio }}
+                  </span>
+                </div>
+
+                <div class="burndown-explain" *ngIf="burndownAtual(projetoModal) as atual">
+                  <div class="formula-card">
+                    <strong>Desvio = Real - Ideal</strong>
+                    <span>
+                      {{ atual.restantes }} - {{ atual.restanteIdeal }} =
+                      {{ atual.desvio > 0 ? '+' : '' }}{{ atual.desvio }}
+                    </span>
+                  </div>
+                  <div class="formula-card" [ngClass]="burndownDesvioClasse(atual.desvio)">
+                    <strong>{{ burndownDesvioDescricao(atual.desvio) }}</strong>
+                    <span>real azul comparado ao ideal cinza</span>
+                  </div>
+                  <div class="formula-card">
+                    <strong>O que muda o real?</strong>
+                    <span>conclusões reduzem; novas tarefas aumentam</span>
+                  </div>
+                </div>
+
+                <div class="burndown-legend compact">
+                  <span><i class="legend-dot ideal"></i>Ideal</span>
+                  <span><i class="legend-dot real"></i>Real</span>
+                  <span><i class="legend-dot deviation"></i>Área do desvio</span>
+                  <span><i class="legend-dot done"></i>Concluídas reduzem</span>
+                  <span><i class="legend-dot created"></i>Criadas aumentam</span>
+                </div>
+
+                <p class="burndown-reading">
+                  {{ burndownInterpretacao(projetoModal) }}
+                </p>
+              </section>
+
+              <section class="project-summary-card">
+                <div class="project-summary-header">
+                  <strong>Carga no projeto</strong>
+                  <span>{{ projetoModal.responsaveis.length }} responsáveis</span>
+                </div>
+
+                <div class="responsible-list">
+                  <div class="responsible-row" *ngFor="let responsavel of projetoModal.responsaveis">
+                    <div>
+                      <strong>{{ nomeUsuario(responsavel.usuarioId) }}</strong>
+                      <small>{{ responsavel.totalTarefas }} tarefas · {{ responsavel.atrasadas }} atrasadas</small>
+                    </div>
+                    <span>{{ responsavel.percentualConclusao }}%</span>
+                    <div class="bar-track">
+                      <div class="bar-fill done" [style.width.%]="responsavel.percentualConclusao"></div>
+                    </div>
+                  </div>
+
+                  <div class="empty-projects-list compact" *ngIf="!projetoModal.responsaveis.length">
+                    Sem responsáveis vinculados.
                   </div>
                 </div>
               </section>

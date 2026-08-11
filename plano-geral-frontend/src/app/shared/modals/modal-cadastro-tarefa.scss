@@ -7,6 +7,26 @@ form label {
   color: #0d6efd;
 }
 
+.catalog-selection-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.catalog-selection-card {
+  min-width: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.catalog-selection-card label {
+  display: block;
+  margin-bottom: 8px;
+}
+
 img.img-thumbnail {
   transition: all 0.3s ease;
   &:hover {

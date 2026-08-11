@@ -27,6 +27,10 @@ export class CreateTarefa {
 
     let tituloFinal = input.titulo?.trim();
 
+    if (!input.tituloCatalogoId) {
+      throw new Error('Selecione um item do catálogo para criar a tarefa');
+    }
+
     if (input.tituloCatalogoId) {
       const tituloCatalogo = await this.tituloCatalogoRepo.findById(input.tituloCatalogoId);
 
@@ -34,7 +38,17 @@ export class CreateTarefa {
         throw new Error('Título pré-cadastrado não encontrado');
       }
 
-      tituloFinal = tituloFinal || tituloCatalogo.obterTituloExibicao();
+      if (tituloCatalogo.exigeTituloManual()) {
+        if (!tituloFinal) {
+          throw new Error('Título manual é obrigatório para este item do catálogo');
+        }
+
+        if (tituloCatalogo.correspondeAoTituloAutomaticoComMarcador(tituloFinal)) {
+          throw new Error('Informe um título manual válido para a tarefa');
+        }
+      } else {
+        tituloFinal = tituloFinal || tituloCatalogo.obterTituloExibicao();
+      }
     }
 
     if (!tituloFinal) {

@@ -271,6 +271,7 @@
             </div>
           </div>
           <button
+            *ngIf="!estaAvaliandoSolicitacaoAlteracaoDatas()"
             class="btn btn-link text-danger p-0"
             title="Remover responsável"
             style="font-size: 0.8rem; text-decoration: none"
@@ -280,7 +281,13 @@
         </div>
 
         <!-- Botão para adicionar responsável -->
-        <div *ngIf="!responsavelSelecionado && !mostrarSelecaoResponsavel">
+        <div
+          *ngIf="
+            !responsavelSelecionado &&
+            !mostrarSelecaoResponsavel &&
+            !estaAvaliandoSolicitacaoAlteracaoDatas()
+          "
+        >
           <button
             class="btn btn-sm btn-outline-primary w-100"
             (click)="abrirSelecaoResponsavel()"
@@ -289,8 +296,25 @@
           </button>
         </div>
 
+        <div
+          *ngIf="
+            !responsavelSelecionado &&
+            !mostrarSelecaoResponsavel &&
+            estaAvaliandoSolicitacaoAlteracaoDatas()
+          "
+          class="text-muted small"
+        >
+          Sem responsável
+        </div>
+
         <!-- Seletor de responsável -->
-        <div *ngIf="mostrarSelecaoResponsavel" class="mt-2">
+        <div
+          *ngIf="
+            mostrarSelecaoResponsavel &&
+            !estaAvaliandoSolicitacaoAlteracaoDatas()
+          "
+          class="mt-2"
+        >
           <!-- Campo de busca -->
           <div class="mb-2">
             <input

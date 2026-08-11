@@ -1,7 +1,6 @@
 // src/application/use-cases/tarefa/ConverterTarefaParaPrazo.ts
 import { TarefaRepository } from '../../../domain/repositories/TarefaRepository';
 import { TarefaComPrazo } from '../../../domain/entities/TarefaComPrazo';
-import { Periodo } from '../../../domain/value-objects/Periodo';
 
 interface ConverterParaPrazoInput {
   tarefaId: string;
@@ -28,30 +27,16 @@ export class ConverterTarefaParaPrazoUseCase {
       return tarefaExistente;
     }
 
-    // 3. Converter para TarefaComPrazo
-    const periodo = new Periodo(input.dataInicio, input.dataFim);
-    const tarefaComPrazo = new TarefaComPrazo(
-      tarefaExistente.id,
-      tarefaExistente.titulo,
-      tarefaExistente.descricao,
-      tarefaExistente.obterProjetoId(),
-      periodo
+    // 3. Converter para TarefaComPrazo preservando os dados da tarefa original
+    const tarefaComPrazo = tarefaExistente.converterParaPrazo(
+      input.dataInicio,
+      input.dataFim,
     );
 
-    // 4. Copiar os dados da tarefa original
-    // Você precisará de métodos para isso ou usar reflection
-    Object.assign(tarefaComPrazo, {
-      status: tarefaExistente.obterStatus(),
-      prioridade: tarefaExistente.obterPrioridade(),
-      responsavel: tarefaExistente.obterResponsavel(),
-      checklist: tarefaExistente.obterChecklist(),
-      atividades: tarefaExistente.obterAtividades()
-    });
-
-    // 5. Registrar a conversão
+    // 4. Registrar a conversão
     tarefaComPrazo.alterarDatas(input.dataInicio, input.dataFim, input.usuario);
 
-    // 6. Salvar (vai substituir a antiga)
+    // 5. Salvar (vai substituir a antiga)
     await this.tarefaRepository.save(tarefaComPrazo);
 
     return tarefaComPrazo;

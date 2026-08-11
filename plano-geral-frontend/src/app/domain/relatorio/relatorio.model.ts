@@ -49,6 +49,28 @@ export interface RelatorioCargaUsuariosDTO {
   }[];
 }
 
+export interface RelatorioPessoalDTO {
+  usuarioId: string;
+  resumo: {
+    totalTarefas: number;
+    pendentes: number;
+    emAndamento: number;
+    concluidas: number;
+    atrasadas: number;
+    percentualConclusao: number;
+  };
+  tarefas: {
+    id: string;
+    titulo: string;
+    status: string;
+    prioridade: string;
+    projetoNome: string | null;
+    dataInicio: string | null;
+    dataFim: string | null;
+    atrasada: boolean;
+  }[];
+}
+
 export interface RelatorioProjetoResumoDTO {
   projetoId: string;
   nome: string;
@@ -82,17 +104,57 @@ export interface RelatorioMetricasProjetosDTO {
     nome: string;
     centroCusto: string | null;
     status: string;
+    saudeProjeto: 'SAUDAVEL' | 'ATENCAO' | 'CRITICO';
+    riscoAtraso: 'BAIXO' | 'MEDIO' | 'ALTO';
     totalTarefas: number;
+    tarefasPendentes: number;
     tarefasEmAndamento: number;
     tarefasConcluidas: number;
     tarefasComPrazo: number;
     tarefasDentroDoPrazo: number;
     tarefasForaDoPrazo: number;
     tarefasAtrasadas: number;
+    tarefasSemResponsavel: number;
+    tarefasSemData: number;
+    tarefasCriticasAbertas: number;
+    tarefasVencemEm7Dias: number;
+    tarefasParadasMaisDe7Dias: number;
+    totalAlteracoesDatas: number;
+    tarefasComDatasAlteradas: number;
+    mediaAlteracoesPorTarefa: number;
+    throughputUltimos30Dias: number;
+    leadTimeMedioHoras: number | null;
+    cycleTimeMedioHoras: number | null;
+    tempoEsperaMedioHoras: number | null;
+    tempoExecucaoMedioHoras: number | null;
+    percentualTarefasAtrasadas: number;
     percentualConclusao: number;
     percentualRespeitoPrazo: number;
     indiceAvanco: number;
     avancou: boolean;
+    responsaveis: {
+      usuarioId: string;
+      totalTarefas: number;
+      pendentes: number;
+      emAndamento: number;
+      concluidas: number;
+      atrasadas: number;
+      percentualConclusao: number;
+    }[];
+    prioridade: {
+      BAIXA: number;
+      MEDIA: number;
+      ALTA: number;
+      CRITICA: number;
+    };
+    burndown: {
+      data: string;
+      criadas: number;
+      concluidas: number;
+      restantes: number;
+      restanteIdeal: number;
+      desvio: number;
+    }[];
   }[];
 }
 
@@ -112,6 +174,7 @@ export interface TarefaCalendarioDTO {
   status: string;
   prioridade: string;
   responsavelId: string | null;
+  responsavelNome: string | null;
   projetoId: string | null;
   projeto: {
     id: string;
@@ -177,11 +240,27 @@ export interface RelatorioTempoConclusaoPorTituloDTO {
 
 export interface RelatorioTempoMedioPorTituloDTO {
   totalTitulos: number;
+  componentes: MetricaCatalogoGrupoDTO[];
+  atividadesPrincipais: MetricaCatalogoGrupoDTO[];
+  subatividades: MetricaCatalogoGrupoDTO[];
   titulos: MetricaTituloTarefaDTO[];
+}
+
+export interface MetricaCatalogoGrupoDTO {
+  nome: string;
+  totalTarefas: number;
+  pendentes: number;
+  emAndamento: number;
+  concluidas: number;
+  percentualConclusao: number;
+  tempoMedioHoras: number | null;
 }
 
 export interface MetricaTituloTarefaDTO {
   titulo: string;
+  componente: string | null;
+  atividadePrincipal: string | null;
+  subatividade: string | null;
   totalTarefas: number;
   pendentes: number;
   emAndamento: number;
@@ -239,6 +318,12 @@ export interface DisponibilidadeUsuarioDTO {
   tarefasAtrasadas: number;
   ocupadoAte: string | null;
   disponivelEm: string;
+  proximaTarefaProgramada: {
+    tarefaId: string;
+    titulo: string;
+    dataInicio: string;
+    dataFim: string;
+  } | null;
   statusDisponibilidade: 'DISPONIVEL' | 'OCUPADO' | 'SEM_DADOS';
 }
 

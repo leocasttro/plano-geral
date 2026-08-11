@@ -3,6 +3,7 @@ import { SolicitacaoAlteracaoDatasRepository } from '../../../domain/repositorie
 import { TarefaRepository } from '../../../domain/repositories/TarefaRepository';
 import { UserRepository } from '../../../domain/repositories/UserRepository';
 import { NotificacaoService } from '../../services/NotificacaoService';
+import { GestorProjetoNotificacaoService } from '../../services/GestorProjetoNotificacaoService';
 
 export class SolicitarAlteracaoDatas {
   constructor(
@@ -10,6 +11,7 @@ export class SolicitarAlteracaoDatas {
     private userRepository: UserRepository,
     private solicitacaoRepository: SolicitacaoAlteracaoDatasRepository,
     private notificacaoService: NotificacaoService,
+    private gestorProjetoNotificacaoService?: GestorProjetoNotificacaoService,
   ) {}
 
   async execute(input: {
@@ -68,6 +70,15 @@ export class SolicitarAlteracaoDatas {
       titulo: 'Solicitação de alteração de datas',
       mensagem: `${input.solicitanteNome} solicitou alteração de datas na tarefa "${tarefa.titulo}".`,
       link: `/tarefas/${tarefa.id}/solicitacoes-datas/${solicitacao.id}`,
+    });
+
+    await this.gestorProjetoNotificacaoService?.notificarSolicitacaoAlteracaoDatas({
+      tarefa,
+      solicitacaoId: solicitacao.id,
+      solicitanteId: input.solicitanteId,
+      solicitanteNome: input.solicitanteNome,
+    }).catch((error) => {
+      console.error('Falha ao notificar gestor sobre solicitação de datas:', error);
     });
 
     return solicitacao;

@@ -32,6 +32,7 @@ import { KanbanSearchService } from '../../shared/services/kanban-search.service
 import { Subscription } from 'rxjs';
 import { tarefaDtoToDrawer } from '../../shared/drawers/tarefa-drawer.mapper';
 import { TarefaDrawerNavigationService } from '../../shared/services/tarefa-drawer-navigation.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-planoGeral',
@@ -73,6 +74,7 @@ export class Pedidos implements OnInit, OnDestroy {
     private offcanvasService: NgbOffcanvas,
     private kanbanSearch: KanbanSearchService,
     private tarefaDrawerNavigation: TarefaDrawerNavigationService,
+    private toast: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -235,6 +237,14 @@ export class Pedidos implements OnInit, OnDestroy {
     const statusNovo = String(novoStatus).toUpperCase();
     const statusAnterior = tarefaMovida.status;
 
+    if (!this.podeMoverParaStatus(tarefaMovida, statusNovo)) {
+      this.toast.warning(
+        'Defina responsável, data de início e data de fim antes de mover a tarefa.',
+        'Movimentação bloqueada',
+      );
+      return;
+    }
+
     transferArrayItem(
       event.previousContainer.data,
       event.container.data,
@@ -264,9 +274,24 @@ export class Pedidos implements OnInit, OnDestroy {
           );
 
           tarefaMovida.status = statusAnterior;
+          this.toast.error(
+            err.error?.error ?? err.error?.message ?? 'Erro ao alterar status da tarefa.',
+          );
           this.cdr.detectChanges();
         },
       });
+  }
+
+  private podeMoverParaStatus(tarefa: CardData, novoStatus: string): boolean {
+    if (novoStatus !== 'EM_ANDAMENTO' && novoStatus !== 'CONCLUIDA') {
+      return true;
+    }
+
+    return !!(
+      (tarefa.responsavelId || tarefa.responsavel?.id) &&
+      tarefa.dataInicio &&
+      tarefa.dataFim
+    );
   }
 
   abrirDetalheTarefa(

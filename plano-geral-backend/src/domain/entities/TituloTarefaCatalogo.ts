@@ -12,6 +12,9 @@ export type TituloTarefaCatalogoProps = {
 };
 
 export class TituloTarefaCatalogo {
+  static readonly SUBATIVIDADE_TITULO_MANUAL =
+    'Abrir campo para preenchimento pelo responsável';
+
   constructor(
     public readonly id: string,
     public acao: string | null,
@@ -69,14 +72,42 @@ export class TituloTarefaCatalogo {
     return TituloTarefaCatalogo.montarTituloExibicao(this);
   }
 
+  exigeTituloManual(): boolean {
+    return TituloTarefaCatalogo.ehSubatividadeTituloManual(this.subatividade);
+  }
+
+  tituloAutomaticoComMarcador(): string {
+    return [this.atividadePrincipal, this.subatividade]
+      .map((item) => item?.trim())
+      .filter((item): item is string => !!item)
+      .join(' - ');
+  }
+
+  correspondeAoTituloAutomaticoComMarcador(titulo: string): boolean {
+    return normalizarTexto(titulo) === normalizarTexto(this.tituloAutomaticoComMarcador());
+  }
+
   static montarTituloExibicao(input: {
     atividadePrincipal?: string | null;
     subatividade?: string | null;
   }): string {
-    return [input.atividadePrincipal, input.subatividade]
+    const subatividade = TituloTarefaCatalogo.ehSubatividadeTituloManual(
+      input.subatividade,
+    )
+      ? null
+      : input.subatividade;
+
+    return [input.atividadePrincipal, subatividade]
       .map((item) => item?.trim())
       .filter((item): item is string => !!item)
       .join(' - ');
+  }
+
+  static ehSubatividadeTituloManual(value?: string | null): boolean {
+    return (
+      normalizarTexto(value ?? '') ===
+      normalizarTexto(TituloTarefaCatalogo.SUBATIVIDADE_TITULO_MANUAL)
+    );
   }
 }
 

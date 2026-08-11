@@ -5,6 +5,9 @@ import { ensureAdmin } from '../middlewares/ensureAdmin';
 const router = Router();
 const controller = makeRelatoriosController();
 
+router.get('/pessoal', (req, res) =>
+  controller.relatorioPessoal(req, res),
+);
 router.get(
   '/tarefas/:tarefaId/tempo-responsavel',
   ensureAdmin,

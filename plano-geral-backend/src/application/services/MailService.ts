@@ -11,9 +11,18 @@ export class MailService {
     },
   });
 
-  async sendPasswordChangeConfirmation(to: string, nome: string, link: string) {
+  async send(input: { to: string; subject: string; html: string; text?: string }) {
     await this.transporter.sendMail({
       from: process.env.MAIL_FROM ?? process.env.MAIL_USER,
+      to: input.to,
+      subject: input.subject,
+      html: input.html,
+      text: input.text,
+    });
+  }
+
+  async sendPasswordChangeConfirmation(to: string, nome: string, link: string) {
+    await this.send({
       to,
       subject: 'Defina sua senha - Prosul',
       html: `

@@ -198,6 +198,7 @@ export class TarefasController {
       tarefaId: req.params.id,
       novoStatus,
       usuario: getAuthenticatedUser(req),
+      usuarioId: getAuthenticatedUserId(req),
     });
 
     return res.json(TarefaDTO.fromDomain(tarefa));

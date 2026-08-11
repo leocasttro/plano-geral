@@ -8,6 +8,8 @@ import {
 } from '../../dtos/RelatorioDisponibilidadeUsuariosDTO';
 
 type Intervalo = {
+  tarefaId: string;
+  titulo: string;
   inicio: Date;
   fim: Date;
 };
@@ -58,6 +60,8 @@ export class GetDisponibilidadeUsuarios {
         if (fim < hoje) {
           tarefasAtrasadas += 1;
           intervalos.push({
+            tarefaId: tarefa.id,
+            titulo: tarefa.titulo,
             inicio: hoje,
             fim: hoje,
           });
@@ -65,12 +69,15 @@ export class GetDisponibilidadeUsuarios {
         }
 
         intervalos.push({
+          tarefaId: tarefa.id,
+          titulo: tarefa.titulo,
           inicio: inicio < hoje ? hoje : inicio,
           fim,
         });
       });
 
       const disponibilidade = this.calcularDisponibilidade(intervalos, hoje);
+      const proximaTarefaProgramada = this.obterProximaTarefaProgramada(intervalos, hoje);
 
       return {
         usuarioId: usuario.id,
@@ -84,6 +91,14 @@ export class GetDisponibilidadeUsuarios {
           ? this.formatDateOnly(disponibilidade.ocupadoAte)
           : null,
         disponivelEm: this.formatDateOnly(disponibilidade.disponivelEm),
+        proximaTarefaProgramada: proximaTarefaProgramada
+          ? {
+            tarefaId: proximaTarefaProgramada.tarefaId,
+            titulo: proximaTarefaProgramada.titulo,
+            dataInicio: this.formatDateOnly(proximaTarefaProgramada.inicio),
+            dataFim: this.formatDateOnly(proximaTarefaProgramada.fim),
+          }
+          : null,
         statusDisponibilidade: this.definirStatus(
           disponibilidade.disponivelEm,
           hoje,
@@ -99,6 +114,15 @@ export class GetDisponibilidadeUsuarios {
         a.disponivelEm.localeCompare(b.disponivelEm),
       ),
     };
+  }
+
+  private obterProximaTarefaProgramada(
+    intervalos: Intervalo[],
+    hoje: Date,
+  ): Intervalo | null {
+    return [...intervalos]
+      .filter((intervalo) => intervalo.inicio > hoje)
+      .sort((a, b) => a.inicio.getTime() - b.inicio.getTime())[0] ?? null;
   }
 
   private calcularDisponibilidade(intervalos: Intervalo[], hoje: Date) {

@@ -1,5 +1,6 @@
 import { TarefaComPrazo } from '../../../domain/entities/TarefaComPrazo';
 import { TarefaRepository } from '../../../domain/repositories/TarefaRepository';
+import { UserRepository } from '../../../domain/repositories/UserRepository';
 import { StatusTarefa } from '../../../domain/value-objects/StatusTarefa';
 import { TarefaAccessPolicy } from '../../../domain/policies/TarefaAccessPolicy';
 import {
@@ -19,6 +20,7 @@ type GetCalendarioTarefasInput = {
 export class GetCalendarioTarefas {
   constructor(
     private tarefaRepository: TarefaRepository,
+    private userRepository?: UserRepository,
     private tarefaAccessPolicy = new TarefaAccessPolicy(),
   ) {}
 
@@ -32,6 +34,8 @@ export class GetCalendarioTarefas {
 
     const tarefas = await this.tarefaRepository.list();
 
+    const usuariosMap = await this.mapearUsuarios();
+
     const itens = tarefas
       .filter((tarefa) =>
         this.tarefaAccessPolicy.podeVisualizar(tarefa, {
@@ -42,7 +46,7 @@ export class GetCalendarioTarefas {
       )
       .filter((tarefa) => tarefa instanceof TarefaComPrazo)
       .filter((tarefa) => !input.projetoId || tarefa.obterProjetoId() === input.projetoId)
-      .map((tarefa) => this.toCalendarioItem(tarefa as TarefaComPrazo))
+      .map((tarefa) => this.toCalendarioItem(tarefa as TarefaComPrazo, usuariosMap))
       .filter((item): item is RelatorioCalendarioTarefaItemDTO => item !== null)
       .filter((item) => this.temIntersecaoComPeriodo(item, filtroInicio, filtroFim))
       .sort((a, b) => {
@@ -62,7 +66,10 @@ export class GetCalendarioTarefas {
     };
   }
 
-  private toCalendarioItem(tarefa: TarefaComPrazo): RelatorioCalendarioTarefaItemDTO | null {
+  private toCalendarioItem(
+    tarefa: TarefaComPrazo,
+    usuariosMap: Map<string, string>,
+  ): RelatorioCalendarioTarefaItemDTO | null {
     const periodo = tarefa.getPeriodo();
     const inicio = periodo.getInicio();
     const fim = periodo.getFim();
@@ -74,6 +81,7 @@ export class GetCalendarioTarefas {
     const dataInicio = inicio ?? fim!;
     const dataFim = fim ?? inicio!;
     const projeto = tarefa.obterProjeto();
+    const responsavelId = tarefa.obterResponsavel() ?? null;
 
     return {
       id: tarefa.id,
@@ -81,7 +89,8 @@ export class GetCalendarioTarefas {
       descricao: tarefa.descricao,
       status: tarefa.obterStatus(),
       prioridade: tarefa.obterPrioridade(),
-      responsavelId: tarefa.obterResponsavel() ?? null,
+      responsavelId,
+      responsavelNome: responsavelId ? usuariosMap.get(responsavelId) ?? null : null,
       projetoId: tarefa.obterProjetoId(),
       projeto,
       dataInicio: this.formatDateOnly(dataInicio),
@@ -91,6 +100,15 @@ export class GetCalendarioTarefas {
         tarefa.obterStatus() !== StatusTarefa.CONCLUIDA &&
         tarefa.estaAtrasada(),
     };
+  }
+
+  private async mapearUsuarios(): Promise<Map<string, string>> {
+    if (!this.userRepository) {
+      return new Map();
+    }
+
+    const usuarios = await this.userRepository.findAllActive();
+    return new Map(usuarios.map((usuario) => [usuario.id, usuario.nome]));
   }
 
   private temIntersecaoComPeriodo(

@@ -11,6 +11,7 @@ import { AtividadeORM } from '../entities/AtividadeORM';
 import { ChecklistItemORM } from '../entities/ChecklistItemORM';
 import { TarefaORM } from '../entities/TarefaORM';
 import {ProjetoORM} from '../entities/ProjetoORM';
+import { TituloTarefaCatalogoORM } from '../entities/TituloTarefaCatalogoORM';
 
 export class TarefaMapper {
   static toORM(tarefa: Tarefa): TarefaORM {
@@ -19,6 +20,9 @@ export class TarefaMapper {
     row.id = tarefa.id;
     row.titulo = tarefa.titulo;
     row.tituloCatalogoId = tarefa.obterTituloCatalogoId();
+    row.tituloCatalogo = row.tituloCatalogoId
+      ? ({ id: row.tituloCatalogoId } as TituloTarefaCatalogoORM)
+      : null;
     row.descricao = tarefa.descricao ?? (null as any);
     row.status = tarefa.obterStatus();
     row.prioridade = tarefa.obterPrioridade();
@@ -102,6 +106,14 @@ export class TarefaMapper {
         ? {
           id: row.projeto.id,
           nome: row.projeto.nome,
+        }
+        : null,
+      tituloCatalogo: row.tituloCatalogo
+        ? {
+          id: row.tituloCatalogo.id,
+          componente: row.tituloCatalogo.componente,
+          atividadePrincipal: row.tituloCatalogo.atividadePrincipal,
+          subatividade: row.tituloCatalogo.subatividade,
         }
         : null,
       checklist,
