@@ -1,0 +1,43 @@
+name: Testar runner Plano Geral
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testar-runner:
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+      - plano-geral
+
+    timeout-minutes: 5
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Identificar servidor
+        run: |
+          echo "Usuário:"
+          whoami
+
+          echo "Servidor:"
+          hostname
+
+          echo "Diretório:"
+          pwd
+
+      - name: Verificar estrutura do projeto
+        run: |
+          test -f plano-geral-backend/package.json
+          test -f plano-geral-frontend/package.json
+          echo "Backend e frontend encontrados."
+
+      - name: Verificar Node e npm
+        run: |
+          node --version
+          npm --version
