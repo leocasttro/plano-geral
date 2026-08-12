@@ -124,14 +124,20 @@ export class TarefasController {
   }
 
   async adicionarComentario(req: Request, res: Response) {
-    const tarefa = await this.deps.addComentario.execute({
-      tarefaId: req.params.id,
-      comentario: req.body.comentario,
-      usuarioId: getAuthenticatedUserId(req),
-      usuarioNome: getAuthenticatedUser(req),
-    });
+    try {
+      await this.validarAcessoTarefa(req, req.params.id);
 
-    return res.json(TarefaDTO.fromDomain(tarefa));
+      const tarefa = await this.deps.addComentario.execute({
+        tarefaId: req.params.id,
+        comentario: req.body.comentario,
+        usuarioId: getAuthenticatedUserId(req),
+        usuarioNome: getAuthenticatedUser(req),
+      });
+
+      return res.json(TarefaDTO.fromDomain(tarefa));
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
   }
 
   async buscarAtividades(req: Request, res: Response) {
@@ -154,54 +160,78 @@ export class TarefasController {
   }
 
   async AdicionarChecklistLitem(req: Request, res: Response) {
-    const tarefa = await this.deps.adicionarChecklistItem.execute({
-      tarefaId: req.params.id,
-      nome: req.body.nome,
-    });
+    try {
+      await this.validarAcessoTarefa(req, req.params.id);
 
-    return res.json(TarefaDTO.fromDomain(tarefa));
+      const tarefa = await this.deps.adicionarChecklistItem.execute({
+        tarefaId: req.params.id,
+        nome: req.body.nome,
+      });
+
+      return res.json(TarefaDTO.fromDomain(tarefa));
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
   }
 
   async toggleChecklistItem(req: Request, res: Response) {
-    const tarefa = await this.deps.toggleChecklistItem.execute({
-      tarefaId: req.params.id,
-      checklistItemId: req.params.itemId,
-    });
+    try {
+      await this.validarAcessoTarefa(req, req.params.id);
 
-    return res.json(TarefaDTO.fromDomain(tarefa));
+      const tarefa = await this.deps.toggleChecklistItem.execute({
+        tarefaId: req.params.id,
+        checklistItemId: req.params.itemId,
+      });
+
+      return res.json(TarefaDTO.fromDomain(tarefa));
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
   }
 
   async alterarPrioridade(req: Request, res: Response) {
-    const { novaPrioridade } = req.body;
+    try {
+      const { novaPrioridade } = req.body;
 
-    if (!isPrioridade(novaPrioridade)) {
-      return res.status(400).json({ message: 'Prioridade inválida' });
+      if (!isPrioridade(novaPrioridade)) {
+        return res.status(400).json({ message: 'Prioridade inválida' });
+      }
+
+      await this.validarAcessoTarefa(req, req.params.id);
+
+      const tarefa = await this.deps.alterarPrioridade.execute({
+        tarefaId: req.params.id,
+        novaPrioridade,
+        usuario: getAuthenticatedUser(req),
+      });
+
+      return res.json(TarefaDTO.fromDomain(tarefa));
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
     }
-
-    const tarefa = await this.deps.alterarPrioridade.execute({
-      tarefaId: req.params.id,
-      novaPrioridade,
-      usuario: getAuthenticatedUser(req),
-    });
-
-    return res.json(TarefaDTO.fromDomain(tarefa));
   }
 
   async alterarStatus(req: Request, res: Response) {
-    const { novoStatus } = req.body;
+    try {
+      const { novoStatus } = req.body;
 
-    if (!isStatusTarefa(novoStatus)) {
-      return res.status(400).json({ message: 'Status inválido' });
+      if (!isStatusTarefa(novoStatus)) {
+        return res.status(400).json({ message: 'Status inválido' });
+      }
+
+      await this.validarAcessoTarefa(req, req.params.id);
+
+      const tarefa = await this.deps.alterarStatus.execute({
+        tarefaId: req.params.id,
+        novoStatus,
+        usuario: getAuthenticatedUser(req),
+        usuarioId: getAuthenticatedUserId(req),
+      });
+
+      return res.json(TarefaDTO.fromDomain(tarefa));
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
     }
-
-    const tarefa = await this.deps.alterarStatus.execute({
-      tarefaId: req.params.id,
-      novoStatus,
-      usuario: getAuthenticatedUser(req),
-      usuarioId: getAuthenticatedUserId(req),
-    });
-
-    return res.json(TarefaDTO.fromDomain(tarefa));
   }
 
   async atribuirResponsavel(req: Request, res: Response) {
@@ -213,6 +243,8 @@ export class TarefasController {
           error: 'Responsável é obrigatório',
         });
       }
+
+      await this.validarAcessoTarefa(req, req.params.id);
 
       const result = await this.deps.responsavelTarefa.execute({
         tarefaId: req.params.id,
@@ -228,6 +260,8 @@ export class TarefasController {
 
   async alterarDatas(req: Request, res: Response): Promise<Response> {
     try {
+      await this.validarAcessoTarefa(req, req.params.id);
+
       if (!podeAprovarAlteracaoDatas(req.user?.perfil)) {
         const tarefaAtual = await this.deps.getById.execute({
           id: req.params.id,
@@ -269,6 +303,8 @@ export class TarefasController {
     try {
       const { dataInicio, dataFim, justificativa } = req.body;
 
+      await this.validarAcessoTarefa(req, req.params.id);
+
       const solicitacao = await this.deps.solicitarAlteracaoDatas.execute({
         tarefaId: req.params.id,
         dataInicio: parseDateOnly(dataInicio),
@@ -292,6 +328,10 @@ export class TarefasController {
       const solicitacao = await this.deps.getSolicitacaoAlteracaoDatas.execute({
         solicitacaoId: req.params.solicitacaoId,
       });
+
+      if (!podeAprovarAlteracaoDatas(req.user?.perfil)) {
+        await this.validarAcessoTarefa(req, solicitacao.tarefaId);
+      }
 
       return res.json(SolicitacaoAlteracaoDatasDTO.fromDomain(solicitacao));
     } catch (error: any) {
@@ -380,5 +420,14 @@ export class TarefasController {
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
+  }
+
+  private async validarAcessoTarefa(req: Request, tarefaId: string): Promise<void> {
+    await this.deps.getById.execute({
+      id: tarefaId,
+      usuarioId: req.user.id,
+      usuarioNome: req.user.nome,
+      perfil: req.user.perfil,
+    });
   }
 }
