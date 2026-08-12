@@ -37,7 +37,6 @@ export class App {
   }
 
   onNovaTarefa() {
-    console.log('Abrindo modal de nova tarefa...');
     const modalRef = this.modalService.open(ModalCadastroTarefa, {
       size: 'lg',
       backdrop: 'static'
@@ -46,10 +45,10 @@ export class App {
     modalRef.result.then(
       (tarefa) => {
         if (tarefa) {
-          console.log('Tarefa criada:', tarefa);
+          return;
         }
       },
-      () => console.log('Modal fechado sem salvar')
+      () => undefined
     );
   }
 

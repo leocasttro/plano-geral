@@ -29,6 +29,14 @@ export class TrocarSenha {
     this.email = this.route.snapshot.queryParamMap.get('email') ?? '';
     this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
 
+    if (this.email || this.token) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true,
+      });
+    }
+
     if (!this.email || !this.token) {
       this.error = 'Link de troca de senha inválido ou incompleto.';
     }

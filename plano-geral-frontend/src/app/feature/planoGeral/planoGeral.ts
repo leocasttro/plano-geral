@@ -114,7 +114,6 @@ export class Pedidos implements OnInit, OnDestroy {
   carregarTarefas(): void {
     this.tarefaApi.buscarTodos().subscribe({
       next: (tarefasDto) => {
-        console.log(tarefasDto)
         this.tarefasPendentes = [];
         this.tarefasEmAndamento = [];
         this.tarefasConcluidas = [];
@@ -226,7 +225,7 @@ export class Pedidos implements OnInit, OnDestroy {
           });
         }
       },
-      () => console.log('Modal fechado sem salvar'),
+      () => undefined,
     );
   }
 

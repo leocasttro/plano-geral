@@ -104,8 +104,6 @@ export class TarefaDrawersComponent implements OnInit {
       };
     }
     this.cdr.detectChanges();
-
-    console.log(this.tarefa)
   }
 
   trackAtividade(index: number, item: AtividadeDrawer) {
