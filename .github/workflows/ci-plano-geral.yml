@@ -84,7 +84,7 @@ jobs:
 
       - name: Verificar endereço da API
         run: |
-          grep -F "apiUrl: '/plano-geral-api'" src/environments/environment.ts
+          grep -F "apiUrl: '/plano-geral-api'" src/environments/environment.production.ts
 
       - name: Compilar Angular
         run: npm run build -- --configuration production --base-href /plano-geral/
