@@ -1,43 +1,402 @@
 # Plano Geral Prosul
 
-Sistema web para gestão de projetos, tarefas, calendário, relatórios e usuários. O projeto é dividido em duas aplicações:
+Sistema web para organizar projetos, tarefas, prazos, responsáveis, calendário, notificações e relatórios operacionais.
 
-- `plano-geral-backend`: API REST em Node.js, Express, TypeScript, TypeORM e PostgreSQL.
-- `plano-geral-frontend`: aplicação Angular para uso do Kanban, calendário, relatórios, projetos e configurações.
+O projeto é dividido em duas aplicações:
 
-## Funcionalidades
+- `plano-geral-backend`: API em Node.js, Express, TypeScript, TypeORM e PostgreSQL.
+- `plano-geral-frontend`: aplicação Angular usada pelos usuários no navegador.
 
-- Login com JWT.
+## Visão Geral
+
+O Plano Geral centraliza o acompanhamento das atividades por projeto. A ideia principal é permitir que a equipe veja o que precisa ser feito, quem está responsável, quais tarefas estão em andamento, quais estão atrasadas e onde existe risco operacional.
+
+Principais recursos:
+
+- Login com controle de acesso por perfil.
+- Cadastro de usuários pelo administrador.
+- Primeiro acesso com troca obrigatória de senha.
+- Envio de e-mail para definição ou confirmação de senha.
 - Kanban de tarefas por status.
-- Criação, listagem, atualização e exclusão de tarefas.
-- Comentários e histórico de atividades da tarefa.
-- Checklist por tarefa.
-- Alteração de prioridade, responsável, status e datas.
-- Pesquisa no Kanban por título da tarefa ou responsável.
-- Calendário visual com modos de visualização por mês, semana, dia e ano.
-- Visualização contínua das tarefas no calendário entre data inicial e data final.
-- Gestão de projetos e status do projeto.
-- Relatórios e indicadores de tarefas, projetos, usuários e calendário.
-- Configurações administrativas para criação de usuários, alteração de perfil e ativação/desativação.
-- Toasts no frontend para feedback de alterações, erros e validações.
+- Filtro de tarefas por projeto, usuário, componente, atividade, subatividade e período.
+- Catálogo de títulos de tarefa por componente, atividade principal e subatividade.
+- Cadastro de tarefa com título automático ou título manual quando o catálogo exigir.
+- Vinculação de tarefas a projetos.
+- Vinculação de coordenador/gestor ao projeto.
+- Responsável por tarefa.
+- Datas de início e fim.
+- Trava para iniciar ou concluir tarefas sem responsável e sem datas.
+- Solicitação e aprovação de alteração de datas.
+- Comentários, checklist e histórico da tarefa.
+- Notificações no sistema.
+- Notificações por e-mail para gestor do projeto em eventos relevantes.
+- Calendário por dia, semana, mês e ano.
+- Relatório geral para gestão.
+- Relatório pessoal para colaboradores.
+- Configuração de usuários, perfis, ativação, desativação e exclusão.
+
+## Perfis de Acesso
+
+Os perfis controlam o que cada pessoa consegue visualizar ou alterar.
+
+- `ADMIN`: administra usuários, configurações e acessa recursos gerenciais.
+- `MANAGER` ou `GESTOR`: acompanha projetos, tarefas, filtros e relatórios gerenciais.
+- `USER`: perfil operacional/colaborador, focado nas próprias tarefas e no relatório pessoal.
+- `VIEWER`: perfil de visualização.
+
+## Fluxo de Usuários e Senha
+
+Quando um administrador cadastra um usuário, o sistema pode exigir a troca de senha no primeiro acesso.
+
+O usuário recebe um link por e-mail para definir a senha. Esse link abre uma tela simples, no padrão da tela de login, sem menu lateral e sem navegação interna.
+
+O sistema valida:
+
+- se o token ainda existe;
+- se o token não expirou;
+- se a nova senha e a confirmação são iguais;
+- se a senha atende ao tamanho mínimo configurado.
+
+Depois da confirmação, o usuário passa a acessar normalmente com a nova senha.
+
+## E-mail
+
+O backend pode enviar e-mails usando SMTP, inclusive Gmail.
+
+Variáveis usadas:
+
+```env
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_SECURE=false
+MAIL_USER=sisinfo.ls@prosul.com
+MAIL_PASS=sua_senha_ou_app_password
+MAIL_FROM=sisinfo.ls@prosul.com
+FRONTEND_URL=http://localhost:4200
+```
+
+Observações:
+
+- `MAIL_USER` é a conta usada para autenticar no SMTP.
+- `MAIL_FROM` é o remetente exibido no e-mail.
+- Quando `MAIL_FROM` não for informado, o sistema usa `MAIL_USER`.
+- Para Gmail, normalmente é necessário usar senha de aplicativo.
+
+## Projetos
+
+Na tela de projetos é possível:
+
+- criar projetos;
+- informar nome, centro de custo e coordenador;
+- listar projetos cadastrados;
+- acompanhar as tarefas vinculadas;
+- alterar o status do projeto.
+
+Status de projeto:
+
+- `ATIVO`
+- `PAUSADO`
+- `CONCLUIDO`
+- `CANCELADO`
+
+O centro de custo aparece nos relatórios para facilitar a diferenciação entre projetos com nomes parecidos.
+
+## Tarefas e Kanban
+
+A tela de tarefas organiza o trabalho em colunas.
+
+Status de tarefa:
+
+- `PENDENTE`
+- `EM_ANDAMENTO`
+- `CONCLUIDA`
+
+No Kanban é possível:
+
+- criar tarefas;
+- abrir o detalhe da tarefa;
+- alterar responsável;
+- alterar prioridade;
+- alterar datas;
+- adicionar comentários;
+- adicionar checklist;
+- acompanhar histórico;
+- excluir tarefas quando permitido;
+- mover tarefas entre status.
+
+Para mover uma tarefa para `EM_ANDAMENTO` ou `CONCLUIDA`, ela precisa ter:
+
+- responsável definido;
+- data de início;
+- data de fim.
+
+Essa regra evita que uma tarefa entre em execução ou seja concluída sem dados mínimos para acompanhamento.
+
+## Filtros de Tarefas
+
+O botão de filtro no topo da tela de tarefas abre o mesmo componente de filtros usado nos relatórios.
+
+Filtros disponíveis:
+
+- projeto;
+- usuário/responsável;
+- componente;
+- atividade principal;
+- subatividade;
+- período.
+
+O filtro pode ser ativado e desativado pelo botão do topo. Ao desativar, os filtros aplicados são limpos.
+
+Quando o quadro está filtrado, a movimentação por arrastar e soltar fica bloqueada. Isso evita mover uma tarefa sem visualizar o contexto completo das colunas.
+
+## Catálogo de Tarefas
+
+O catálogo padroniza os títulos das tarefas.
+
+Cada item pode ter:
+
+- componente;
+- atividade principal;
+- subatividade;
+- título exibido.
+
+Quando o item do catálogo é comum, o sistema gera o título automaticamente no formato:
+
+```text
+Atividade principal - Subatividade
+```
+
+Quando a subatividade for a opção de preenchimento manual, o sistema abre o campo de título para o responsável digitar. Nesse caso, a frase de instrução não vira título da tarefa.
+
+Essa regra evita títulos como:
+
+```text
+Relatório Mensal - Abrir campo para preenchimento pelo responsável
+```
+
+## Solicitação de Alteração de Datas
+
+Quando uma alteração de data exige aprovação, o responsável informa a justificativa e o gestor/coordenador do projeto recebe uma solicitação.
+
+O gestor pode:
+
+- aprovar a alteração;
+- reprovar a alteração;
+- abrir a tarefa diretamente pela notificação.
+
+Durante a aprovação de alteração de datas, o objetivo é avaliar apenas a mudança de prazo. A alteração de responsável não faz parte desse fluxo.
+
+## Notificações
+
+O sistema possui notificações internas no sino do topo da tela.
+
+Também pode enviar e-mails ao gestor do projeto quando ocorrerem eventos relevantes em tarefas vinculadas ao projeto.
+
+Exemplos de eventos:
+
+- solicitação de alteração de datas;
+- comentário feito pelo responsável da tarefa;
+- comentário feito por outro gestor;
+- mudança de andamento da tarefa.
+
+As notificações ajudam o gestor a acompanhar o projeto sem precisar procurar manualmente cada tarefa.
+
+## Calendário
+
+O calendário mostra as tarefas de acordo com as datas de início e fim.
+
+Modos disponíveis:
+
+- Dia
+- Semana
+- Mês
+- Ano
+
+Nas visualizações por dia e semana, o sistema exibe as tarefas de forma visual, incluindo o responsável pela atividade. Tarefas com vários dias aparecem no período correspondente.
+
+## Contagem de Tempo
+
+Os relatórios consideram tempo útil de trabalho.
+
+Regra atual:
+
+- conta apenas dias úteis;
+- considera o expediente das 8h às 18h;
+- ignora fins de semana;
+- conta tempo de execução apenas depois que a tarefa entra em `EM_ANDAMENTO`;
+- tarefas apenas planejadas ainda não pesam como execução.
+
+Na visualização, tempos menores que 60 minutos aparecem em minutos. A partir de 60 minutos, o sistema apresenta em horas e minutos.
+
+Exemplos:
+
+- `30min`
+- `1h`
+- `1h 20min`
+
+## Relatórios
+
+A tela de relatórios foi pensada para leitura gerencial. Ela mostra onde está o maior volume de tarefas, onde o tempo está mais alto, quais projetos precisam de atenção e como está a carga dos usuários.
+
+Os filtros no topo permitem analisar os dados por:
+
+- projeto;
+- usuário;
+- componente;
+- atividade principal;
+- subatividade;
+- período.
+
+Os filtros são cumulativos. Por exemplo, é possível selecionar um projeto e depois um componente para enxergar apenas aquele recorte, sem perder a visão do projeto selecionado.
+
+### Projetos
+
+Mostra a situação geral dos projetos:
+
+- total de tarefas;
+- tarefas em andamento;
+- tarefas atrasadas;
+- avanço;
+- respeito ao prazo;
+- saúde do projeto;
+- risco de atraso.
+
+O projeto também exibe o centro de custo quando cadastrado.
+
+### Risco Operacional por Projeto
+
+Mostra quais projetos exigem mais atenção.
+
+O índice vai de `0` a `10`:
+
+- `0`: risco mínimo;
+- `10`: risco máximo.
+
+O risco considera principalmente:
+
+- tarefas atrasadas;
+- tarefas críticas abertas;
+- tarefas que vencem nos próximos 7 dias;
+- tarefas em andamento sem atualização recente;
+- tarefas sem responsável ou sem data;
+- tarefas concluídas, para dar contexto de avanço.
+
+Como interpretar:
+
+- barra baixa e índice baixo indicam menor atenção;
+- barra alta e índice alto indicam maior atenção;
+- tarefas atrasadas e críticas puxam o risco para cima;
+- tarefas sem dados prejudicam a leitura porque dificultam prever prazo e carga;
+- tarefas concluídas ajudam a entender se o projeto está avançando.
+
+### Análise do Catálogo de Tarefas
+
+Mostra onde o trabalho está consumindo mais tempo.
+
+A análise é organizada em:
+
+- maiores tempos por componente;
+- maiores tempos por atividade principal;
+- maiores tempos por subatividade;
+- distribuição por atividade principal;
+- títulos detalhados com busca.
+
+Essa área ajuda a responder perguntas como:
+
+- qual componente está levando mais tempo;
+- qual atividade principal concentra maior esforço;
+- qual subatividade está demorando mais;
+- quais títulos aparecem com maior tempo médio;
+- quais tarefas já têm tempo calculado e quais ainda não foram concluídas.
+
+Ao clicar em um título, o sistema abre um detalhe com:
+
+- total de tarefas;
+- concluídas;
+- percentual de conclusão;
+- tempo médio;
+- tarefas em andamento;
+- tarefas pendentes;
+- tempo de espera;
+- tempo em execução.
+
+O tempo usado nos gráficos considera principalmente o período em execução, e não o tempo parado apenas aguardando início.
+
+### Desempenho por Usuário
+
+Mostra a carga e o andamento por pessoa.
+
+Ajuda a visualizar:
+
+- total de tarefas por usuário;
+- quantas estão em andamento;
+- quantas estão atrasadas;
+- quantas foram concluídas;
+- percentual de conclusão.
+
+Ao clicar em um usuário, o sistema abre detalhes das tarefas relacionadas.
+
+### Disponibilidade dos Usuários
+
+Mostra quando cada usuário tende a ficar disponível com base nas tarefas abertas e nas datas já planejadas.
+
+O sistema considera:
+
+- tarefas abertas;
+- tarefas com data;
+- tarefas sem data;
+- tarefas atrasadas;
+- tarefa futura já programada.
+
+Exemplos de leitura:
+
+- `Disponível`: não há tarefa ocupando o usuário hoje.
+- `Ocupado`: há tarefas planejadas cobrindo o período atual.
+- `Sem dados`: há tarefas sem datas suficientes para prever disponibilidade.
+
+Quando existe uma tarefa futura, o relatório mostra a próxima tarefa programada mesmo que ela não esteja na semana atual.
+
+### Relatório Pessoal
+
+O colaborador possui uma tela própria para acompanhar seu desempenho básico.
+
+Ela mostra:
+
+- suas tarefas;
+- status das tarefas;
+- prioridades;
+- desempenho geral;
+- gráficos simples de acompanhamento.
+
+## Configurações
+
+Na tela de configurações, administradores podem:
+
+- criar usuários;
+- alterar perfil;
+- ativar usuários;
+- desativar usuários;
+- excluir usuários criados;
+- consultar resumo por perfil.
+
+O sistema protege ações sensíveis, como impedir a remoção do próprio usuário logado e evitar deixar o sistema sem administrador ativo.
 
 ## Tecnologias
 
-### Backend
+Backend:
 
 - Node.js
-- Express 5
+- Express
 - TypeScript
 - TypeORM
 - PostgreSQL
-- JWT com `jsonwebtoken`
-- `bcryptjs` para senha
-- `dotenv` para variáveis de ambiente
-- CORS configurado para o frontend local
+- JWT
+- bcryptjs
+- Nodemailer
 
-### Frontend
+Frontend:
 
-- Angular 20
+- Angular
 - TypeScript
 - Angular Router
 - Angular Forms
@@ -45,89 +404,13 @@ Sistema web para gestão de projetos, tarefas, calendário, relatórios e usuár
 - Bootstrap
 - ng-bootstrap
 - Font Awesome
-- CoreUI
-- ApexCharts / ng-apexcharts
 - RxJS
 
-## Arquitetura
+## Como Executar
 
-O backend segue uma organização próxima de Clean Architecture, separando regras de domínio, casos de uso, infraestrutura e interface HTTP.
+### Backend
 
-```text
-plano-geral-backend/src
-├── application
-│   ├── dtos
-│   ├── services
-│   └── use-cases
-├── domain
-│   ├── entities
-│   ├── policies
-│   ├── repositories
-│   ├── services
-│   └── value-objects
-├── infra
-│   ├── database
-│   │   └── typeorm
-│   └── http
-│       ├── controllers
-│       ├── factories
-│       ├── middlewares
-│       └── routes
-└── server.ts
-```
-
-Camadas principais:
-
-- `domain`: entidades, regras de negócio, políticas de acesso, status, prioridades e contratos de repositório.
-- `application`: casos de uso e DTOs que coordenam as operações do sistema.
-- `infra/database`: implementação TypeORM, entidades ORM, mappers e migrations.
-- `infra/http`: rotas, controllers, middlewares de autenticação/autorização e factories.
-- `server.ts`: inicialização do Express, banco, CORS e rotas.
-
-O frontend é organizado por domínio, features e componentes compartilhados.
-
-```text
-plano-geral-frontend/src/app
-├── domain
-│   ├── auth
-│   ├── projeto
-│   ├── relatorio
-│   ├── tarefa
-│   └── usuario
-├── feature
-│   ├── calendario
-│   ├── configuracoes
-│   ├── login
-│   ├── planoGeral
-│   ├── projeto
-│   └── relatorio
-└── shared
-    ├── components
-    ├── dashboard
-    ├── drawers
-    ├── modals
-    ├── nav-bar
-    ├── services
-    ├── side-bar
-    └── toast
-```
-
-Camadas principais:
-
-- `domain`: serviços de API, modelos e autenticação.
-- `feature`: telas principais do sistema.
-- `shared`: componentes reutilizáveis, drawer de tarefa, modal de cadastro, menu, navbar, dashboards e toasts.
-
-## Requisitos
-
-- Node.js compatível com Angular 20.
-- npm.
-- PostgreSQL.
-- Banco de dados criado para a aplicação.
-
-## Configuração do Backend
-
-Entre na pasta do backend:
+Entre na pasta:
 
 ```bash
 cd plano-geral-backend
@@ -139,18 +422,13 @@ Instale as dependências:
 npm install
 ```
 
-Crie o arquivo `.env` a partir do exemplo:
-
-```bash
-cp .env.example .env
-```
-
-Configure as variáveis:
+Configure o `.env`:
 
 ```env
 PORT=3000
 NODE_ENV=development
 CORS_ORIGIN=http://localhost:4200
+FRONTEND_URL=http://localhost:4200
 
 DB_HOST=localhost
 DB_PORT=5432
@@ -163,45 +441,30 @@ TYPEORM_LOGGING=false
 
 JWT_SECRET=sua_chave_segura
 JWT_EXPIRES_IN=8h
+
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_SECURE=false
+MAIL_USER=sisinfo.ls@prosul.com
+MAIL_PASS=sua_senha_ou_app_password
+MAIL_FROM=sisinfo.ls@prosul.com
 ```
 
-Observações:
-
-- Em desenvolvimento, `TYPEORM_SYNCHRONIZE=true` cria/sincroniza as tabelas automaticamente.
-- Em produção, prefira `TYPEORM_SYNCHRONIZE=false` e use migrations.
-- Gere uma chave JWT segura, por exemplo:
-
-```bash
-openssl rand -base64 64
-```
-
-Execute o backend em desenvolvimento:
+Execute:
 
 ```bash
 npm run dev
 ```
 
-A API sobe em:
+A API fica disponível em:
 
 ```text
 http://localhost:3000
 ```
 
-Build do backend:
+### Frontend
 
-```bash
-npm run build
-```
-
-Executar versão compilada:
-
-```bash
-npm start
-```
-
-## Configuração do Frontend
-
-Entre na pasta do frontend:
+Entre na pasta:
 
 ```bash
 cd plano-geral-frontend
@@ -213,293 +476,17 @@ Instale as dependências:
 npm install
 ```
 
-Confirme a URL da API nos environments:
-
-```ts
-apiUrl: 'http://localhost:3000'
-```
-
-Execute o frontend:
+Execute:
 
 ```bash
 npm start
 ```
 
-A aplicação sobe em:
+A aplicação fica disponível em:
 
 ```text
 http://localhost:4200
 ```
-
-Build do frontend:
-
-```bash
-npm run build
-```
-
-## Como Executar o Sistema
-
-1. Inicie o PostgreSQL.
-2. Crie o banco configurado em `DB_DATABASE`.
-3. Configure `plano-geral-backend/.env`.
-4. Execute o backend com `npm run dev`.
-5. Execute o frontend com `npm start`.
-6. Acesse `http://localhost:4200`.
-7. Faça login com um usuário cadastrado no banco.
-
-## Como Usar
-
-### Login
-
-Acesse `/login`, informe e-mail e senha. Após autenticar, o token JWT é salvo no navegador e enviado automaticamente nas requisições protegidas.
-
-### Plano Geral / Kanban
-
-Rota:
-
-```text
-/planoGeral
-```
-
-Use esta tela para:
-
-- Visualizar tarefas por status.
-- Criar novas tarefas.
-- Mover tarefas entre colunas.
-- Pesquisar tarefas pelo título ou pelo responsável.
-- Abrir o drawer da tarefa ao clicar em uma tarefa.
-
-No drawer da tarefa é possível:
-
-- Ver descrição, responsável, projeto, datas e participantes.
-- Alterar prioridade.
-- Atribuir responsável.
-- Alterar datas de início e fim.
-- Adicionar comentários.
-- Adicionar e concluir itens de checklist.
-- Ver atividades da tarefa.
-- Apagar a tarefa pelo botão fixo no rodapé do drawer.
-
-### Calendário
-
-Rota:
-
-```text
-/calendario
-```
-
-Use esta tela para visualizar tarefas por período. O calendário usa a data de início e fim da tarefa para exibir uma linha contínua entre as datas.
-
-Modos disponíveis:
-
-- Mês
-- Semana
-- Dia
-- Ano
-
-### Projetos
-
-Rota:
-
-```text
-/projetos
-```
-
-Use esta tela para:
-
-- Criar projetos.
-- Listar projetos.
-- Ver tarefas vinculadas ao projeto.
-- Alterar status do projeto.
-
-Status de projeto usados pelo sistema:
-
-- `ATIVO`
-- `PAUSADO`
-- `CONCLUIDO`
-- `CANCELADO`
-
-### Relatórios
-
-Rota:
-
-```text
-/relatorios
-```
-
-Use esta tela para acompanhar indicadores como:
-
-- Dashboard geral.
-- Carga por usuário.
-- Métricas por projeto.
-- Status de tarefas.
-- Alterações de datas.
-- Tempo de tarefa por responsável.
-- Lead time das tarefas, com tempo médio entre criação e conclusão.
-
-O relatório de lead time apresenta:
-
-- Média geral em horas e dias.
-- Total de tarefas avaliadas.
-- Quantidade de tarefas com e sem lead time calculado.
-- Agrupamentos por projeto, responsável e período de conclusão.
-
-Alguns relatórios exigem perfil administrativo.
-
-### Configurações
-
-Rota:
-
-```text
-/configuracoes
-```
-
-Use esta tela para:
-
-- Criar usuários.
-- Alterar perfil de usuário.
-- Ativar ou desativar usuários.
-- Ver resumo dos perfis.
-
-Perfis usados no sistema:
-
-- `ADMIN`: acesso administrativo.
-- `USER`: usuário operacional.
-- `MANAGER`: perfil gerencial.
-- `VIEWER`: perfil de visualização.
-
-No frontend, os perfis são apresentados em português para melhorar a experiência do usuário.
-
-## Rotas da API
-
-### Autenticação
-
-Base:
-
-```text
-/auth
-```
-
-Endpoints:
-
-- `POST /auth/login`
-
-### Tarefas
-
-Base:
-
-```text
-/tarefas
-```
-
-Endpoints:
-
-- `POST /tarefas`
-- `GET /tarefas`
-- `GET /tarefas/:id`
-- `POST /tarefas/:id/comentarios`
-- `GET /tarefas/:id/atividades`
-- `POST /tarefas/:id/checklist`
-- `PATCH /tarefas/:id/checklist/:itemId/toggle`
-- `PATCH /tarefas/:id/prioridade`
-- `POST /tarefas/:id/status`
-- `POST /tarefas/:id/atribuirResponsavel`
-- `PATCH /tarefas/:id/datas`
-- `DELETE /tarefas/:id`
-
-### Projetos
-
-Base:
-
-```text
-/projetos
-```
-
-Endpoints:
-
-- `POST /projetos`
-- `GET /projetos`
-- `GET /projetos/:id`
-- `PATCH /projetos/:id/status`
-- `POST /projetos/bulk`
-
-### Usuários
-
-Base:
-
-```text
-/users
-```
-
-Endpoints:
-
-- `GET /users`
-- `GET /users/admin/all`
-- `POST /users/createUser`
-- `PATCH /users/:id/perfil`
-- `PATCH /users/:id/status`
-
-### Relatórios
-
-Base:
-
-```text
-/relatorios
-```
-
-Endpoints:
-
-- `GET /relatorios/dashboard`
-- `GET /relatorios/calendario`
-- `GET /relatorios/usuarios/carga`
-- `GET /relatorios/projetos/metricas`
-- `GET /relatorios/projetos/:projetoId/resumo`
-- `GET /relatorios/tarefas/:tarefaId/alteracoes-datas`
-- `GET /relatorios/tarefas/:tarefaId/tempo-responsavel`
-- `GET /relatorios/lead-time`
-
-#### Lead time
-
-O endpoint `GET /relatorios/lead-time` retorna o tempo entre a criação e a conclusão das tarefas. O cálculo usa a atividade de criação da tarefa e a atividade de alteração de status para concluída.
-
-Retorno:
-
-- `geral`: resumo consolidado do lead time.
-- `porProjeto`: resumo agrupado por projeto.
-- `porResponsavel`: resumo agrupado por responsável.
-- `porPeriodo`: resumo agrupado pelo mês de conclusão.
-
-Cada resumo contém:
-
-- `totalTarefas`
-- `tarefasComLeadTime`
-- `tarefasSemLeadTime`
-- `tempoMedioHoras`
-- `tempoMedioDias`
-
-## Autenticação e Autorização
-
-- O login retorna um JWT e os dados do usuário.
-- O frontend salva o token no `localStorage`.
-- O interceptor HTTP adiciona `Authorization: Bearer <token>` nas requisições.
-- Rotas protegidas no Angular usam `authGuard`.
-- No backend, `ensureAuthenticated` valida o token.
-- Rotas administrativas usam `ensureAdmin`.
-
-## Status e Prioridades
-
-Status de tarefa:
-
-- `PENDENTE`
-- `EM_ANDAMENTO`
-- `CONCLUIDA`
-
-Prioridades:
-
-- `BAIXA`
-- `NORMAL`
-- `ALTA`
-- `CRITICA`
 
 ## Scripts Úteis
 
@@ -520,8 +507,9 @@ npm run build
 npm test
 ```
 
-Checagem TypeScript do frontend:
+## Observações de Ambiente
 
-```bash
-npx tsc --noEmit
-```
+- Em desenvolvimento, `TYPEORM_SYNCHRONIZE=true` sincroniza o banco automaticamente.
+- Em produção, use `TYPEORM_SYNCHRONIZE=false` e prefira migrations.
+- O frontend com Angular exige uma versão de Node compatível com a versão instalada do Angular CLI.
+- Para Gmail, configure uma senha de aplicativo quando a conta tiver autenticação em duas etapas.
