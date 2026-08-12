@@ -3,11 +3,11 @@ import { Subject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class KanbanSearchService {
-  private readonly openSearchSubject = new Subject<void>();
+  private readonly toggleFiltersSubject = new Subject<void>();
 
-  openSearch$ = this.openSearchSubject.asObservable();
+  toggleFilters$ = this.toggleFiltersSubject.asObservable();
 
-  abrirPesquisa(): void {
-    this.openSearchSubject.next();
+  alternarFiltros(): void {
+    this.toggleFiltersSubject.next();
   }
 }

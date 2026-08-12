@@ -33,6 +33,7 @@ export interface CardData {
     email: string;
   } | null;
   status?: string;
+  tituloCatalogoId?: string | null;
 
   projetoId?: string | null;
   projeto?: {

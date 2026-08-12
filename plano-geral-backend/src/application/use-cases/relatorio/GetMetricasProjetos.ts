@@ -10,6 +10,7 @@ import {
   RelatorioFiltros,
 } from './RelatorioFiltros';
 import { TituloTarefaCatalogoRepository } from '../../../domain/repositories/TituloTarefaCatalogoRepository';
+import { BusinessHoursService } from '../../services/BusinessHoursService';
 
 export class GetMetricasProjetos {
   constructor(
@@ -84,7 +85,7 @@ export class GetMetricasProjetos {
           this.dataConclusao(tarefa) && this.dataConclusao(tarefa)! >= this.diasAtras(30),
         ).length;
         const tarefasParadasMaisDe7Dias = tarefas.filter((tarefa) =>
-          tarefa.obterStatus() !== StatusTarefa.CONCLUIDA &&
+          tarefa.obterStatus() === StatusTarefa.EM_ANDAMENTO &&
           this.ultimaAtividade(tarefa) < this.diasAtras(7),
         ).length;
 
@@ -229,12 +230,12 @@ export class GetMetricasProjetos {
     const temposExecucao: number[] = [];
 
     tarefas.forEach((tarefa) => {
-      const criacao = this.dataCriacao(tarefa);
       const inicio = this.dataInicio(tarefa);
       const conclusao = this.dataConclusao(tarefa);
 
-      if (criacao && conclusao) leadTimes.push(this.horasEntre(criacao, conclusao));
+      if (inicio && conclusao) leadTimes.push(this.horasEntre(inicio, conclusao));
       if (inicio && conclusao) cycleTimes.push(this.horasEntre(inicio, conclusao));
+      const criacao = this.dataCriacao(tarefa);
       if (criacao && inicio) temposEspera.push(this.horasEntre(criacao, inicio));
       if (inicio && conclusao) temposExecucao.push(this.horasEntre(inicio, conclusao));
     });
@@ -248,7 +249,7 @@ export class GetMetricasProjetos {
   }
 
   private horasEntre(inicio: Date, fim: Date): number {
-    return Number(((fim.getTime() - inicio.getTime()) / 36e5).toFixed(2));
+    return BusinessHoursService.calcularHoras(inicio, fim);
   }
 
   private media(valores: number[]): number | null {

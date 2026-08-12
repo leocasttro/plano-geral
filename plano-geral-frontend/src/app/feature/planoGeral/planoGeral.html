@@ -1,31 +1,13 @@
 <div class="container-fluid">
-  <section class="kanban-search-panel" *ngIf="mostrarPesquisa">
-    <div class="search-copy">
-      <strong>Pesquisar tarefas</strong>
-      <span>Busque pelo título ou pelo responsável da tarefa.</span>
-    </div>
-
-    <div class="search-field">
-      <input
-        #searchInput
-        type="search"
-        [(ngModel)]="termoPesquisa"
-        placeholder="Digite título, nome ou email do responsável"
-        aria-label="Pesquisar tarefas por título ou responsável"
-      />
-      <button
-        type="button"
-        *ngIf="pesquisaAtiva()"
-        (click)="limparPesquisa()"
-      >
-        Limpar
-      </button>
-    </div>
-
-    <div class="search-result" *ngIf="pesquisaAtiva()">
-      {{ totalFiltrado() }} resultado(s)
-    </div>
-  </section>
+  <app-filtros-operacionais
+    *ngIf="mostrarFiltrosTarefas"
+    [projetos]="projetosFiltro"
+    [usuarios]="usuariosFiltro"
+    [catalogos]="catalogosFiltro"
+    [filtros]="filtrosTarefas"
+    helperText="Os filtros consideram as tarefas visíveis no quadro. Projeto, usuário e período funcionam de forma independente. Atividade principal e subatividade dependem do componente selecionado."
+    (filtrosChange)="atualizarFiltrosTarefas($event)"
+  ></app-filtros-operacionais>
 
   <div class="kanban-board mt-4 ms-1" cdkDropListGroup>
     <!-- ======================= PENDENTE ======================= -->
@@ -59,13 +41,13 @@
         id="pendentes"
         [cdkDropListData]="tarefasPendentes"
         [cdkDropListConnectedTo]="['andamento', 'concluidas', 'outros']"
-        [cdkDropListDisabled]="pesquisaAtiva()"
+        [cdkDropListDisabled]="filtrosAtivos()"
         (cdkDropListDropped)="drop($event, 'PENDENTE')"
       >
         @for (tarefa of filtrarTarefas(tarefasPendentes); track tarefa.id) {
           <app-card-component
             cdkDrag
-            [cdkDragDisabled]="pesquisaAtiva()"
+            [cdkDragDisabled]="filtrosAtivos()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"
@@ -109,13 +91,13 @@
         id="andamento"
         [cdkDropListData]="tarefasEmAndamento"
         [cdkDropListConnectedTo]="['pendentes', 'concluidas', 'outros']"
-        [cdkDropListDisabled]="pesquisaAtiva()"
+        [cdkDropListDisabled]="filtrosAtivos()"
         (cdkDropListDropped)="drop($event, 'EM_ANDAMENTO')"
       >
         @for (tarefa of filtrarTarefas(tarefasEmAndamento); track tarefa.id) {
           <app-card-component
             cdkDrag
-            [cdkDragDisabled]="pesquisaAtiva()"
+            [cdkDragDisabled]="filtrosAtivos()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"
@@ -159,13 +141,13 @@
         id="concluidas"
         [cdkDropListData]="tarefasConcluidas"
         [cdkDropListConnectedTo]="['pendentes', 'andamento', 'outros']"
-        [cdkDropListDisabled]="pesquisaAtiva()"
+        [cdkDropListDisabled]="filtrosAtivos()"
         (cdkDropListDropped)="drop($event, 'CONCLUIDA')"
       >
         @for (tarefa of filtrarTarefas(tarefasConcluidas); track tarefa.id) {
           <app-card-component
             cdkDrag
-            [cdkDragDisabled]="pesquisaAtiva()"
+            [cdkDragDisabled]="filtrosAtivos()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"
@@ -209,13 +191,13 @@
         id="outros"
         [cdkDropListData]="tarefasTeste"
         [cdkDropListConnectedTo]="['pendentes', 'andamento', 'concluidas']"
-        [cdkDropListDisabled]="pesquisaAtiva()"
+        [cdkDropListDisabled]="filtrosAtivos()"
         (cdkDropListDropped)="drop($event, 'OUTROS')"
       >
         @for (tarefa of filtrarTarefas(tarefasTeste); track tarefa.id) {
           <app-card-component
             cdkDrag
-            [cdkDragDisabled]="pesquisaAtiva()"
+            [cdkDragDisabled]="filtrosAtivos()"
             [data]="tarefa"
             (checklistItemselected)="handleChecklistItemClick($event)"
             (tituloClick)="abrirDetalheTarefa($event)"

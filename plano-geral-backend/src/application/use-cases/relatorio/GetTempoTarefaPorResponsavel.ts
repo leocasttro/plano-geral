@@ -1,4 +1,5 @@
 import {TarefaRepository} from '../../../domain/repositories/TarefaRepository';
+import { BusinessHoursService } from '../../services/BusinessHoursService';
 
 type PeriodoResponsavel = {
   responsavel: string;
@@ -25,20 +26,33 @@ export class GetTempoTarefaPorResponsavel {
       (a) => a.tipo === 'ATRIBUICAO_RESPONSAVEL',
     );
 
+    const inicioExecucao = atividades.find(
+      (a) =>
+        a.tipo === 'ALTERACAO_STATUS' &&
+        a.descricao.toLowerCase().includes('inici'),
+    );
+
     const conclusao = atividades.find(
       (a) =>
         a.tipo === 'ALTERACAO_STATUS' &&
         a.descricao.toLowerCase().includes('conclu'),
     );
 
+    if (!inicioExecucao) {
+      return [];
+    }
+
     return atribuicoes.map((atividade, index) => {
       const proximaAtribuicao = atribuicoes[index + 1];
 
-      const inicio = atividade.data;
-      const fim = proximaAtribuicao?.data ?? conclusao?.data ?? new Date();
+      const inicio = this.maiorData(atividade.data, inicioExecucao.data);
+      const fim = this.menorData(
+        proximaAtribuicao?.data,
+        conclusao?.data,
+        new Date(),
+      );
 
-      const duracaoHoras =
-        (fim.getTime() - inicio.getTime()) / (1000 * 60 * 60);
+      const duracaoHoras = BusinessHoursService.calcularHoras(inicio, fim);
 
       const valor = atividade.descricao.replace('Responsável atribuído: ', '');
       const [responsavelId, nomeResponsavel] = valor.split('|');
@@ -48,8 +62,18 @@ export class GetTempoTarefaPorResponsavel {
         responsavelNome: nomeResponsavel,
         inicio,
         fim,
-        duracaoHoras: Number(duracaoHoras.toFixed(2)),
+        duracaoHoras,
       };
     });
+  }
+
+  private maiorData(a: Date, b: Date): Date {
+    return a > b ? a : b;
+  }
+
+  private menorData(...datas: Array<Date | undefined>): Date {
+    return datas
+      .filter((data): data is Date => !!data)
+      .sort((a, b) => a.getTime() - b.getTime())[0];
   }
 }

@@ -1,0 +1,19 @@
+<label class="period-filter-field">
+  <span>{{ label }}</span>
+  <div class="period-date-inputs">
+    <input
+      type="date"
+      [ngModel]="inicio"
+      (ngModelChange)="alterarInicio($event)"
+      [disabled]="disabled"
+      aria-label="Data inicial"
+    />
+    <input
+      type="date"
+      [ngModel]="fim"
+      (ngModelChange)="alterarFim($event)"
+      [disabled]="disabled"
+      aria-label="Data final"
+    />
+  </div>
+</label>

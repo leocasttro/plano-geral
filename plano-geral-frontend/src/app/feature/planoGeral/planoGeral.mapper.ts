@@ -34,6 +34,7 @@ export function tarefaDtoToCardData(t: TarefaDTO): CardData {
     status: (t.status ?? 'PENDENTE').toLowerCase(),
     responsavelId: t.responsavelId ?? t.responsavel?.id ?? null,
     responsavel: t.responsavel,
+    tituloCatalogoId: t.tituloCatalogoId ?? null,
     badgeTexto: t.prioridade,
     badgeClasseCor: mapPrioridadeParaBadge(t.prioridade),
     urlImagem: 'https://placehold.co/24x24/999/FFF?text=?',

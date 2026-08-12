@@ -161,6 +161,7 @@ export class RelatoriosController {
   private getFiltrosRelatorio(req: Request): RelatorioFiltros {
     return {
       projetoId: this.getQueryParam(req.query.projetoId),
+      usuarioId: this.getQueryParam(req.query.usuarioId),
       componente: this.getQueryParam(req.query.componente),
       atividadePrincipal: this.getQueryParam(req.query.atividadePrincipal),
       subatividade: this.getQueryParam(req.query.subatividade),
@@ -172,6 +173,7 @@ export class RelatoriosController {
   private getFiltrosProjetoRelatorio(req: Request): RelatorioFiltros {
     return {
       projetoId: this.getQueryParam(req.query.projetoId),
+      usuarioId: this.getQueryParam(req.query.usuarioId),
       inicio: this.parseDateParam(this.getQueryParam(req.query.inicio), false),
       fim: this.parseDateParam(this.getQueryParam(req.query.fim), true),
     };
@@ -210,7 +212,9 @@ export class RelatoriosController {
 
   async disponibilidadeUsuarios(req: Request, res: Response) {
     try {
-      const resultado = await this.deps.getDisponibilidadeUsuarios.execute();
+      const resultado = await this.deps.getDisponibilidadeUsuarios.execute(
+        this.getFiltrosRelatorio(req),
+      );
       return res.json(resultado);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });

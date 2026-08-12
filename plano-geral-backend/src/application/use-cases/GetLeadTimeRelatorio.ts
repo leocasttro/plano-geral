@@ -1,6 +1,7 @@
 import {TarefaRepository} from '../../domain/repositories/TarefaRepository';
 import {UserRepository} from '../../domain/repositories/UserRepository';
 import {LeadTimeResumoDTO, RelatorioLeadTimeDTO} from '../dtos/RelatorioLeadTimeDTO';
+import { BusinessHoursService } from '../services/BusinessHoursService';
 
 type Item = {
   projetoId: string | null;
@@ -26,19 +27,23 @@ export class GetLeadTimeRelatorio {
         .obterAtividades()
         .sort((a, b) => a.data.getTime() - b.data.getTime());
 
-      const criacao = atividades.find((a) => a.tipo === 'CRIACAO');
+      const inicio = atividades.find(
+        (a) =>
+          a.tipo === 'ALTERACAO_STATUS' &&
+          a.descricao.toLowerCase().includes('inici'),
+      );
       const conclusao = atividades.find(
         (a) =>
           a.tipo === 'ALTERACAO_STATUS' &&
           a.descricao.toLowerCase().includes('conclu'),
       );
 
-      const criadaEm = criacao?.data ?? null;
+      const iniciadaEm = inicio?.data ?? null;
       const concluidaEm = conclusao?.data ?? null;
 
       const duracaoHoras =
-        criadaEm && concluidaEm
-          ? Number(((concluidaEm.getTime() - criadaEm.getTime()) / 36e5).toFixed(2))
+        iniciadaEm && concluidaEm
+          ? BusinessHoursService.calcularHoras(iniciadaEm, concluidaEm)
           : null;
 
       const projeto = tarefa.obterProjeto();
@@ -79,7 +84,9 @@ export class GetLeadTimeRelatorio {
       tarefasSemLeadTime: itens.length - tempos.length,
       tempoMedioHoras,
       tempoMedioDias:
-        tempoMedioHoras === null ? null : Number((tempoMedioHoras / 24).toFixed(2)),
+        tempoMedioHoras === null
+          ? null
+          : Number((tempoMedioHoras / BusinessHoursService.HOURS_PER_BUSINESS_DAY).toFixed(2)),
     };
   }
 

@@ -45,7 +45,12 @@ export class GetDashboardRelatorio {
     const projetosIdsComTarefas = new Set(tarefas.map((tarefa) => tarefa.obterProjetoId()));
     const projetos = filtros.projetoId
       ? todosProjetos.filter((projeto) => projeto.id === filtros.projetoId)
-      : filtros.componente || filtros.atividadePrincipal || filtros.subatividade || filtros.inicio || filtros.fim
+      : filtros.usuarioId ||
+        filtros.componente ||
+        filtros.atividadePrincipal ||
+        filtros.subatividade ||
+        filtros.inicio ||
+        filtros.fim
         ? todosProjetos.filter((projeto) => projetosIdsComTarefas.has(projeto.id))
         : todosProjetos;
 

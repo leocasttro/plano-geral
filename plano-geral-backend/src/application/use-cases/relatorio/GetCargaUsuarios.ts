@@ -31,7 +31,9 @@ export class GetCargaUsuarios {
 
     const usuariosMap = new Map<string, CargaUsuarioDTO>();
 
-    usuarios.forEach((usuario) => {
+    usuarios
+      .filter((usuario) => !filtros.usuarioId || usuario.id === filtros.usuarioId)
+      .forEach((usuario) => {
       usuariosMap.set(usuario.id, {
         usuarioId: usuario.id,
         nome: usuario.nome,

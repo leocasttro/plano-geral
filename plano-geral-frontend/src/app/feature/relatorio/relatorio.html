@@ -8,85 +8,13 @@
   </div>
 
   <ng-container *ngIf="dashboard as dashboardData">
-    <header class="report-header">
-      <div>
-        <h2>Relatórios</h2>
-        <p>Análise de tempo, risco e desempenho com filtros independentes.</p>
-      </div>
-    </header>
-
-    <section class="report-filter-panel">
-      <div class="report-filter-grid">
-        <label>
-          <span>Projeto</span>
-          <select [(ngModel)]="filtroProjetoId" (ngModelChange)="aplicarFiltrosRelatorio()">
-            <option value="">Todos os projetos</option>
-            <option *ngFor="let projeto of projetosFiltro" [value]="projeto.id">
-              {{ projetoFiltroLabel(projeto) }}
-            </option>
-          </select>
-        </label>
-
-        <label>
-          <span>Componente</span>
-          <select [(ngModel)]="filtroComponente" (ngModelChange)="aoAlterarComponente()">
-            <option value="">Todos os componentes</option>
-            <option *ngFor="let componente of componentesFiltro" [value]="componente">
-              {{ componente }}
-            </option>
-          </select>
-        </label>
-
-        <label>
-          <span>Atividade principal</span>
-          <select
-            [(ngModel)]="filtroAtividadePrincipal"
-            (ngModelChange)="aoAlterarAtividadePrincipal()"
-            [disabled]="!filtroComponente"
-          >
-            <option value="">Todas as atividades</option>
-            <option *ngFor="let atividade of atividadesPrincipaisFiltro" [value]="atividade">
-              {{ atividade }}
-            </option>
-          </select>
-        </label>
-
-        <label>
-          <span>Subatividade</span>
-          <select
-            [(ngModel)]="filtroSubatividade"
-            (ngModelChange)="aplicarFiltrosRelatorio()"
-            [disabled]="!filtroComponente || !filtroAtividadePrincipal"
-          >
-            <option value="">Todas as subatividades</option>
-            <option *ngFor="let subatividade of subatividadesFiltro" [value]="subatividade">
-              {{ subatividade }}
-            </option>
-          </select>
-        </label>
-
-        <label class="period-filter-field">
-          <span>Período</span>
-          <div class="period-date-inputs">
-            <input type="date" [(ngModel)]="filtroInicio" (change)="aplicarFiltrosRelatorio()" aria-label="Data inicial" />
-            <input type="date" [(ngModel)]="filtroFim" (change)="aplicarFiltrosRelatorio()" aria-label="Data final" />
-          </div>
-        </label>
-
-        <div class="filter-actions">
-          <button type="button" class="filter-update-button" (click)="aplicarFiltrosRelatorio()">
-            Atualizar
-          </button>
-          <button type="button" class="filter-clear-button" (click)="limparFiltrosRelatorio()">
-            Limpar
-          </button>
-        </div>
-      </div>
-
-      <div class="filter-helper">
-        Os filtros de projeto e período funcionam de forma independente. Atividade principal e subatividade dependem do componente selecionado.
-      </div>
-    </section>
+    <app-filtros-operacionais
+      [projetos]="projetosFiltro"
+      [usuarios]="usuariosFiltro"
+      [catalogos]="catalogosFiltro"
+      [filtros]="filtrosRelatorio"
+      (filtrosChange)="atualizarFiltrosRelatorio($event)"
+    ></app-filtros-operacionais>
 
     <div class="report-sections-order">
     <section class="report-panel projects-panel">
@@ -250,7 +178,7 @@
         <div><i class="risk-segment-dot overdue"></i><strong>Atrasadas</strong><span>Tarefas com prazo vencido</span></div>
         <div><i class="risk-segment-dot critical"></i><strong>Críticas</strong><span>Tarefas de prioridade crítica</span></div>
         <div><i class="risk-segment-dot due"></i><strong>Vencem em 7d</strong><span>Tarefas próximas do prazo</span></div>
-        <div><i class="risk-segment-dot stopped"></i><strong>Paradas</strong><span>Sem atualização recente</span></div>
+        <div><i class="risk-segment-dot stopped"></i><strong>Paradas</strong><span>Em andamento sem atualização recente</span></div>
         <div><i class="risk-segment-dot missing"></i><strong>Sem dados</strong><span>Sem responsável ou data</span></div>
         <div><i class="risk-segment-dot done"></i><strong>Concluídas</strong><span>Tarefas finalizadas no projeto</span></div>
       </div>
@@ -303,15 +231,15 @@
               <div class="catalog-horizontal-track">
                 <div
                   class="catalog-horizontal-fill"
-                  [style.width.%]="larguraTempoCatalogo(item, topComponentesCatalogo(catalogo))"
+                  [style.width.%]="larguraTempoCatalogo(item, topComponentesCatalogo(catalogo), 'componente')"
                 ></div>
               </div>
-              <strong>{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+              <strong>{{ formatarHorasBrasil(tempoVisualCatalogo(item, 'componente')) }}</strong>
             </div>
           </div>
 
           <ng-template #semComponentesCatalogo>
-            <div class="empty-projects-list compact">Nenhum componente com tempo de conclusão.</div>
+            <div class="empty-projects-list compact">Nenhum componente com tempo registrado.</div>
           </ng-template>
         </section>
 
@@ -327,15 +255,15 @@
               <div class="catalog-horizontal-track">
                 <div
                   class="catalog-horizontal-fill"
-                  [style.width.%]="larguraTempoCatalogo(item, topAtividadesCatalogo(catalogo))"
+                  [style.width.%]="larguraTempoCatalogo(item, topAtividadesCatalogo(catalogo), 'atividadePrincipal')"
                 ></div>
               </div>
-              <strong>{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+              <strong>{{ formatarHorasBrasil(tempoVisualCatalogo(item, 'atividadePrincipal')) }}</strong>
             </div>
           </div>
 
           <ng-template #semAtividadesCatalogo>
-            <div class="empty-projects-list compact">Nenhuma atividade principal com tempo de conclusão.</div>
+            <div class="empty-projects-list compact">Nenhuma atividade principal com tempo registrado.</div>
           </ng-template>
         </section>
 
@@ -351,15 +279,15 @@
               <div class="catalog-horizontal-track">
                 <div
                   class="catalog-horizontal-fill"
-                  [style.width.%]="larguraTempoCatalogo(item, topSubatividadesCatalogo(catalogo))"
+                  [style.width.%]="larguraTempoCatalogo(item, topSubatividadesCatalogo(catalogo), 'subatividade')"
                 ></div>
               </div>
-              <strong>{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+              <strong>{{ formatarHorasBrasil(tempoVisualCatalogo(item, 'subatividade')) }}</strong>
             </div>
           </div>
 
           <ng-template #semSubatividadesCatalogo>
-            <div class="empty-projects-list compact">Nenhuma subatividade com tempo de conclusão.</div>
+            <div class="empty-projects-list compact">Nenhuma subatividade com tempo registrado.</div>
           </ng-template>
         </section>
       </div>
@@ -413,7 +341,7 @@
             *ngFor="let item of metricasTitulosFiltradas"
             (click)="abrirTituloMetricas(item)"
           >
-            <strong class="time-column-value">{{ formatarHorasBrasil(item.tempoMedioHoras) }}</strong>
+            <strong class="time-column-value">{{ formatarHorasBrasil(tempoVisualTitulo(item)) }}</strong>
             <div class="time-column-plot">
               <div
                 class="time-column-fill"
@@ -569,7 +497,7 @@
             <div>
               <h5>{{ tituloHeader.titulo }}</h5>
               <small>
-                {{ tituloHeader.totalTarefas }} tarefas · {{ formatarHorasBrasil(tituloHeader.tempoMedioHoras) }} em média
+                {{ tituloHeader.totalTarefas }} tarefas · {{ formatarHorasBrasil(tempoVisualTitulo(tituloHeader)) }} em média
               </small>
             </div>
           </div>
@@ -664,7 +592,7 @@
                       <strong>{{ projetoModal.tarefasSemResponsavel }}</strong>
                     </div>
                     <div>
-                      <span>Paradas +7d</span>
+                      <span>Em andamento paradas +7d</span>
                       <strong>{{ projetoModal.tarefasParadasMaisDe7Dias }}</strong>
                     </div>
                   </div>
@@ -798,7 +726,7 @@
               </div>
               <div class="summary-card">
                 <span>Tempo médio</span>
-                <strong>{{ formatarHorasBrasil(tituloModal.tempoMedioHoras) }}</strong>
+                <strong>{{ formatarHorasBrasil(tempoVisualTitulo(tituloModal)) }}</strong>
               </div>
               <div class="summary-card">
                 <span>Com lead time</span>
@@ -851,7 +779,7 @@
               <section>
                 <div class="modal-section-title">
                   <span class="title-icon">▦</span>
-                  <strong>Lead time por etapa (horas)</strong>
+                  <strong>Lead time por etapa</strong>
                 </div>
 
                 <div class="title-stage-legend">
@@ -881,7 +809,7 @@
                     </div>
 
                     <strong class="task-time">
-                      {{ totalEtapasTitulo(tarefa) ? formatarHorasBrasil(totalEtapasTitulo(tarefa)) : 'pendente' }}
+                      {{ tempoExecucaoTitulo(tarefa) ? formatarHorasBrasil(tempoExecucaoTitulo(tarefa)) : 'pendente' }}
                     </strong>
                   </div>
 
@@ -958,13 +886,13 @@
                 <div class="project-summary-card">
                   <div class="project-summary-header">
                     <strong>Tempo</strong>
-                    <span>média por tarefas concluídas</span>
+                    <span>média com tempo em execução</span>
                   </div>
 
                   <div class="indicator-list">
                     <div>
                       <span>Tempo médio</span>
-                      <strong>{{ formatarHorasBrasil(tituloModal.tempoMedioHoras) }}</strong>
+                      <strong>{{ formatarHorasBrasil(tempoVisualTitulo(tituloModal)) }}</strong>
                     </div>
                     <div>
                       <span>Com tempo calculado</span>

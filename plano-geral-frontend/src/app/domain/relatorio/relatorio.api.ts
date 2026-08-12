@@ -18,6 +18,7 @@ import {
 
 export interface RelatorioFiltrosRequest {
   projetoId?: string;
+  usuarioId?: string;
   componente?: string;
   atividadePrincipal?: string;
   subatividade?: string;
@@ -128,9 +129,10 @@ export class RelatorioApi {
     );
   }
 
-  disponibilidadeUsuarios(): Observable<RelatorioDisponibilidadeUsuariosDTO> {
+  disponibilidadeUsuarios(filtros?: RelatorioFiltrosRequest): Observable<RelatorioDisponibilidadeUsuariosDTO> {
     return this.http.get<RelatorioDisponibilidadeUsuariosDTO>(
       `${this.apiUrl}/usuarios/disponibilidade`,
+      { params: this.buildFiltrosParams(filtros) },
     );
   }
 

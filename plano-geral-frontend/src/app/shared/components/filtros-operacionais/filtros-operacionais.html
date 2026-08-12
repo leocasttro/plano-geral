@@ -1,0 +1,86 @@
+<section class="report-filter-panel mt-4">
+  <div class="report-filter-grid">
+    <label>
+      <span>Projeto</span>
+      <select
+        [ngModel]="filtros.projetoId ?? ''"
+        (ngModelChange)="alterarProjeto($event)"
+      >
+        <option value="">Todos os projetos</option>
+        <option *ngFor="let projeto of projetos" [value]="projeto.id">
+          {{ projetoFiltroLabel(projeto) }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      <span>Usuário</span>
+      <select
+        [ngModel]="filtros.usuarioId ?? ''"
+        (ngModelChange)="alterarUsuario($event)"
+      >
+        <option value="">Todos os usuários</option>
+        <option *ngFor="let usuario of usuarios" [value]="usuario.id">
+          {{ usuario.nome }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      <span>Componente</span>
+      <select
+        [ngModel]="filtros.componente ?? ''"
+        (ngModelChange)="alterarComponente($event)"
+      >
+        <option value="">Todos os componentes</option>
+        <option *ngFor="let componente of componentesFiltro" [value]="componente">
+          {{ componente }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      <span>Atividade principal</span>
+      <select
+        [ngModel]="filtros.atividadePrincipal ?? ''"
+        (ngModelChange)="alterarAtividadePrincipal($event)"
+        [disabled]="!filtros.componente"
+      >
+        <option value="">Todas as atividades</option>
+        <option *ngFor="let atividade of atividadesPrincipaisFiltro" [value]="atividade">
+          {{ atividade }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      <span>Subatividade</span>
+      <select
+        [ngModel]="filtros.subatividade ?? ''"
+        (ngModelChange)="alterarSubatividade($event)"
+        [disabled]="!filtros.componente || !filtros.atividadePrincipal"
+      >
+        <option value="">Todas as subatividades</option>
+        <option *ngFor="let subatividade of subatividadesFiltro" [value]="subatividade">
+          {{ subatividade }}
+        </option>
+      </select>
+    </label>
+
+    <app-periodo-filter
+      [inicio]="filtros.inicio ?? ''"
+      [fim]="filtros.fim ?? ''"
+      (periodoChange)="alterarPeriodo($event)"
+    ></app-periodo-filter>
+
+    <div class="filter-actions">
+      <button type="button" class="filter-clear-button" (click)="limpar()">
+        Limpar
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-helper">
+    {{ helperText }}
+  </div>
+</section>

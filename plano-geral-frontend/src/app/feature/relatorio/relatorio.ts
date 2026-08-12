@@ -26,6 +26,10 @@ import { ProjetoApi } from '../../domain/projeto/projeto.api';
 import { ProjetoDTO } from '../../domain/projeto/projetoModel';
 import { TituloTarefaApi } from '../../domain/titulo-tarefa/titulo-tarefa.api';
 import { TituloTarefaCatalogoDTO } from '../../domain/titulo-tarefa/titulo-tarefa.model';
+import { UsuarioApi } from '../../domain/usuario/usuario.api';
+import { UsuarioDTO } from '../../domain/usuario/usuario.model';
+import { FiltrosOperacionaisComponent } from '../../shared/components/filtros-operacionais/filtros-operacionais';
+import { FiltrosOperacionais } from '../../shared/components/filtros-operacionais/filtros-operacionais.model';
 import { ProjectStatusChartComponent } from '../../shared/dashboard/project-status-chart/project-status-chart';
 import { UserPerformanceChartComponent } from '../../shared/dashboard/user-performance-chart/user-performance-chart';
 import { ProjectRadarChartComponent } from '../../shared/dashboard/project-radar-chart/project-radar-chart';
@@ -33,6 +37,7 @@ import { ProjectRadarChartComponent } from '../../shared/dashboard/project-radar
 type UsuarioCarga = RelatorioCargaUsuariosDTO['usuarios'][number];
 type MetricaProjeto = RelatorioMetricasProjetosDTO['projetos'][number];
 type MetricaTitulo = RelatorioTempoMedioPorTituloDTO['titulos'][number];
+type TipoGrupoCatalogo = 'componente' | 'atividadePrincipal' | 'subatividade';
 type PeriodoThroughput = '15d' | '30d' | '90d' | 'ano';
 
 @Component({
@@ -41,6 +46,7 @@ type PeriodoThroughput = '15d' | '30d' | '90d' | 'ano';
   imports: [
     CommonModule,
     FormsModule,
+    FiltrosOperacionaisComponent,
     ProjectStatusChartComponent,
     UserPerformanceChartComponent,
     ProjectRadarChartComponent,
@@ -85,6 +91,7 @@ export class Relatorio implements OnInit {
   metricasTitulos: RelatorioTempoMedioPorTituloDTO | null = null;
   projetosFiltro: ProjetoDTO[] = [];
   catalogosFiltro: TituloTarefaCatalogoDTO[] = [];
+  usuariosFiltro: UsuarioDTO[] = [];
 
   usuarioSelecionado: UsuarioCarga | null = null;
   projetoSelecionado: MetricaProjeto | null = null;
@@ -92,12 +99,7 @@ export class Relatorio implements OnInit {
   tarefasUsuario: TarefaUsuarioDetalhe[] = [];
 
   periodoThroughput: PeriodoThroughput = '15d';
-  filtroProjetoId = '';
-  filtroComponente = '';
-  filtroAtividadePrincipal = '';
-  filtroSubatividade = '';
-  filtroInicio = '';
-  filtroFim = '';
+  filtrosRelatorio: FiltrosOperacionais = {};
 
   buscaTituloMetrica = '';
 
@@ -116,6 +118,7 @@ export class Relatorio implements OnInit {
     private tarefaApi: TarefaApi,
     private projetoApi: ProjetoApi,
     private tituloTarefaApi: TituloTarefaApi,
+    private usuarioApi: UsuarioApi,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -155,6 +158,12 @@ export class Relatorio implements OnInit {
           return of([]);
         }),
       ),
+      usuariosFiltro: this.usuarioApi.buscarTodos().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar usuários para filtro:', err);
+          return of([]);
+        }),
+      ),
       leadTime: this.relatorioApi.leadTime().pipe(
         catchError((err) => {
           console.error('Erro ao buscar lead time:', err);
@@ -173,7 +182,7 @@ export class Relatorio implements OnInit {
           });
         }),
       ),
-      disponibilidadeUsuarios: this.relatorioApi.disponibilidadeUsuarios().pipe(
+      disponibilidadeUsuarios: this.relatorioApi.disponibilidadeUsuarios(filtros).pipe(
         catchError((err) => {
           console.error('Erro ao buscar disponibilidade de usuários:', err);
           return of({ totalUsuarios: 0, usuarios: [] });
@@ -195,6 +204,7 @@ export class Relatorio implements OnInit {
           metricasTitulos,
           projetosFiltro,
           catalogosFiltro,
+          usuariosFiltro,
           leadTime,
           disponibilidadeUsuarios,
         }) => {
@@ -204,6 +214,7 @@ export class Relatorio implements OnInit {
           this.metricasTitulos = metricasTitulos;
           this.projetosFiltro = projetosFiltro;
           this.catalogosFiltro = catalogosFiltro;
+          this.usuariosFiltro = usuariosFiltro;
           this.leadTime = leadTime;
           this.disponibilidadeUsuarios = disponibilidadeUsuarios;
         },
@@ -223,35 +234,9 @@ export class Relatorio implements OnInit {
     this.carregarTela(false);
   }
 
-  aplicarFiltrosRelatorio(): void {
+  atualizarFiltrosRelatorio(filtros: FiltrosOperacionais): void {
+    this.filtrosRelatorio = filtros;
     this.carregarTela(false);
-  }
-
-  limparFiltrosRelatorio(): void {
-    this.filtroProjetoId = '';
-    this.filtroComponente = '';
-    this.filtroAtividadePrincipal = '';
-    this.filtroSubatividade = '';
-    this.filtroInicio = '';
-    this.filtroFim = '';
-    this.carregarTela(false);
-  }
-
-  projetoFiltroLabel(projeto: ProjetoDTO): string {
-    return projeto.centroCusto
-      ? `${projeto.nome} · CC ${projeto.centroCusto}`
-      : projeto.nome;
-  }
-
-  aoAlterarComponente(): void {
-    this.filtroAtividadePrincipal = '';
-    this.filtroSubatividade = '';
-    this.aplicarFiltrosRelatorio();
-  }
-
-  aoAlterarAtividadePrincipal(): void {
-    this.filtroSubatividade = '';
-    this.aplicarFiltrosRelatorio();
   }
 
   abrirModalDashboard(tipo: string): void {
@@ -428,21 +413,23 @@ export class Relatorio implements OnInit {
 
   formatarHorasBrasil(horas?: number | null): string {
     if (!horas || horas <= 0) {
-      return '0h';
+      return '0min';
     }
 
-    const horasInteiras = Math.floor(horas);
-    const minutos = Math.round((horas - horasInteiras) * 60);
+    const totalMinutos = Math.max(1, Math.round(horas * 60));
 
-    if (horasInteiras === 0) {
-      return `${minutos}min`;
+    if (totalMinutos < 60) {
+      return `${totalMinutos}min`;
     }
 
-    if (minutos === 0) {
+    const horasInteiras = Math.floor(totalMinutos / 60);
+    const minutosRestantes = totalMinutos % 60;
+
+    if (minutosRestantes === 0) {
       return `${horasInteiras}h`;
     }
 
-    return `${horasInteiras}h ${minutos}min`;
+    return `${horasInteiras}h ${minutosRestantes}min`;
   }
 
   iniciais(valor?: string | null): string {
@@ -478,29 +465,38 @@ export class Relatorio implements OnInit {
     return Math.round(82 + proporcao * 58);
   }
 
-  larguraTempoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): number {
-    const maiorTempo = Math.max(...itens.map((grupo) => grupo.tempoMedioHoras ?? 0), 1);
-    const tempo = item.tempoMedioHoras ?? 0;
+  larguraTempoCatalogo(
+    item: MetricaCatalogoGrupoDTO,
+    itens: MetricaCatalogoGrupoDTO[],
+    tipo: TipoGrupoCatalogo,
+  ): number {
+    const maiorTempo = Math.max(...itens.map((grupo) => this.tempoVisualCatalogo(grupo, tipo)), 1);
+    const tempo = this.tempoVisualCatalogo(item, tipo);
 
     return Math.max(tempo > 0 ? 6 : 0, Math.round((tempo / maiorTempo) * 100));
   }
 
-  alturaTempoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): number {
-    const maiorTempo = Math.max(...itens.map((grupo) => grupo.tempoMedioHoras ?? 0), 1);
-    const tempo = item.tempoMedioHoras ?? 0;
+  alturaTempoCatalogo(
+    item: MetricaCatalogoGrupoDTO,
+    itens: MetricaCatalogoGrupoDTO[],
+    tipo: TipoGrupoCatalogo,
+  ): number {
+    const maiorTempo = Math.max(...itens.map((grupo) => this.tempoVisualCatalogo(grupo, tipo)), 1);
+    const tempo = this.tempoVisualCatalogo(item, tipo);
 
     return Math.max(tempo > 0 ? 8 : 0, Math.round((tempo / maiorTempo) * 100));
   }
 
   gruposMaiorTempo(
     itens: MetricaCatalogoGrupoDTO[],
+    tipo: TipoGrupoCatalogo,
     limite = 6,
   ): MetricaCatalogoGrupoDTO[] {
     return [...itens]
-      .filter((item) => item.totalTarefas > 0 && (item.tempoMedioHoras ?? 0) > 0)
+      .filter((item) => item.totalTarefas > 0 && this.tempoVisualCatalogo(item, tipo) > 0)
       .sort(
         (a, b) =>
-          (b.tempoMedioHoras ?? 0) - (a.tempoMedioHoras ?? 0) ||
+          this.tempoVisualCatalogo(b, tipo) - this.tempoVisualCatalogo(a, tipo) ||
           b.totalTarefas - a.totalTarefas ||
           a.nome.localeCompare(b.nome),
       )
@@ -517,7 +513,7 @@ export class Relatorio implements OnInit {
     return Number(
       catalogo.titulos
         .reduce(
-          (total, item) => total + ((item.tempoMedioHoras ?? 0) * item.totalTarefas),
+          (total, item) => total + (this.tempoVisualTitulo(item) * item.totalTarefas),
           0,
         )
         .toFixed(2),
@@ -537,15 +533,15 @@ export class Relatorio implements OnInit {
   }
 
   topComponentesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
-    return this.gruposMaiorTempo(catalogo.componentes, 6);
+    return this.gruposMaiorTempo(catalogo.componentes, 'componente', 6);
   }
 
   topAtividadesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
-    return this.gruposMaiorTempo(catalogo.atividadesPrincipais, 6);
+    return this.gruposMaiorTempo(catalogo.atividadesPrincipais, 'atividadePrincipal', 6);
   }
 
   topSubatividadesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
-    return this.gruposMaiorTempo(catalogo.subatividades, 6);
+    return this.gruposMaiorTempo(catalogo.subatividades, 'subatividade', 6);
   }
 
   distribuicaoAtividadesCatalogo(catalogo: RelatorioTempoMedioPorTituloDTO): MetricaCatalogoGrupoDTO[] {
@@ -605,10 +601,14 @@ export class Relatorio implements OnInit {
     ][index % 10];
   }
 
-  classeTempoCatalogo(item: MetricaCatalogoGrupoDTO, itens: MetricaCatalogoGrupoDTO[]): string {
+  classeTempoCatalogo(
+    item: MetricaCatalogoGrupoDTO,
+    itens: MetricaCatalogoGrupoDTO[],
+    tipo: TipoGrupoCatalogo,
+  ): string {
     return this.classeTempoPorReferencia(
-      item.tempoMedioHoras,
-      itens.map((grupo) => grupo.tempoMedioHoras ?? 0),
+      this.tempoVisualCatalogo(item, tipo),
+      itens.map((grupo) => this.tempoVisualCatalogo(grupo, tipo)),
     );
   }
 
@@ -621,28 +621,28 @@ export class Relatorio implements OnInit {
 
   larguraTempoTitulo(item: MetricaTitulo): number {
     const maiorTempo = Math.max(
-      ...this.metricasTitulosFiltradas.map((titulo) => titulo.tempoMedioHoras ?? 0),
+      ...this.metricasTitulosFiltradas.map((titulo) => this.tempoVisualTitulo(titulo)),
       1,
     );
-    const tempo = item.tempoMedioHoras ?? 0;
+    const tempo = this.tempoVisualTitulo(item);
 
     return Math.max(tempo > 0 ? 6 : 0, Math.round((tempo / maiorTempo) * 100));
   }
 
   alturaTempoTitulo(item: MetricaTitulo): number {
     const maiorTempo = Math.max(
-      ...this.metricasTitulosFiltradas.map((titulo) => titulo.tempoMedioHoras ?? 0),
+      ...this.metricasTitulosFiltradas.map((titulo) => this.tempoVisualTitulo(titulo)),
       1,
     );
-    const tempo = item.tempoMedioHoras ?? 0;
+    const tempo = this.tempoVisualTitulo(item);
 
     return Math.max(tempo > 0 ? 8 : 0, Math.round((tempo / maiorTempo) * 100));
   }
 
   classeTempoTitulo(item: MetricaTitulo): string {
     return this.classeTempoPorReferencia(
-      item.tempoMedioHoras,
-      this.metricasTitulosFiltradas.map((titulo) => titulo.tempoMedioHoras ?? 0),
+      this.tempoVisualTitulo(item),
+      this.metricasTitulosFiltradas.map((titulo) => this.tempoVisualTitulo(titulo)),
     );
   }
 
@@ -707,12 +707,68 @@ export class Relatorio implements OnInit {
     );
   }
 
+  tempoExecucaoTitulo(tarefa: MetricaTitulo['tarefas'][number]): number {
+    return Number(((tarefa.tempoExecucaoHoras ?? tarefa.duracaoHoras ?? 0)).toFixed(2));
+  }
+
+  tempoVisualTitulo(item: MetricaTitulo): number {
+    const tempos = item.tarefas
+      .map((tarefa) => this.tempoVisualTarefa(tarefa))
+      .filter((tempo) => tempo > 0);
+
+    if (tempos.length) {
+      return Number((tempos.reduce((total, tempo) => total + tempo, 0) / tempos.length).toFixed(2));
+    }
+
+    return item.tempoMedioHoras ?? 0;
+  }
+
+  tempoVisualCatalogo(item: MetricaCatalogoGrupoDTO, tipo: TipoGrupoCatalogo): number {
+    const nomeGrupo = this.normalizarTexto(item.nome);
+    const titulos = (this.metricasTitulos?.titulos ?? []).filter(
+      (titulo) => this.normalizarTexto(this.valorGrupoTitulo(titulo, tipo)) === nomeGrupo,
+    );
+    const tempos = titulos
+      .flatMap((titulo) => titulo.tarefas.map((tarefa) => this.tempoVisualTarefa(tarefa)))
+      .filter((tempo) => tempo > 0);
+
+    if (tempos.length) {
+      return Number((tempos.reduce((total, tempo) => total + tempo, 0) / tempos.length).toFixed(2));
+    }
+
+    return item.tempoMedioHoras ?? 0;
+  }
+
   percentualTitulo(valor: number, total: number): number {
     if (!total) {
       return 0;
     }
 
     return Math.round((valor / total) * 100);
+  }
+
+  private tempoVisualTarefa(tarefa: MetricaTitulo['tarefas'][number]): number {
+    return this.tempoExecucaoTitulo(tarefa);
+  }
+
+  private valorGrupoTitulo(titulo: MetricaTitulo, tipo: TipoGrupoCatalogo): string | null {
+    if (tipo === 'componente') {
+      return titulo.componente;
+    }
+
+    if (tipo === 'atividadePrincipal') {
+      return titulo.atividadePrincipal;
+    }
+
+    return titulo.subatividade;
+  }
+
+  private normalizarTexto(valor?: string | null): string {
+    return (valor ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
   }
 
   statusLabel(status: string): string {
@@ -1123,73 +1179,27 @@ export class Relatorio implements OnInit {
   get metricasTitulosFiltradas() {
     const busca = this.buscaTituloMetrica.trim().toLowerCase();
     const titulos = this.metricasTitulos?.titulos ?? [];
+    const filtrados = busca
+      ? titulos.filter((item) => item.titulo.toLowerCase().includes(busca))
+      : titulos;
 
-    if (!busca) {
-      return titulos;
-    }
-
-    return titulos.filter((item) =>
-      item.titulo.toLowerCase().includes(busca),
+    return [...filtrados].sort(
+      (a, b) =>
+        this.tempoVisualTitulo(b) - this.tempoVisualTitulo(a) ||
+        b.totalTarefas - a.totalTarefas ||
+        a.titulo.localeCompare(b.titulo),
     );
-  }
-
-  get componentesFiltro(): string[] {
-    return this.valoresUnicosCatalogo('componente', this.catalogosFiltro);
-  }
-
-  get atividadesPrincipaisFiltro(): string[] {
-    if (!this.filtroComponente) {
-      return [];
-    }
-
-    return this.valoresUnicosCatalogo(
-      'atividadePrincipal',
-      this.catalogosFiltro.filter((item) =>
-        this.valorCatalogoIgual(item.componente, this.filtroComponente),
-      ),
-    );
-  }
-
-  get subatividadesFiltro(): string[] {
-    if (!this.filtroComponente || !this.filtroAtividadePrincipal) {
-      return [];
-    }
-
-    return this.valoresUnicosCatalogo(
-      'subatividade',
-      this.catalogosFiltro.filter(
-        (item) =>
-          this.valorCatalogoIgual(item.componente, this.filtroComponente) &&
-          this.valorCatalogoIgual(item.atividadePrincipal, this.filtroAtividadePrincipal),
-      ),
-    );
-  }
-
-  private valoresUnicosCatalogo(
-    campo: 'componente' | 'atividadePrincipal' | 'subatividade',
-    catalogos: TituloTarefaCatalogoDTO[],
-  ): string[] {
-    return Array.from(
-      new Set(
-        catalogos
-          .map((item) => item[campo]?.trim())
-          .filter((valor): valor is string => !!valor),
-      ),
-    ).sort((a, b) => a.localeCompare(b));
-  }
-
-  private valorCatalogoIgual(valor: string | null | undefined, filtro: string): boolean {
-    return (valor ?? '').trim() === filtro.trim();
   }
 
   private filtrosRelatorioRequest() {
     return {
-      projetoId: this.filtroProjetoId || undefined,
-      componente: this.filtroComponente || undefined,
-      atividadePrincipal: this.filtroAtividadePrincipal || undefined,
-      subatividade: this.filtroSubatividade || undefined,
-      inicio: this.filtroInicio || undefined,
-      fim: this.filtroFim || undefined,
+      projetoId: this.filtrosRelatorio.projetoId || undefined,
+      usuarioId: this.filtrosRelatorio.usuarioId || undefined,
+      componente: this.filtrosRelatorio.componente || undefined,
+      atividadePrincipal: this.filtrosRelatorio.atividadePrincipal || undefined,
+      subatividade: this.filtrosRelatorio.subatividade || undefined,
+      inicio: this.filtrosRelatorio.inicio || undefined,
+      fim: this.filtrosRelatorio.fim || undefined,
     };
   }
 

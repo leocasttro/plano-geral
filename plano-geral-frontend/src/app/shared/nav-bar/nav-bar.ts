@@ -1,6 +1,6 @@
 import {
   faBell,
-  faMagnifyingGlass,
+  faFilter,
   faPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -36,7 +36,7 @@ export class NavBar {
   isProjetosRoute = false;
   isKanbanRoute = false;
 
-  faSearch = faMagnifyingGlass;
+  faFilter = faFilter;
   faNotification = faBell;
   faPlus = faPlus;
 
@@ -151,9 +151,9 @@ export class NavBar {
     this.novoProjeto.emit();
   }
 
-  onSearchClick() {
+  onFilterClick() {
     if (this.isKanbanRoute) {
-      this.kanbanSearch.abrirPesquisa();
+      this.kanbanSearch.alternarFiltros();
     }
   }
 

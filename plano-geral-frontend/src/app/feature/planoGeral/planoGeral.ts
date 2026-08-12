@@ -29,10 +29,20 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { TarefaDrawersComponent } from '../../shared/drawers/tarefa-drawers-component';
 import { tarefaDtoToCardData } from './planoGeral.mapper';
 import { KanbanSearchService } from '../../shared/services/kanban-search.service';
-import { Subscription } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError, take } from 'rxjs/operators';
 import { tarefaDtoToDrawer } from '../../shared/drawers/tarefa-drawer.mapper';
 import { TarefaDrawerNavigationService } from '../../shared/services/tarefa-drawer-navigation.service';
 import { ToastService } from '../../shared/toast/toast.service';
+import { AuthService } from '../../domain/auth/auth.service';
+import { FiltrosOperacionaisComponent } from '../../shared/components/filtros-operacionais/filtros-operacionais';
+import { FiltrosOperacionais } from '../../shared/components/filtros-operacionais/filtros-operacionais.model';
+import { ProjetoApi } from '../../domain/projeto/projeto.api';
+import { ProjetoDTO } from '../../domain/projeto/projetoModel';
+import { UsuarioApi } from '../../domain/usuario/usuario.api';
+import { UsuarioDTO } from '../../domain/usuario/usuario.model';
+import { TituloTarefaApi } from '../../domain/titulo-tarefa/titulo-tarefa.api';
+import { TituloTarefaCatalogoDTO } from '../../domain/titulo-tarefa/titulo-tarefa.model';
 
 @Component({
   selector: 'app-planoGeral',
@@ -45,26 +55,29 @@ import { ToastService } from '../../shared/toast/toast.service';
     CdkDrag,
     FontAwesomeModule,
     FormsModule,
+    FiltrosOperacionaisComponent,
   ],
   templateUrl: './planoGeral.html',
   styleUrl: './planoGeral.scss',
 })
 export class Pedidos implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef;
-  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
 
   tarefasPendentes: CardData[] = [];
   tarefasEmAndamento: CardData[] = [];
   tarefasConcluidas: CardData[] = [];
   tarefasTeste: CardData[] = [];
   tarefas: CardData[] = [];
-  termoPesquisa = '';
-  mostrarPesquisa = false;
+  mostrarFiltrosTarefas = false;
+  filtrosTarefas: FiltrosOperacionais = {};
+  projetosFiltro: ProjetoDTO[] = [];
+  usuariosFiltro: UsuarioDTO[] = [];
+  catalogosFiltro: TituloTarefaCatalogoDTO[] = [];
 
   faPlus = faPlus;
 
   private itemSelecionadoParaUpload: ChecklistItem | null = null;
-  private searchSub?: Subscription;
+  private filtersSub?: Subscription;
   private drawerNavigationSub?: Subscription;
 
   constructor(
@@ -75,21 +88,26 @@ export class Pedidos implements OnInit, OnDestroy {
     private kanbanSearch: KanbanSearchService,
     private tarefaDrawerNavigation: TarefaDrawerNavigationService,
     private toast: ToastService,
+    private authService: AuthService,
+    private projetoApi: ProjetoApi,
+    private usuarioApi: UsuarioApi,
+    private tituloTarefaApi: TituloTarefaApi,
   ) {}
 
   ngOnInit(): void {
-    this.searchSub = this.kanbanSearch.openSearch$.subscribe(() => {
-      this.abrirPesquisa();
+    this.filtersSub = this.kanbanSearch.toggleFilters$.subscribe(() => {
+      this.alternarFiltros();
     });
     this.drawerNavigationSub = this.tarefaDrawerNavigation.abrirTarefa$.subscribe(
       ({ tarefaId, solicitacaoAlteracaoDatasId }) =>
         this.abrirDetalheTarefaPorId(tarefaId, solicitacaoAlteracaoDatasId),
     );
     this.carregarTarefas();
+    this.carregarFiltros();
   }
 
   ngOnDestroy(): void {
-    this.searchSub?.unsubscribe();
+    this.filtersSub?.unsubscribe();
     this.drawerNavigationSub?.unsubscribe();
   }
 
@@ -119,51 +137,75 @@ export class Pedidos implements OnInit, OnDestroy {
     });
   }
 
-  pesquisaAtiva(): boolean {
-    return this.termoPesquisa.trim().length > 0;
+  carregarFiltros(): void {
+    if (!this.podeFiltrarTarefas()) {
+      return;
+    }
+
+    forkJoin({
+      projetos: this.projetoApi.buscarTodos().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar projetos para filtros:', err);
+          return of([]);
+        }),
+      ),
+      usuarios: this.usuarioApi.buscarTodos().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar usuários para filtros:', err);
+          return of([]);
+        }),
+      ),
+      catalogos: this.tituloTarefaApi.listar().pipe(
+        catchError((err) => {
+          console.error('Erro ao buscar catálogo para filtros:', err);
+          return of([]);
+        }),
+      ),
+    })
+      .pipe(take(1))
+      .subscribe(({ projetos, usuarios, catalogos }) => {
+        this.projetosFiltro = projetos;
+        this.usuariosFiltro = usuarios;
+        this.catalogosFiltro = catalogos;
+        this.cdr.detectChanges();
+      });
   }
 
-  abrirPesquisa(): void {
-    this.mostrarPesquisa = true;
+  filtrosAtivos(): boolean {
+    return this.filtrosTarefasAtivos();
+  }
+
+  alternarFiltros(): void {
+    if (!this.podeFiltrarTarefas()) {
+      return;
+    }
+
+    const deveMostrarFiltros = !this.mostrarFiltrosTarefas;
+    this.mostrarFiltrosTarefas = deveMostrarFiltros;
+
+    if (!deveMostrarFiltros) {
+      this.filtrosTarefas = {};
+    }
+
     this.cdr.detectChanges();
-
-    setTimeout(() => {
-      this.searchInput?.nativeElement.focus();
-    });
   }
 
-  limparPesquisa(): void {
-    this.termoPesquisa = '';
-    this.mostrarPesquisa = false;
+  podeFiltrarTarefas(): boolean {
+    const perfil = this.authService.usuario()?.perfil?.toUpperCase();
+    return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR';
+  }
+
+  filtrosTarefasAtivos(): boolean {
+    return Object.values(this.filtrosTarefas).some((valor) => !!valor);
+  }
+
+  atualizarFiltrosTarefas(filtros: FiltrosOperacionais): void {
+    this.filtrosTarefas = filtros;
+    this.mostrarFiltrosTarefas = this.filtrosTarefasAtivos() || this.mostrarFiltrosTarefas;
   }
 
   filtrarTarefas(tarefas: CardData[]): CardData[] {
-    const termo = this.normalizarTexto(this.termoPesquisa);
-
-    if (!termo) {
-      return tarefas;
-    }
-
-    return tarefas.filter((tarefa) => {
-      const titulo = this.normalizarTexto(tarefa.titulo);
-      const responsavelNome = this.normalizarTexto(tarefa.responsavel?.nome);
-      const responsavelEmail = this.normalizarTexto(tarefa.responsavel?.email);
-
-      return (
-        titulo.includes(termo) ||
-        responsavelNome.includes(termo) ||
-        responsavelEmail.includes(termo)
-      );
-    });
-  }
-
-  totalFiltrado(): number {
-    return (
-      this.filtrarTarefas(this.tarefasPendentes).length +
-      this.filtrarTarefas(this.tarefasEmAndamento).length +
-      this.filtrarTarefas(this.tarefasConcluidas).length +
-      this.filtrarTarefas(this.tarefasTeste).length
-    );
+    return tarefas.filter((tarefa) => this.tarefaDentroDosFiltros(tarefa));
   }
 
   onNovaTarefa(): void {
@@ -220,7 +262,7 @@ export class Pedidos implements OnInit, OnDestroy {
   }
 
   drop(event: CdkDragDrop<CardData[]>, novoStatus: string): void {
-    if (this.pesquisaAtiva()) {
+    if (this.filtrosAtivos()) {
       return;
     }
 
@@ -355,5 +397,89 @@ export class Pedidos implements OnInit, OnDestroy {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
+  }
+
+  private tarefaDentroDosFiltros(tarefa: CardData): boolean {
+    if (!this.filtrosTarefasAtivos()) {
+      return true;
+    }
+
+    if (this.filtrosTarefas.projetoId && tarefa.projetoId !== this.filtrosTarefas.projetoId) {
+      return false;
+    }
+
+    const responsavelId = tarefa.responsavelId || tarefa.responsavel?.id || '';
+    if (this.filtrosTarefas.usuarioId && responsavelId !== this.filtrosTarefas.usuarioId) {
+      return false;
+    }
+
+    const catalogo = this.catalogoDaTarefa(tarefa);
+
+    if (!this.textoCatalogoIgual(catalogo?.componente, this.filtrosTarefas.componente)) {
+      return false;
+    }
+
+    if (!this.textoCatalogoIgual(catalogo?.atividadePrincipal, this.filtrosTarefas.atividadePrincipal)) {
+      return false;
+    }
+
+    if (!this.textoCatalogoIgual(catalogo?.subatividade, this.filtrosTarefas.subatividade)) {
+      return false;
+    }
+
+    if (!this.tarefaDentroDoPeriodo(tarefa)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private tarefaDentroDoPeriodo(tarefa: CardData): boolean {
+    if (!this.filtrosTarefas.inicio && !this.filtrosTarefas.fim) {
+      return true;
+    }
+
+    const inicioFiltro = this.filtrosTarefas.inicio ? this.dataLocal(this.filtrosTarefas.inicio) : null;
+    const fimFiltro = this.filtrosTarefas.fim ? this.dataLocal(this.filtrosTarefas.fim, true) : null;
+    const dataInicio = tarefa.dataInicio ? this.dataLocal(tarefa.dataInicio) : null;
+    const dataFim = tarefa.dataFim ? this.dataLocal(tarefa.dataFim, true) : dataInicio;
+
+    if (!dataInicio && !dataFim) {
+      return false;
+    }
+
+    const tarefaInicio = dataInicio ?? dataFim!;
+    const tarefaFim = dataFim ?? dataInicio!;
+
+    if (inicioFiltro && tarefaFim < inicioFiltro) {
+      return false;
+    }
+
+    if (fimFiltro && tarefaInicio > fimFiltro) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private textoCatalogoIgual(valor: string | null | undefined, filtro?: string): boolean {
+    if (!filtro?.trim()) {
+      return true;
+    }
+
+    return this.normalizarTexto(valor) === this.normalizarTexto(filtro);
+  }
+
+  private catalogoDaTarefa(tarefa: CardData): TituloTarefaCatalogoDTO | undefined {
+    return (
+      this.catalogosFiltro.find((item) => item.id === tarefa.tituloCatalogoId) ??
+      this.catalogosFiltro.find(
+        (item) => this.normalizarTexto(item.tituloExibicao) === this.normalizarTexto(tarefa.titulo),
+      )
+    );
+  }
+
+  private dataLocal(valor: string, fimDoDia = false): Date {
+    return new Date(`${valor.slice(0, 10)}T${fimDoDia ? '23:59:59.999' : '00:00:00.000'}`);
   }
 }

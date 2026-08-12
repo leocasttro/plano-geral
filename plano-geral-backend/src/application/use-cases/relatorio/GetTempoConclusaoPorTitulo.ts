@@ -1,4 +1,5 @@
 import { TarefaRepository } from '../../../domain/repositories/TarefaRepository';
+import { BusinessHoursService } from '../../services/BusinessHoursService';
 
 type ItemTempoConclusao = {
   tarefaId: string;
@@ -38,6 +39,11 @@ export class GetTempoConclusaoPorTitulo {
         .sort((a, b) => a.data.getTime() - b.data.getTime());
 
       const criacao = atividades.find((a) => a.tipo === 'CRIACAO');
+      const inicio = atividades.find(
+        (a) =>
+          a.tipo === 'ALTERACAO_STATUS' &&
+          a.descricao.toLowerCase().includes('inici'),
+      );
       const conclusao = atividades.find(
         (a) =>
           a.tipo === 'ALTERACAO_STATUS' &&
@@ -45,11 +51,12 @@ export class GetTempoConclusaoPorTitulo {
       );
 
       const criadaEm = criacao?.data ?? null;
+      const iniciadaEm = inicio?.data ?? null;
       const concluidaEm = conclusao?.data ?? null;
 
       const duracaoHoras =
-        criadaEm && concluidaEm
-          ? Number(((concluidaEm.getTime() - criadaEm.getTime()) / 36e5).toFixed(2))
+        iniciadaEm && concluidaEm
+          ? BusinessHoursService.calcularHoras(iniciadaEm, concluidaEm)
           : null;
 
       return {
@@ -60,7 +67,9 @@ export class GetTempoConclusaoPorTitulo {
         concluidaEm,
         duracaoHoras,
         duracaoDias:
-          duracaoHoras === null ? null : Number((duracaoHoras / 24).toFixed(2)),
+          duracaoHoras === null
+            ? null
+            : Number((duracaoHoras / BusinessHoursService.HOURS_PER_BUSINESS_DAY).toFixed(2)),
       };
     });
 
@@ -80,7 +89,9 @@ export class GetTempoConclusaoPorTitulo {
       totalConcluidas: concluidas.length,
       tempoMedioHoras,
       tempoMedioDias:
-        tempoMedioHoras === null ? null : Number((tempoMedioHoras / 24).toFixed(2)),
+        tempoMedioHoras === null
+          ? null
+          : Number((tempoMedioHoras / BusinessHoursService.HOURS_PER_BUSINESS_DAY).toFixed(2)),
       tarefas: itens,
     };
   }

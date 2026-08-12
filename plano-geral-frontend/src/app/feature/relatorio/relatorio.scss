@@ -2,7 +2,7 @@
   width: 100%;
   min-height: calc(100vh - 80px);
   padding: 32px;
-  background: #f8fafc;
+  background: transparent;
   color: #111827;
 }
 
@@ -28,101 +28,6 @@
 .report-header p {
   margin: 6px 0 0;
   color: #6b7280;
-}
-
-.report-filter-panel {
-  margin-bottom: 18px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-  overflow: hidden;
-}
-
-.report-filter-grid {
-  display: grid;
-  grid-template-columns:
-    minmax(180px, 1.05fr)
-    minmax(180px, 1.05fr)
-    minmax(190px, 1.1fr)
-    minmax(190px, 1.1fr)
-    minmax(250px, 1.2fr)
-    auto;
-  gap: 14px;
-  align-items: end;
-  padding: 16px;
-}
-
-.report-filter-grid label {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-}
-
-.report-filter-grid label span {
-  color: #374151;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.report-filter-grid select,
-.report-filter-grid input {
-  width: 100%;
-  min-width: 0;
-  height: 42px;
-  border: 1px solid #dbe3ef;
-  border-radius: 8px;
-  padding: 8px 11px;
-  background: #fff;
-  color: #1f2a44;
-  font-size: 0.86rem;
-}
-
-.report-filter-grid select:disabled {
-  background: #f8fafc;
-  color: #94a3b8;
-  cursor: not-allowed;
-}
-
-.period-date-inputs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.filter-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.filter-update-button,
-.filter-clear-button {
-  height: 42px;
-  border-radius: 8px;
-  padding: 0 14px;
-  font-weight: 800;
-}
-
-.filter-update-button {
-  border: 0;
-  background: #4f2cff;
-  color: #fff;
-}
-
-.filter-clear-button {
-  border: 1px solid #dbe3ef;
-  background: #fff;
-  color: #64748b;
-}
-
-.filter-helper {
-  padding: 10px 16px;
-  border-top: 1px solid #eadcff;
-  background: #f6f0ff;
-  color: #5b3c9f;
-  font-size: 0.8rem;
 }
 
 .period-switch {
@@ -2234,7 +2139,6 @@
 
   .overview-grid,
   .lower-grid,
-  .report-filter-grid,
   .projects-metrics-grid,
   .risk-board,
   .risk-charts,
@@ -2278,9 +2182,6 @@
     min-width: 0;
   }
 
-  .filter-actions {
-    justify-content: flex-start;
-  }
 }
 
 @media (max-width: 760px) {
@@ -2294,7 +2195,6 @@
   }
 
   .kpi-grid,
-  .period-date-inputs,
   .modal-summary,
     .user-modal-grid,
     .title-modal-grid,

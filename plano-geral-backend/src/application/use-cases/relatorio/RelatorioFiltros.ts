@@ -7,6 +7,7 @@ import {
 
 export type RelatorioFiltros = {
   projetoId?: string;
+  usuarioId?: string;
   componente?: string;
   atividadePrincipal?: string;
   subatividade?: string;
@@ -27,6 +28,10 @@ export function filtrarTarefasRelatorio(
 ): Tarefa[] {
   return tarefas.filter((tarefa) => {
     if (filtros.projetoId && tarefa.obterProjetoId() !== filtros.projetoId) {
+      return false;
+    }
+
+    if (filtros.usuarioId && tarefa.obterResponsavel() !== filtros.usuarioId) {
       return false;
     }
 

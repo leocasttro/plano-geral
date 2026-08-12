@@ -6,6 +6,7 @@ import {
   DisponibilidadeUsuarioDTO,
   RelatorioDisponibilidadeUsuariosDTO,
 } from '../../dtos/RelatorioDisponibilidadeUsuariosDTO';
+import { RelatorioFiltros } from './RelatorioFiltros';
 
 type Intervalo = {
   tarefaId: string;
@@ -20,7 +21,7 @@ export class GetDisponibilidadeUsuarios {
     private userRepository: UserRepository,
   ) {}
 
-  async execute(): Promise<RelatorioDisponibilidadeUsuariosDTO> {
+  async execute(filtros: RelatorioFiltros = {}): Promise<RelatorioDisponibilidadeUsuariosDTO> {
     const [tarefas, usuarios] = await Promise.all([
       this.tarefaRepository.list(),
       this.userRepository.findAllActive(),
@@ -28,7 +29,9 @@ export class GetDisponibilidadeUsuarios {
 
     const hoje = this.inicioDoDia(new Date());
 
-    const usuariosDisponibilidade = usuarios.map((usuario): DisponibilidadeUsuarioDTO => {
+    const usuariosDisponibilidade = usuarios
+      .filter((usuario) => !filtros.usuarioId || usuario.id === filtros.usuarioId)
+      .map((usuario): DisponibilidadeUsuarioDTO => {
       const tarefasDoUsuario = tarefas.filter(
         (tarefa) =>
           tarefa.obterResponsavel() === usuario.id &&

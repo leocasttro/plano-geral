@@ -7,6 +7,7 @@ import {
 } from '../../../domain/entities/TituloTarefaCatalogo';
 import { TituloTarefaCatalogoRepository } from '../../../domain/repositories/TituloTarefaCatalogoRepository';
 import { filtrarTarefasRelatorio, RelatorioFiltros } from './RelatorioFiltros';
+import { BusinessHoursService } from '../../services/BusinessHoursService';
 
 type TarefaTituloDetalheDTO = {
   tarefaId: string;
@@ -291,16 +292,12 @@ export class GetTempoMedioPorTitulo {
     const iniciadaEm = inicio?.data ?? null;
     const concluidaEm = conclusao?.data ?? null;
     const duracaoHoras =
-      criadaEm && concluidaEm
-        ? Number(((concluidaEm.getTime() - criadaEm.getTime()) / 36e5).toFixed(2))
+      iniciadaEm && concluidaEm
+        ? BusinessHoursService.calcularHoras(iniciadaEm, concluidaEm)
         : null;
     const agora = new Date();
     const tempoEsperaHoras =
-      criadaEm && iniciadaEm
-        ? this.calcularHoras(criadaEm, iniciadaEm)
-        : criadaEm && !iniciadaEm
-          ? this.calcularHoras(criadaEm, concluidaEm ?? agora)
-          : null;
+      criadaEm && iniciadaEm ? this.calcularHoras(criadaEm, iniciadaEm) : null;
     const tempoExecucaoHoras =
       iniciadaEm && concluidaEm
         ? this.calcularHoras(iniciadaEm, concluidaEm)
@@ -333,6 +330,6 @@ export class GetTempoMedioPorTitulo {
   }
 
   private calcularHoras(inicio: Date, fim: Date): number {
-    return Number(Math.max(0, (fim.getTime() - inicio.getTime()) / 36e5).toFixed(2));
+    return BusinessHoursService.calcularHoras(inicio, fim);
   }
 }
