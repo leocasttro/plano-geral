@@ -38,6 +38,10 @@ export class ConfirmPasswordChange {
       throw new Error('As senhas não conferem');
     }
 
+    if (!input.novaSenha || input.novaSenha.length < 6) {
+      throw new Error('A senha deve ter no mínimo 6 caracteres');
+    }
+
     const novaSenhaHash = await bcrypt.hash(input.novaSenha, 10);
 
     user.alterarSenha(novaSenhaHash);

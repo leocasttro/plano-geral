@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { LoginUser } from '../../../application/use-cases/auth/LoginUser';
 import { authConfig } from '../../config/auth';
 import { ConfirmPasswordChange } from '../../../application/use-cases/auth/ConfirmPasswordChange';
+import { resetLoginRateLimit } from '../middlewares/loginRateLimiter';
 
 type Deps = {
   loginUser: LoginUser;
@@ -17,6 +18,7 @@ export class AuthController {
       const { email, senha } = req.body;
 
       const user = await this.deps.loginUser.execute({ email, senha });
+      resetLoginRateLimit(req);
 
       const token = jwt.sign(
         {
@@ -32,8 +34,8 @@ export class AuthController {
         token,
         user: user.toJSON(),
       });
-    } catch (error: any) {
-      return res.status(401).json({ error: error.message });
+    } catch {
+      return res.status(401).json({ error: 'Credenciais inválidas' });
     }
   }
 
