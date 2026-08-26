@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, take } from 'rxjs';
@@ -12,7 +12,7 @@ import { AuthService } from '../../domain/auth/auth.service';
   templateUrl: './trocar-senha.html',
   styleUrl: './trocar-senha.scss',
 })
-export class TrocarSenha {
+export class TrocarSenha implements OnInit {
   email = '';
   token = '';
   novaSenha = '';
@@ -25,21 +25,25 @@ export class TrocarSenha {
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
-  ) {
-    this.email = this.route.snapshot.queryParamMap.get('email') ?? '';
-    this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
+  ) {}
 
-    if (this.email || this.token) {
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {},
-        replaceUrl: true,
-      });
-    }
+  ngOnInit() {
+    this.route.queryParams.pipe(take(1)).subscribe((params) => {
+      this.email = params['email'] ?? '';
+      this.token = params['token'] ?? '';
 
-    if (!this.email || !this.token) {
-      this.error = 'Link de troca de senha inválido ou incompleto.';
-    }
+      if (this.email && this.token) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true,
+        });
+      }
+
+      if (!this.email || !this.token) {
+        this.error = 'Link de troca de senha inválido ou incompleto.';
+      }
+    });
   }
 
   confirmar(): void {
