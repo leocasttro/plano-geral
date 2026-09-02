@@ -7,5 +7,6 @@ const controller = makeAuthController();
 
 router.post('/login', loginRateLimiter, (req, res) => controller.login(req, res));
 router.post('/confirm-password-change', (req, res) => controller.confirmPasswordChange(req, res));
+router.post('/request-password-rest',   (req, res) => controller.requestPasswordReset(req, res));
 
 export default router;

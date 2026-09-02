@@ -39,6 +39,10 @@ export class AuthService {
     );
   }
 
+  requestPasswordReset(payload: { email: string }) {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/request-password-rest`, payload);
+  }
+
   confirmPasswordChange(payload: ConfirmPasswordChangeRequest) {
     return this.http.post<{ message: string }>(`${this.apiUrl}/confirm-password-change`, payload);
   }
