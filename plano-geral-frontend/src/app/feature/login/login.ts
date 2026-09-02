@@ -19,6 +19,9 @@ export class Login {
   loading = false;
   error = '';
 
+  recuperandoSenha = false;
+  mensagemSucesso = '';
+
   constructor(
     private authService: AuthService,
     private router: Router
@@ -37,6 +40,29 @@ export class Login {
         this.error = err.error.message ?? 'Erro ao fazer login';
         this.loading = false;
       },
+    });
+  }
+
+  solicitarRecuperacaoSenha(event: Event) {
+    event.preventDefault();
+    this.error = '';
+    this.mensagemSucesso = '';
+
+    if (!this.email) {
+      this.error = 'Por favor, digite seu e-mail no campo acima para recuperar a senha.';
+      return;
+    }
+
+    this.recuperandoSenha = true;
+    this.authService.requestPasswordReset({ email: this.email }).subscribe({
+      next: (res) => {
+        this.mensagemSucesso = res.message || 'Link de cuperação enviado para o seu e-mail.';
+        this.recuperandoSenha = false;
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Erro ao solicitar recuperação de senha.';
+        this.recuperandoSenha = false;
+      }
     });
   }
 }

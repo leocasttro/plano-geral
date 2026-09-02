@@ -21,6 +21,8 @@ export class TrocarSenha implements OnInit {
   error = '';
   success = '';
 
+  hastoken = false;
+
   constructor(
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -32,19 +34,26 @@ export class TrocarSenha implements OnInit {
       this.email = params['email'] ?? '';
       this.token = params['token'] ?? '';
 
-      if (this.email && this.token) {
+      if (this.token) {
+        this.hastoken = true;
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: {},
           replaceUrl: true,
         });
-      }
-
-      if (!this.email || !this.token) {
-        this.error = 'Link de troca de senha inválido ou incompleto.';
+      } else {
+        this.hastoken = false;
+        this.error = '';
       }
     });
   }
+
+  submeterFormulario() {
+    if (this.hastoken) {
+      this.confirmar();
+    }
+  }
+
 
   confirmar(): void {
     this.error = '';

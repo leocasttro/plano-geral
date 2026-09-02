@@ -24,7 +24,7 @@ export class MailService {
   async sendPasswordChangeConfirmation(to: string, nome: string, link: string) {
     await this.send({
       to,
-      subject: 'Defina sua senha - Prosul',
+      subject: 'Defina sua senha - Plano geral Prosul',
       html: `
         <p>Olá, ${nome}.</p>
         <p>Seu acesso ao sistema Prosul foi criado.</p>
@@ -33,5 +33,19 @@ export class MailService {
         <p>Esse link expira em 30 minutos.</p>
       `,
     });
+  }
+
+  async sendPasswordReset(to: string, nome: string, link: string) {
+    await this.send({
+      to,
+      subject: 'Recuperação de senha - Plano geral Prosul',
+      html: `
+        <p>Olá, ${nome}.</p>
+        <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
+        <p>Clique no link abaixo para criar uma nova senha:</p>
+        <p><a href="${link}">Refinir minha senha</a></p>
+        <p>Esse link expira em 1 hora. Se você não solicitou, pode ignorar este e-mail.</p>
+      `
+    })
   }
 }

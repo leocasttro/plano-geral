@@ -40,11 +40,15 @@
           <span>Lembrar-me</span>
         </label>
 
-        <a href="#" aria-disabled="true">Esqueci minha senha</a>
+        <a href="#" (click)="solicitarRecuperacaoSenha($event)" aria-disabled="true">Esqueci minha senha</a>
       </div>
 
       <div class="alert alert-danger" *ngIf="error">
         {{ error }}
+      </div>
+
+      <div class="alert alert-success" *ngIf="mensagemSucesso">
+        {{ mensagemSucesso }}
       </div>
 
       <button class="login-button" type="submit" [disabled]="loading">

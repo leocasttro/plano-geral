@@ -4,10 +4,12 @@ import { LoginUser } from '../../../application/use-cases/auth/LoginUser';
 import { authConfig } from '../../config/auth';
 import { ConfirmPasswordChange } from '../../../application/use-cases/auth/ConfirmPasswordChange';
 import { resetLoginRateLimit } from '../middlewares/loginRateLimiter';
+import { RequestPasswordReset } from '../../../application/use-cases/auth/RequestPasswordReset';
 
 type Deps = {
   loginUser: LoginUser;
   confirmPasswordChange: ConfirmPasswordChange;
+  requestPasswordReset: RequestPasswordReset;
 };
 
 export class AuthController {
@@ -45,6 +47,22 @@ export class AuthController {
       return res.json({ message: 'Senha alterada com sucesso' });
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async requestPasswordReset(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: 'E-mail é obrigatório' });
+      }
+
+      await this.deps.requestPasswordReset.execute(email);
+
+      return res.json({ message: 'E-mail enviado para redefinir a senha.' });
+    } catch (error: any) {
+      return res.status(500).json({ error: 'Erro interno ao processar a solicitação.' });
     }
   }
 }
