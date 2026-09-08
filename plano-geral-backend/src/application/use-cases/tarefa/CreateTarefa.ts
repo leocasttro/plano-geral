@@ -2,12 +2,14 @@ import { Tarefa } from "../../../domain/entities/Tarefa";
 import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 import {ProjetoRepository} from '../../../domain/repositories/ProjetoRepository';
 import {TituloTarefaCatalogoRepository} from '../../../domain/repositories/TituloTarefaCatalogoRepository';
+import {UserRepository} from '../../../domain/repositories/UserRepository';
 
 export class CreateTarefa {
   constructor(
     private readonly repo: TarefaRepository,
     private readonly projetoRepo: ProjetoRepository,
     private readonly tituloCatalogoRepo: TituloTarefaCatalogoRepository,
+    private readonly userRepo: UserRepository,
   ) {}
 
   async execute(input: {
@@ -62,6 +64,17 @@ export class CreateTarefa {
       input.projetoId,
       input.tituloCatalogoId ?? null,
     );
+
+    if (input.tituloCatalogoId) {
+      const tituloCatalogoObj = await this.tituloCatalogoRepo.findById(input.tituloCatalogoId);
+      if (tituloCatalogoObj?.componente?.trim().toLowerCase() === 'geoprocessamento') {
+        const users = await this.userRepo.findAllActive();
+        const gestorGeo = users.find(u => u.perfil === 'GESTOR_GEOPROCESSAMENTO');
+        if (gestorGeo) {
+          tarefa.atribuirResponsavel(gestorGeo.id, input.usuarioNome, gestorGeo.nome);
+        }
+      }
+    }
 
     tarefa.definirProjeto({
       id: projeto.id,

@@ -205,7 +205,7 @@
                 <strong>{{ log.usuario }}</strong>
                 {{ log.acao }}
                 <span class="activity-date">
-                  {{ log.data | date:'short' }}
+                  {{ log.data | date:'dd/MM/yyyy HH:mm' }}
                 </span>
               </div>
 
@@ -214,7 +214,7 @@
                 <div class="comment-header">
                   <strong>{{ log.usuario }}</strong>
                   <span class="activity-date">
-                    {{ log.data | date:'short' }}
+                    {{ log.data | date:'dd/MM/yyyy HH:mm' }}
                   </span>
                 </div>
 
@@ -259,7 +259,7 @@
           *ngIf="responsavelSelecionado && !mostrarSelecaoResponsavel"
           class="d-flex align-items-center justify-content-between mb-2"
         >
-          <div class="d-flex align-items-center gap-2">
+          <div class="d-flex align-items-center gap-2" (click)="abrirSelecaoResponsavel()" style="cursor: pointer;" title="Alterar responsável">
             <div
               class="avatar"
               [style.backgroundColor]="getCorAvatar(responsavelSelecionado.nome)"
@@ -270,14 +270,6 @@
               <strong>{{ responsavelSelecionado.nome }}</strong>
             </div>
           </div>
-          <button
-            *ngIf="!estaAvaliandoSolicitacaoAlteracaoDatas()"
-            class="btn btn-link text-danger p-0"
-            title="Remover responsável"
-            style="font-size: 0.8rem; text-decoration: none"
-          >
-            <i class="bi bi-x"></i>
-          </button>
         </div>
 
         <!-- Botão para adicionar responsável -->

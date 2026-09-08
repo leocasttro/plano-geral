@@ -67,6 +67,13 @@ export class Configuracoes implements OnInit {
       descricao: 'Acesso de consulta para acompanhamento.',
       permissoes: ['Visualizar informações permitidas', 'Acompanhar prazos'],
     },
+    {
+      id: 'GESTOR_GEOPROCESSAMENTO',
+      nome: 'Gestor de Geoprocessamento',
+      resumo: 'Responsável pelo setor de Geo',
+      descricao: 'Acesso às tarefas de geoprocessamento e controle da equipe do setor.',
+      permissoes: ['Receber tarefas de geoprocessamento', 'Reatribuir tarefas de geoprocessamento'],
+    },
   ];
 
   constructor(

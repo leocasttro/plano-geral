@@ -49,6 +49,7 @@ type Deps = {
   aprovarAlteracaoDatas: AprovarAlteracaoDatas;
   reprovarAlteracaoDatas: ReprovarAlteracaoDatas;
   deleteTarefa: DeleteTarefa;
+  userRepo: import('../../../domain/repositories/UserRepository').UserRepository;
 };
 
 function parseDateOnly(value?: string): Date | undefined {
@@ -77,7 +78,7 @@ function isStatusTarefa(valor: any): valor is StatusTarefa {
 }
 
 function podeAprovarAlteracaoDatas(perfil?: string): boolean {
-  return ['ADMIN', 'MANAGER', 'GESTOR'].includes(
+  return ['ADMIN', 'MANAGER', 'GESTOR', 'GESTOR_GEOPROCESSAMENTO'].includes(
     String(perfil ?? '').toUpperCase(),
   );
 }
@@ -97,7 +98,20 @@ export class TarefasController {
       usuarioNome: getAuthenticatedUser(req),
     });
 
-    return res.status(201).json(TarefaDTO.fromDomain(tarefa));
+    let responsavelDto = null;
+    const responsavelId = tarefa.obterResponsavel();
+    if (responsavelId) {
+      const respUser = await this.deps.userRepo.findById(responsavelId);
+      if (respUser) {
+        responsavelDto = {
+          id: respUser.id,
+          nome: respUser.nome,
+          email: respUser.email,
+        };
+      }
+    }
+
+    return res.status(201).json(TarefaDTO.fromDomain(tarefa, responsavelDto));
   }
 
   async buscarTodas(req: Request, res: Response) {

@@ -117,7 +117,7 @@ export class User {
   }
 
   alterarPerfil(novoPerfil: string, usuarioAcao?: string) {
-    const perfisValidos = ['ADMIN', 'USER', 'MANAGER', 'VIEWER'];
+    const perfisValidos = ['ADMIN', 'USER', 'MANAGER', 'VIEWER', 'GESTOR_GEOPROCESSAMENTO'];
     const perfilUpper = novoPerfil.toUpperCase();
 
     if (!perfisValidos.includes(perfilUpper)) {
