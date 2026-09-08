@@ -8,6 +8,7 @@ import { Calendario } from './feature/calendario/calendario';
 import { Configuracoes } from './feature/configuracoes/configuracoes';
 import { TrocarSenha } from './feature/trocar-senha/trocar-senha';
 import { RelatorioPessoal } from './feature/relatorio-pessoal/relatorio-pessoal';
+import { roleGuard } from './domain/auth/role.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login, title: 'Login | Prosul' },
@@ -47,6 +48,9 @@ export const routes: Routes = [
     path: 'configuracoes',
     component: Configuracoes,
     title: 'Configurações | Prosul',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: ['ADMIN']
+    }
   },
 ];

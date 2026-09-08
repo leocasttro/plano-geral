@@ -50,7 +50,7 @@ export function makeTarefaController() {
 
 
   return new TarefasController({
-    createTarefa: new CreateTarefa(repo, projetoRepo, tituloCatalogoRepo),
+    createTarefa: new CreateTarefa(repo, projetoRepo, tituloCatalogoRepo, userRepo),
     getById: new GetTarefaById(repo, userRepo),
     getAllTarefas: new GetAllTarefas(repo, userRepo),
     addComentario: new AdicionarComentario(
@@ -92,5 +92,6 @@ export function makeTarefaController() {
       notificacaoService,
     ),
     deleteTarefa: new DeleteTarefa(repo, notificacaoService),
+    userRepo,
   });
 }
