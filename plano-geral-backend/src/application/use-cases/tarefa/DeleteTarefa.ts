@@ -14,6 +14,10 @@ export class DeleteTarefa {
       throw new Error('Tarefa não encontrada');
     }
 
+    if (tarefa.obterCriador() !== input.usuarioId) {
+      throw new Error('Apenas o criador da tarefa pode apagá-la');
+    }
+
     const responsavelId = tarefa.obterResponsavel();
 
     await this.tarefaRepository.delete(input.tarefaId);

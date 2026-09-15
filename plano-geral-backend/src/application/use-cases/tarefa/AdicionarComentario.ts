@@ -32,26 +32,28 @@ export class AdicionarComentario {
     const responsavelId = tarefa.obterResponsavel();
 
     if (responsavelId) {
-      await this.notificacaoService.notificarUsuario({
+      this.notificacaoService.notificarUsuario({
         usuarioId: responsavelId,
         autorId: input.usuarioId,
         tipo: 'COMENTARIO_TAREFA',
         titulo: 'Novo comentário',
         mensagem: `${input.usuarioNome} comentou na tarefa "${tarefa.titulo}".`,
         link: `/tarefas/${tarefa.id}`,
-      });
+      }).catch(console.error);
     }
 
-    if (await this.deveNotificarGestor(input.usuarioId, responsavelId)) {
-      await this.gestorProjetoNotificacaoService?.notificarComentarioRelevante({
-        tarefa,
-        comentario: input.comentario,
-        usuarioId: input.usuarioId,
-        usuarioNome: input.usuarioNome,
-      }).catch((error) => {
-        console.error('Falha ao notificar gestor sobre comentário:', error);
-      });
-    }
+    this.deveNotificarGestor(input.usuarioId, responsavelId).then(deve => {
+      if (deve) {
+        this.gestorProjetoNotificacaoService?.notificarComentarioRelevante({
+          tarefa,
+          comentario: input.comentario,
+          usuarioId: input.usuarioId,
+          usuarioNome: input.usuarioNome,
+        }).catch((error) => {
+          console.error('Falha ao notificar gestor sobre comentário:', error);
+        });
+      }
+    }).catch(console.error);
 
     return tarefa;
   }
