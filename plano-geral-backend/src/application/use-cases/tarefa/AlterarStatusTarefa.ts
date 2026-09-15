@@ -12,9 +12,11 @@ type AlterarStatusTarefaDeps = {
 
 export class AlterarStatusTarefa {
   private statusTransitionService: TarefaStatusTransitionService;
+  private userRepository?: import("../../../domain/repositories/UserRepository").UserRepository;
 
   constructor(private repo: TarefaRepository, private deps: AlterarStatusTarefaDeps = {}) {
     this.statusTransitionService = deps.statusTransitionService ?? new TarefaStatusTransitionService();
+    this.userRepository = (deps as any).userRepository;
   }
 
   async execute(input: {
@@ -22,6 +24,7 @@ export class AlterarStatusTarefa {
     novoStatus: StatusTarefa;
     usuario: string;
     usuarioId?: string;
+    perfil?: string;
   }) {
     const tarefa = await this.repo.findById(input.tarefaId);
 
@@ -29,12 +32,22 @@ export class AlterarStatusTarefa {
       throw new Error('Tarefa não encontrada');
     }
 
-    this.validarPreRequisitosParaAndamentoOuConclusao(tarefa, input.novoStatus);
+    
+    let force = false;
+    if (input.perfil === 'GESTOR_GEOPROCESSAMENTO' && tarefa.obterTituloCatalogo()?.componente?.toLowerCase() === 'geoprocessamento') {
+      force = true;
+    }
+    
+    if (!force) {
+        this.validarPreRequisitosParaAndamentoOuConclusao(tarefa, input.novoStatus);
+    }
+
 
     this.statusTransitionService.alterarStatus(
       tarefa,
       input.novoStatus,
       input.usuario,
+      force
     );
 
     await this.repo.save(tarefa);

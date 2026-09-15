@@ -4,6 +4,8 @@ import { TarefaORM } from "../TarefaORM";
 import { AppDataSource } from "../../../data-source";
 import { Tarefa } from "../../../../../domain/entities/Tarefa";
 import { TarefaMapper } from "../../mappers/TarefaMapper";
+import { AtividadeORM } from "../AtividadeORM";
+import { ChecklistItemORM } from "../ChecklistItemORM";
 
 export class TarefaTypeORMRepository implements TarefaRepository {
   private ormRepo: Repository<TarefaORM>;
@@ -14,6 +16,31 @@ export class TarefaTypeORMRepository implements TarefaRepository {
 
   async save(tarefa: Tarefa): Promise<void> {
     const row = TarefaMapper.toORM(tarefa);
+
+    // Fetch existing to find removed items
+    const existing = await this.ormRepo.findOne({
+      where: { id: tarefa.id },
+      relations: { atividades: true, checklist: true }
+    });
+
+    if (existing) {
+      // Find removed atividades
+      const removedAtividades = existing.atividades.filter(
+        (ea) => !row.atividades.some((ra) => ra.id === ea.id)
+      );
+      if (removedAtividades.length > 0) {
+        await AppDataSource.getRepository(AtividadeORM).remove(removedAtividades);
+      }
+
+      // Find removed checklist
+      const removedChecklist = existing.checklist.filter(
+        (ec) => !row.checklist.some((rc) => rc.id === ec.id)
+      );
+      if (removedChecklist.length > 0) {
+        await AppDataSource.getRepository(ChecklistItemORM).remove(removedChecklist);
+      }
+    }
+
     await this.ormRepo.save(row);
   }
 

@@ -271,13 +271,14 @@ export class Calendario implements OnInit {
       return 'SR';
     }
 
-    return nome
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((parte) => parte[0])
-      .join('')
-      .toUpperCase();
+    const parts = nome.trim().split(/\s+/);
+    if (parts.length === 1) {
+      return parts[0].substring(0, 2).toUpperCase();
+    }
+    
+    const first = parts[0];
+    const last = parts[parts.length - 1];
+    return (first.charAt(0) + last.charAt(0)).toUpperCase();
   }
 
   corResponsavelCalendario(tarefa: TarefaCalendarioDTO): string {

@@ -14,12 +14,14 @@ type ResponsavelDTO = {
 type ProjetoResumoDTO = {
   id: string;
   nome: string;
+  centroCusto?: string | null;
 };
 
 export interface TarefaDTOProps {
   id: string;
   titulo: string;
   tituloCatalogoId?: string | null;
+  componenteCatalogo?: string | null;
   descricao?: string;
   dataInicio?: string | null;
   dataFim?: string | null;
@@ -73,6 +75,7 @@ export class TarefaDTO {
       id: tarefa.id,
       titulo: tarefa.titulo,
       tituloCatalogoId: tarefa.obterTituloCatalogoId(),
+      componenteCatalogo: tarefa.obterTituloCatalogo()?.componente ?? null,
       descricao: tarefa.descricao,
       dataInicio: formatDateOnly(dataInicio),
       dataFim: formatDateOnly(dataFim),

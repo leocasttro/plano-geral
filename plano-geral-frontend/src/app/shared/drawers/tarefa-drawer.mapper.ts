@@ -22,6 +22,7 @@ export type CardDataDrawer = CardData & {
   tags?: string[];
   dataCriacao: Date;
   status: string;
+  componenteCatalogo?: string | null;
 };
 
 export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
@@ -35,6 +36,7 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
     urlImagem: 'https://placehold.co/32x32',
 
     responsavelId: dto.responsavelId ?? null,
+    criadorId: dto.criadorId ?? null,
     responsavel: dto.responsavel ?? null,
     dataCriacao: dto.atividades?.length
       ? new Date(dto.atividades[0].data)
@@ -68,6 +70,7 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
         acao: tipo !== 'COMENTARIO' ? a.descricao : undefined,
       };
     }),
+    componenteCatalogo: dto.componenteCatalogo,
   };
 }
 

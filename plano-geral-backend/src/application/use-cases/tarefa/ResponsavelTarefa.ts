@@ -31,7 +31,7 @@ export class ResponsavelTarefa {
 
     const tituloCatalogo = tarefa.obterTituloCatalogo();
     if (tituloCatalogo?.componente?.trim().toLowerCase() === 'geoprocessamento') {
-      if (usuarioAcao?.perfil !== 'GESTOR_GEOPROCESSAMENTO' && usuarioAcao?.perfil !== 'ADMIN') {
+      if (usuarioAcao?.perfil !== 'GESTOR_GEOPROCESSAMENTO') {
         throw new Error('Apenas o gestor de geoprocessamento pode reatribuir esta tarefa');
       }
     }

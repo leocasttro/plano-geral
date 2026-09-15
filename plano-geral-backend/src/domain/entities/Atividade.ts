@@ -15,7 +15,7 @@ export class Atividade {
     public readonly id: string,
     public readonly tipo: TipoAtividade,
     public readonly usuario: string,
-    public readonly descricao: string,
+    public descricao: string,
     data?: Date,
   ) {
     this.data = data ?? new Date();
@@ -23,6 +23,13 @@ export class Atividade {
     if (!descricao || descricao.trim().length === 0) {
       throw new Error('Atividade precisa de uma descrição válida');
     }
+  }
+
+  alterarDescricao(novaDescricao: string) {
+    if (!novaDescricao || novaDescricao.trim().length === 0) {
+      throw new Error('Descrição não pode ser vazia');
+    }
+    this.descricao = novaDescricao;
   }
 
   static reconstituir(props: AtividadeProps): Atividade {

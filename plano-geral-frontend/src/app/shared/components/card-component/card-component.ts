@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { DatePipe, NgClass, SlicePipe, UpperCasePipe } from '@angular/common';
+import { DatePipe, NgClass, SlicePipe, UpperCasePipe, CommonModule } from '@angular/common';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
@@ -34,11 +34,13 @@ export interface CardData {
   } | null;
   status?: string;
   tituloCatalogoId?: string | null;
+  criadorId?: string | null;
 
   projetoId?: string | null;
   projeto?: {
     id: string;
     nome: string;
+    centroCusto?: string | null;
   } | null;
   checklist: ChecklistItem[];
 
@@ -48,19 +50,21 @@ export interface CardData {
   dataFim?: string;
 }
 
+import { IniciaisPipe } from '../../pipes/iniciais.pipe';
+
 /* ================= COMPONENT ================= */
 
 @Component({
   selector: 'app-card-component',
   standalone: true,
   imports: [
+    CommonModule,
     NgClass,
     NgbCollapseModule,
     FontAwesomeModule,
     FormsModule,
     DatePipe,
-    SlicePipe,      // ← Adicione aqui
-    UpperCasePipe,   // ← Adicione aqui
+    IniciaisPipe,
   ],
   templateUrl: './card-component.html',
   styleUrls: ['./card-component.scss'],

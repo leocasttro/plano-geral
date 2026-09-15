@@ -3,7 +3,7 @@ import {
   TarefaApi,
 } from './../../domain/tarefa/tarefa.api';
 import { AtividadeDTO, Usuario } from '../../domain/tarefa/tarefa.model';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import {
   NgbCollapseModule,
@@ -14,6 +14,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 import { EventEmitter, Output } from '@angular/core';
+
+import { IniciaisPipe } from '../pipes/iniciais.pipe';
 
 import {
   AtividadeDrawer,
@@ -35,6 +37,7 @@ import { AuthService } from '../../domain/auth/auth.service';
     FontAwesomeModule,
     FormsModule,
     NgbTypeaheadModule,
+    IniciaisPipe,
   ],
   templateUrl: './tarefa-drawers-component.html',
   styleUrls: ['./tarefa-drawers-component.scss'],
@@ -44,6 +47,16 @@ export class TarefaDrawersComponent implements OnInit {
   @Input() solicitacaoAlteracaoDatasId: string | null = null;
   @Output() tarefaAtualizada = new EventEmitter<CardDataDrawer>();
   @Output() tarefaExcluida = new EventEmitter<string>();
+
+  @ViewChild('activityTimeline') activityTimeline!: ElementRef;
+
+  scrollToBottom(): void {
+    setTimeout(() => {
+      if (this.activityTimeline) {
+        this.activityTimeline.nativeElement.scrollTop = this.activityTimeline.nativeElement.scrollHeight;
+      }
+    }, 100);
+  }
 
   faCalendar = faCalendar;
 
@@ -135,15 +148,73 @@ export class TarefaDrawersComponent implements OnInit {
           ];
 
           this.novoComentario = '';
+          this.tarefaAtualizada.emit(this.tarefa);
 
           this.toast.success('Comentário adicionado na tarefa.');
           this.cdr.detectChanges();
+          this.scrollToBottom();
         },
         error: (err) => {
           console.error(err);
           this.toast.error('Erro ao adicionar comentário.');
         },
       });
+  }
+
+  atividadeEmEdicaoId: string | null = null;
+  comentarioEdicaoTexto: string = '';
+
+  iniciarEdicaoComentario(atividade: AtividadeDrawer) {
+    if (!this.podeEditarApagarComentario(atividade)) return;
+    this.atividadeEmEdicaoId = atividade.id;
+    this.comentarioEdicaoTexto = atividade.comentario ?? '';
+  }
+
+  cancelarEdicaoComentario() {
+    this.atividadeEmEdicaoId = null;
+    this.comentarioEdicaoTexto = '';
+  }
+
+  salvarEdicaoComentario() {
+    if (!this.atividadeEmEdicaoId || !this.comentarioEdicaoTexto.trim()) return;
+
+    this.tarefaApi.alterarComentario(this.tarefa.id!, this.atividadeEmEdicaoId, this.comentarioEdicaoTexto.trim()).subscribe({
+      next: () => {
+        this.toast.success('Comentário atualizado.');
+        this.atividadeEmEdicaoId = null;
+        this.listarAtividades();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error(err.error?.error ?? 'Erro ao editar comentário.');
+      }
+    });
+  }
+
+  apagarComentario(atividadeId: string) {
+    if (!confirm('Deseja realmente apagar este comentário?')) return;
+
+    this.tarefaApi.apagarComentario(this.tarefa.id!, atividadeId).subscribe({
+      next: () => {
+        this.toast.success('Comentário apagado.');
+        this.listarAtividades();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error(err.error?.error ?? 'Erro ao apagar comentário.');
+      }
+    });
+  }
+
+  podeEditarApagarComentario(atividade: AtividadeDrawer): boolean {
+    if (atividade.tipo !== 'comentario') return false;
+    const usuarioLogado = this.authService.usuario();
+    if (!usuarioLogado || atividade.usuario !== usuarioLogado.nome) return false;
+
+    const dataAtividade = new Date(atividade.data);
+    const dataAtual = new Date();
+    const difMs = dataAtual.getTime() - dataAtividade.getTime();
+    return difMs <= 24 * 60 * 60 * 1000;
   }
 
   carregarSolicitacaoAlteracaoDatas(): void {
@@ -277,7 +348,9 @@ export class TarefaDrawersComponent implements OnInit {
           ...new Set(this.tarefa.atividades.map((x) => x.usuario)),
         ];
 
+        this.tarefaAtualizada.emit(this.tarefa);
         this.cdr.detectChanges();
+        this.scrollToBottom();
       },
       error: (err) => console.error(err),
     });
@@ -684,6 +757,24 @@ export class TarefaDrawersComponent implements OnInit {
   podeAlterarDatas(): boolean {
     const perfil = this.authService.usuario()?.perfil?.toUpperCase();
     return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR';
+  }
+
+  podeAlterarResponsavel(): boolean {
+    const perfil = this.authService.usuario()?.perfil?.toUpperCase();
+
+    // Regra específica para tarefas de Geoprocessamento
+    if (this.tarefa.componenteCatalogo?.trim().toLowerCase() === 'geoprocessamento') {
+      return perfil === 'GESTOR_GEOPROCESSAMENTO';
+    }
+
+    // Regra geral para outras tarefas (somente Gestores e Admins podem reatribuir)
+    return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR';
+  }
+
+  podeApagar(): boolean {
+    const usuarioLogado = this.authService.usuario();
+    if (!usuarioLogado || !this.tarefa.criadorId) return false;
+    return usuarioLogado.id === this.tarefa.criadorId;
   }
 
   getCorAvatar(nome: string): string {

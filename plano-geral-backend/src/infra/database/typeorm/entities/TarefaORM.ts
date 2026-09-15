@@ -64,11 +64,11 @@ export class TarefaORM {
   @JoinColumn({ name: 'titulo_catalogo_id' })
   tituloCatalogo?: TituloTarefaCatalogoORM | null;
 
-  @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert'] })
+  @OneToMany(() => AtividadeORM, (a) => a.tarefa, { cascade: ['insert', 'update', 'remove'] })
   atividades!: AtividadeORM[];
 
   @OneToMany(() => ChecklistItemORM, (c) => c.tarefa, {
-    cascade: ['insert', 'update'],
+    cascade: ['insert', 'update', 'remove'],
   })
   checklist!: ChecklistItemORM[];
 
