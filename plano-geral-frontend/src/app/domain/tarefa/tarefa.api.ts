@@ -62,6 +62,23 @@ export class TarefaApi {
     });
   }
 
+  alterarComentario(
+    tarefaId: string,
+    atividadeId: string,
+    comentario: string,
+  ): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${tarefaId}/comentarios/${atividadeId}`, {
+      comentario,
+    });
+  }
+
+  apagarComentario(
+    tarefaId: string,
+    atividadeId: string,
+  ): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${tarefaId}/comentarios/${atividadeId}`);
+  }
+
   buscarAtividades(tarefaId: string): Observable<AtividadeDTO[]> {
     return this.http.get<AtividadeDTO[]>(
       `${this.apiUrl}/${tarefaId}/atividades`,

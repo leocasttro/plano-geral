@@ -220,6 +220,7 @@ section:last-child {
   position: relative;
   max-height: 300px;
   overflow-y: auto;
+  overflow-x: hidden;
   margin-bottom: 1rem;
 }
 
@@ -237,7 +238,7 @@ section:last-child {
   position: relative;
   display: flex;
   gap: 12px;
-  padding: 8px 0 8px 32px;
+  padding: 8px 6px 8px 32px;
   font-size: 0.85rem;
 }
 
@@ -282,6 +283,7 @@ section:last-child {
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   padding: 8px 12px;
+  margin-top: 6px;
 }
 
 .comment-header {
@@ -296,6 +298,8 @@ section:last-child {
   font-size: 0.85rem;
   color: #111827;
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .checklist-text {
@@ -398,4 +402,49 @@ section:last-child {
 .drawer-danger-zone span {
   color: #6b7280;
   font-size: 0.8rem;
+}
+
+/* ================= COMENTÁRIO ACTIONS (BUBBLES) ================= */
+.comment-item {
+  position: relative;
+}
+
+.comment-actions {
+  position: absolute;
+  top: -12px;
+  right: -2px;
+  display: flex;
+  gap: 4px;
+  background: #fff;
+  padding: 3px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  z-index: 2;
+}
+
+.comment-action-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  font-size: 0.75rem;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.comment-action-btn:hover {
+  opacity: 0.85;
+}
+
+.btn-edit-comment {
+  background-color: #0d6efd; /* Azul para editar */
+}
+
+.btn-delete-comment {
+  background-color: #dc3545; /* Vermelho para apagar */
 }

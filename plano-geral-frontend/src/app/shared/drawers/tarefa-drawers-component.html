@@ -194,7 +194,7 @@
           </div>
         </div>
 
-        <ul class="activity-timeline">
+        <ul class="activity-timeline" #activityTimeline>
           <!-- ITEM SIMPLES -->
           <li *ngFor="let log of tarefa.atividades; trackBy: trackAtividade">
             <div class="timeline-dot"></div>
@@ -211,14 +211,28 @@
 
               <!-- COMENTÁRIO -->
               <div *ngIf="log.tipo === 'comentario'" class="comment-item">
-                <div class="comment-header">
-                  <strong>{{ log.usuario }}</strong>
-                  <span class="activity-date">
-                    {{ log.data | date:'dd/MM/yyyy HH:mm' }}
-                  </span>
+                <div *ngIf="podeEditarApagarComentario(log)" class="comment-actions">
+                  <button type="button" class="comment-action-btn btn-edit-comment" title="Editar" (click)="iniciarEdicaoComentario(log)">✎</button>
+                  <button type="button" class="comment-action-btn btn-delete-comment" title="Apagar" (click)="apagarComentario(log.id)">✖</button>
+                </div>
+                <div class="comment-header d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>{{ log.usuario }}</strong>
+                    <span class="activity-date">
+                      {{ log.data | date:'dd/MM/yyyy HH:mm' }}
+                    </span>
+                  </div>
                 </div>
 
-                <div class="comment-body">{{ log.comentario }}</div>
+                <div class="comment-body" *ngIf="atividadeEmEdicaoId !== log.id">{{ log.comentario }}</div>
+                
+                <div class="mt-2" *ngIf="atividadeEmEdicaoId === log.id">
+                  <textarea class="form-control form-control-sm mb-2" rows="2" [(ngModel)]="comentarioEdicaoTexto"></textarea>
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicaoComentario()">Cancelar</button>
+                    <button class="btn btn-sm btn-primary" (click)="salvarEdicaoComentario()">Salvar</button>
+                  </div>
+                </div>
               </div>
             </div>
           </li>
@@ -259,12 +273,15 @@
           *ngIf="responsavelSelecionado && !mostrarSelecaoResponsavel"
           class="d-flex align-items-center justify-content-between mb-2"
         >
-          <div class="d-flex align-items-center gap-2" (click)="abrirSelecaoResponsavel()" style="cursor: pointer;" title="Alterar responsável">
+          <div class="d-flex align-items-center gap-2" 
+               (click)="podeAlterarResponsavel() ? abrirSelecaoResponsavel() : null" 
+               [style.cursor]="podeAlterarResponsavel() ? 'pointer' : 'default'" 
+               [title]="podeAlterarResponsavel() ? 'Alterar responsável' : ''">
             <div
               class="avatar"
               [style.backgroundColor]="getCorAvatar(responsavelSelecionado.nome)"
             >
-              {{ responsavelSelecionado.nome | slice:0:2 | uppercase }}
+              {{ responsavelSelecionado.nome | iniciais }}
             </div>
             <div>
               <strong>{{ responsavelSelecionado.nome }}</strong>
@@ -277,7 +294,8 @@
           *ngIf="
             !responsavelSelecionado &&
             !mostrarSelecaoResponsavel &&
-            !estaAvaliandoSolicitacaoAlteracaoDatas()
+            !estaAvaliandoSolicitacaoAlteracaoDatas() &&
+            podeAlterarResponsavel()
           "
         >
           <button
@@ -336,7 +354,7 @@
                   class="avatar"
                   [style.backgroundColor]="getCorAvatar(usuario.nome)"
                 >
-                  {{ usuario.nome | slice:0:2 | uppercase }}
+                  {{ usuario.nome | iniciais }}
                 </div>
                 <div class="flex-grow-1">
                   <div class="fw-bold" style="font-size: small">
@@ -483,7 +501,7 @@
             [style.backgroundColor]="getCorAvatar(p + i)"
             [title]="p"
           >
-            {{ p | slice:0:2 | uppercase }}
+            {{ p | iniciais }}
           </div>
         </div>
 
@@ -496,7 +514,7 @@
 </div>
 
 <div class="drawer-footer">
-  <div class="drawer-danger-zone">
+  <div class="drawer-danger-zone" *ngIf="podeApagar()">
     <div>
       <strong>Apagar tarefa</strong>
       <span>Remove a tarefa, checklist, atividades e comentários vinculados.</span>

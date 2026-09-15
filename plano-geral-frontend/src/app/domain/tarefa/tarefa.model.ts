@@ -27,6 +27,7 @@ export interface TarefaDTO {
   id: string;
   titulo: string;
   tituloCatalogoId?: string | null;
+  componenteCatalogo?: string | null;
   descricao?: string;
   dataInicio?: string | null;
   dataFim?: string | null;
@@ -60,4 +61,5 @@ export interface ResponsavelTarefaDTO {
 export interface ProjetoResumoDTO {
   id: string;
   nome: string;
+  centroCusto?: string | null;
 }
