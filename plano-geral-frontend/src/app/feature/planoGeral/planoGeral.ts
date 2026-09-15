@@ -219,7 +219,19 @@ export class Pedidos implements OnInit, OnDestroy {
           this.tarefaApi.criar(novaTarefa).subscribe({
             next: (tarefaDto) => {
               const card = tarefaDtoToCardData(tarefaDto);
-              this.tarefasPendentes.push(card);
+              const status = String(card.status ?? '').toUpperCase();
+
+              if (status === 'EM_ANDAMENTO') {
+                this.tarefasEmAndamento = [card, ...this.tarefasEmAndamento];
+              } else if (status === 'CONCLUIDA') {
+                this.tarefasConcluidas = [card, ...this.tarefasConcluidas];
+              } else if (status === 'OUTROS') {
+                this.tarefasTeste = [card, ...this.tarefasTeste];
+              } else {
+                // Cai aqui se for PENDENTE ou qualquer outro não mapeado
+                this.tarefasPendentes = [card, ...this.tarefasPendentes];
+              }
+              
               this.cdr.detectChanges();
             },
           });
