@@ -16,10 +16,12 @@ type PerfilConfig = {
   permissoes: string[];
 };
 
+import { IniciaisPipe } from '../../shared/pipes/iniciais.pipe';
+
 @Component({
   selector: 'app-configuracoes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IniciaisPipe],
   templateUrl: './configuracoes.html',
   styleUrl: './configuracoes.scss',
 })

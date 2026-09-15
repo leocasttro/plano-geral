@@ -100,7 +100,7 @@
 
           <div class="user-row" *ngFor="let usuario of usuarios">
             <div class="user-identity">
-              <div class="avatar">{{ usuario.nome | slice:0:2 | uppercase }}</div>
+              <div class="avatar">{{ usuario.nome | iniciais }}</div>
               <div>
                 <strong>{{ usuario.nome }}</strong>
                 <small>{{ usuario.email }}</small>
