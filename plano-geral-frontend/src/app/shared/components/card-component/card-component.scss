@@ -29,3 +29,21 @@
   border: 2px solid #fff;
   cursor: default;
 }
+
+.descricao-truncada {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.card-body {
+  cursor: pointer;
+}
+.card-body:hover {
+  background-color: #f8f9fa;
+}
