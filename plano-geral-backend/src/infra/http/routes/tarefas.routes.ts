@@ -23,6 +23,8 @@ router.get('/:id/solicitacoes-datas/pendente', (req, res) =>
   controller.buscarSolicitacaoAlteracaoDatasPendente(req, res),
 );
 router.post("/:id/comentarios", (req, res) => controller.adicionarComentario(req, res));
+router.put("/:id/comentarios/:atividadeId", (req, res) => controller.alterarComentario(req, res));
+router.delete("/:id/comentarios/:atividadeId", (req, res) => controller.apagarComentario(req, res));
 router.get("/:id/atividades", (req, res) => controller.buscarAtividades(req, res));
 router.post('/:id/checklist', (req, res) => controller.AdicionarChecklistLitem(req, res));
 router.patch('/:id/checklist/:itemId/toggle', (req, res) => controller.toggleChecklistItem(req, res));

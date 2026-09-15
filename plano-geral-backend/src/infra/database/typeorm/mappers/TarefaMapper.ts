@@ -106,6 +106,7 @@ export class TarefaMapper {
         ? {
           id: row.projeto.id,
           nome: row.projeto.nome,
+          centroCusto: row.projeto.centroCusto,
         }
         : null,
       tituloCatalogo: row.tituloCatalogo

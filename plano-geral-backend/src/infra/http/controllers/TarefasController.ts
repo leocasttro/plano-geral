@@ -148,7 +148,52 @@ export class TarefasController {
         usuarioNome: getAuthenticatedUser(req),
       });
 
-      return res.json(TarefaDTO.fromDomain(tarefa));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(dto);
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
+  async alterarComentario(req: Request, res: Response) {
+    try {
+      await this.validarAcessoTarefa(req, req.params.id);
+
+      const { AlterarComentario } = require('../../../application/use-cases/tarefa/AlterarComentario');
+      const useCase = new AlterarComentario(this.deps.getById['tarefaRepository']); // Hack para instanciar rápido
+
+      await useCase.execute({
+        tarefaId: req.params.id,
+        atividadeId: req.params.atividadeId,
+        novoComentario: req.body.comentario,
+        usuarioAcao: getAuthenticatedUser(req),
+      });
+
+      return res.status(204).send();
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
+  }
+
+  async apagarComentario(req: Request, res: Response) {
+    try {
+      await this.validarAcessoTarefa(req, req.params.id);
+
+      const { ApagarComentario } = require('../../../application/use-cases/tarefa/ApagarComentario');
+      const useCase = new ApagarComentario(this.deps.getById['tarefaRepository']);
+
+      await useCase.execute({
+        tarefaId: req.params.id,
+        atividadeId: req.params.atividadeId,
+        usuarioAcao: getAuthenticatedUser(req),
+      });
+
+      return res.status(204).send();
     } catch (error: any) {
       return res.status(403).json({ error: error.message });
     }
@@ -182,7 +227,13 @@ export class TarefasController {
         nome: req.body.nome,
       });
 
-      return res.json(TarefaDTO.fromDomain(tarefa));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(dto);
     } catch (error: any) {
       return res.status(403).json({ error: error.message });
     }
@@ -197,7 +248,13 @@ export class TarefasController {
         checklistItemId: req.params.itemId,
       });
 
-      return res.json(TarefaDTO.fromDomain(tarefa));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(dto);
     } catch (error: any) {
       return res.status(403).json({ error: error.message });
     }
@@ -219,7 +276,13 @@ export class TarefasController {
         usuario: getAuthenticatedUser(req),
       });
 
-      return res.json(TarefaDTO.fromDomain(tarefa));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(dto);
     } catch (error: any) {
       return res.status(403).json({ error: error.message });
     }
@@ -240,9 +303,16 @@ export class TarefasController {
         novoStatus,
         usuario: getAuthenticatedUser(req),
         usuarioId: getAuthenticatedUserId(req),
+        perfil: req.user.perfil,
       });
 
-      return res.json(TarefaDTO.fromDomain(tarefa));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(dto);
     } catch (error: any) {
       return res.status(403).json({ error: error.message });
     }
@@ -266,7 +336,13 @@ export class TarefasController {
         usuario: getAuthenticatedUserId(req),
       });
 
-      return res.json(TarefaDTO.fromDomain(result.tarefa, result.responsavel));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(dto);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -307,7 +383,13 @@ export class TarefasController {
         justificativa,
       });
 
-      return res.status(200).json(TarefaDTO.fromDomain(tarefa));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.status(200).json(dto);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
@@ -390,7 +472,13 @@ export class TarefasController {
         aprovadorNome: getAuthenticatedUser(req),
       });
 
-      return res.json(TarefaDTO.fromDomain(tarefa));
+      const dto = await this.deps.getById.execute({
+        id: req.params.id,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+      return res.json(dto);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }
