@@ -13,6 +13,13 @@ export class TarefaAccessPolicy {
       return true;
     }
 
+    if (usuario.perfil === 'GESTOR_GEOPROCESSAMENTO') {
+      const catalogo = tarefa.obterTituloCatalogo();
+      if (catalogo?.componente?.trim().toLowerCase() === 'geoprocessamento') {
+        return true;
+      }
+    }
+
     return (
       tarefa.obterCriador() === usuario.id ||
       tarefa.obterResponsavel() === usuario.id ||

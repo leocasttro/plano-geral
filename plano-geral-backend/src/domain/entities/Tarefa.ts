@@ -25,6 +25,7 @@ type TarefaProps = {
 type ProjetoResumo = {
   id: string;
   nome: string;
+  centroCusto?: string | null;
 }
 
 type TituloCatalogoResumo = {
@@ -80,8 +81,21 @@ export class Tarefa {
     return tarefa;
   }
 
-  iniciar(usuario: string) {
-    if (this.status !== StatusTarefa.PENDENTE) {
+
+  retrocederParaPendente(usuario: string) {
+    this.status = StatusTarefa.PENDENTE;
+    this.registrarAtividade(
+      new Atividade(
+        randomUUID(),
+        TipoAtividade.ALTERACAO_STATUS,
+        usuario,
+        'Status alterado para PENDENTE',
+      ),
+    );
+  }
+
+  iniciar(usuario: string, force: boolean = false) {
+    if (!force && this.status !== StatusTarefa.PENDENTE) {
       throw new Error('Só é possível iniciar uma tarefa PENDENTE');
     }
 
@@ -97,8 +111,8 @@ export class Tarefa {
     );
   }
 
-  concluir(usuario: string) {
-    if (this.status !== StatusTarefa.EM_ANDAMENTO) {
+  concluir(usuario: string, force: boolean = false) {
+    if (!force && this.status !== StatusTarefa.EM_ANDAMENTO) {
       throw new Error('Só é possível concluir uma tarefa EM ANDAMENTO');
     }
 
@@ -184,6 +198,44 @@ export class Tarefa {
         comentario,
       ),
     );
+  }
+
+  alterarComentario(atividadeId: string, novoComentario: string, usuarioAcao: string) {
+    const atividade = this.atividades.find(a => a.id === atividadeId);
+    if (!atividade || atividade.tipo !== TipoAtividade.COMENTARIO) {
+      throw new Error('Comentário não encontrado');
+    }
+
+    if (atividade.usuario !== usuarioAcao) {
+      throw new Error('Apenas o autor pode editar o comentário');
+    }
+
+    const vinteQuatroHorasEmMs = 24 * 60 * 60 * 1000;
+    if (new Date().getTime() - atividade.data.getTime() > vinteQuatroHorasEmMs) {
+      throw new Error('O comentário só pode ser editado em até 24h após a criação');
+    }
+
+    atividade.alterarDescricao(novoComentario);
+  }
+
+  apagarComentario(atividadeId: string, usuarioAcao: string) {
+    const index = this.atividades.findIndex(a => a.id === atividadeId);
+    if (index === -1 || this.atividades[index].tipo !== TipoAtividade.COMENTARIO) {
+      throw new Error('Comentário não encontrado');
+    }
+
+    const atividade = this.atividades[index];
+
+    if (atividade.usuario !== usuarioAcao) {
+      throw new Error('Apenas o autor pode apagar o comentário');
+    }
+
+    const vinteQuatroHorasEmMs = 24 * 60 * 60 * 1000;
+    if (new Date().getTime() - atividade.data.getTime() > vinteQuatroHorasEmMs) {
+      throw new Error('O comentário só pode ser apagado em até 24h após a criação');
+    }
+
+    this.atividades.splice(index, 1);
   }
 
   private existeChecklistPendente(): boolean {

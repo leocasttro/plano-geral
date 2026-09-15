@@ -1,3 +1,4 @@
+import { PendenteTarefaTransition } from './PendenteTarefaTransition';
 import {TarefaStatusTransition} from './TarefaStatusTransition';
 import {IniciarTarefaTransition} from './IniciarTarefaTransition';
 import {ConcluirTarefaTransition} from './ConcluirTarefaTransition';
@@ -6,12 +7,13 @@ import {StatusTarefa} from '../../value-objects/StatusTarefa';
 
 export class TarefaStatusTransitionService {
   constructor(private readonly transitions: TarefaStatusTransition[] = [
+    new PendenteTarefaTransition(),
     new IniciarTarefaTransition(),
     new ConcluirTarefaTransition(),
   ],
     ) {}
 
-  alterarStatus(tarefa: Tarefa, novoStatus: StatusTarefa, usuario: string): void {
+  alterarStatus(tarefa: Tarefa, novoStatus: StatusTarefa, usuario: string, force: boolean = false): void {
     if (tarefa.obterStatus() === novoStatus) return;
 
     const transition = this.transitions.find((item) =>
@@ -21,6 +23,6 @@ export class TarefaStatusTransitionService {
       throw new Error('Transição de status não permitida');
     }
 
-    transition.aplicar(tarefa, usuario);
+    transition.aplicar(tarefa, usuario, force);
   }
 }

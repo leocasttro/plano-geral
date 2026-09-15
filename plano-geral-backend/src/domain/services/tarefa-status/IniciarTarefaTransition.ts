@@ -5,7 +5,7 @@ import {Tarefa} from '../../entities/Tarefa';
 export class IniciarTarefaTransition implements TarefaStatusTransition{
   readonly status = StatusTarefa.EM_ANDAMENTO;
 
-  aplicar(tarefa: Tarefa, usuario: string) {
-    tarefa.iniciar(usuario);
+  aplicar(tarefa: Tarefa, usuario: string, force: boolean = false) {
+    tarefa.iniciar(usuario, force);
   }
 }
