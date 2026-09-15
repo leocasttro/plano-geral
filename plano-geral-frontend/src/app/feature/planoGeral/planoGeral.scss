@@ -14,7 +14,8 @@
 
 /* Estilo de cada coluna (raia) */
 .kanban-column {
-  flex: 0 0 390px; /* Não cresce, não encolhe, largura base de 320px */
+  flex: 1; /* Permite que as colunas se ajustem proporcionalmente ao espaço da tela */
+  min-width: 250px; /* Garante uma largura mínima decente para os cards */
   border-radius: 8px; /* Cantos arredondados */
   border: 1px solid transparent;
   border-left-width: 6px;
