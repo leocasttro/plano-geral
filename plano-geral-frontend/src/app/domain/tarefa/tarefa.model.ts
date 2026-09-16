@@ -42,6 +42,9 @@ export interface TarefaDTO {
 
   checklist: ChecklistItemDTO[];
   atividades: AtividadeDTO[];
+
+  isMacroTarefa: boolean;
+  tarefaPaiId?: string | null;
 }
 
 export interface Usuario {

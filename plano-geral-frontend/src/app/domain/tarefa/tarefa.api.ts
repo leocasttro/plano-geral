@@ -9,6 +9,8 @@ export interface CriarTarefaRequest {
   tituloCatalogoId?: string | null;
   descricao?: string;
   projetoId: string;
+  isMacroTarefa?: boolean;
+  tarefaPaiId?: string | null;
 }
 
 export interface SolicitacaoAlteracaoDatasDTO {
