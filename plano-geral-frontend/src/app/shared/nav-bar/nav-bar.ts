@@ -33,6 +33,18 @@ export class NavBar {
   @Output() novaTarefa = new EventEmitter<void>();
   @Output() novoProjeto = new EventEmitter<void>();
 
+  get usuarioAtual() {
+    return this.authService.usuario();
+  }
+
+  formatarPerfil(perfil?: string | null): string {
+    if (!perfil) return '';
+    if (perfil.toUpperCase() === 'GESTOR_GEOPROCESSAMENTO') {
+      return 'Gestor de Geoprocessamento';
+    }
+    return perfil.charAt(0).toUpperCase() + perfil.slice(1).toLowerCase();
+  }
+
   isProjetosRoute = false;
   isKanbanRoute = false;
 

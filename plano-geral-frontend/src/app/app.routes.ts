@@ -36,7 +36,10 @@ export const routes: Routes = [
     path: 'relatorios',
     component: Relatorio,
     title: 'Relatórios | Prosul',
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: ['ADMIN', 'GESTOR', 'GESTOR_GEOPROCESSAMENTO']
+    }
   },
   {
     path: 'meu-relatorio',

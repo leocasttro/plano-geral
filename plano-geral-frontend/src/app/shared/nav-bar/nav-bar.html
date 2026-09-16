@@ -6,7 +6,16 @@
         <span class="text-body-tertiary fs-6">{{ subtitulo }}</span>
       </div>
 
-      <div class="perfil-btn">
+      <div class="perfil-btn d-flex align-items-center">
+        <!-- Info do Usuário -->
+        <div class="user-info text-end me-4 d-none d-md-block" *ngIf="usuarioAtual">
+          <div class="fw-bold text-dark" style="font-size: 0.95rem; line-height: 1.2;">
+            {{ usuarioAtual.nome }}
+          </div>
+          <div class="text-muted" style="font-size: 0.8rem;">
+            {{ formatarPerfil(usuarioAtual.perfil) }}
+          </div>
+        </div>
         <button
           *ngIf="isProjetosRoute"
           class="btn btn-primary fw-bolder p-2 m-2"
