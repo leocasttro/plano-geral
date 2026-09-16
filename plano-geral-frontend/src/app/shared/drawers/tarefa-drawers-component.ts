@@ -3,7 +3,14 @@ import {
   TarefaApi,
 } from './../../domain/tarefa/tarefa.api';
 import { AtividadeDTO, Usuario } from '../../domain/tarefa/tarefa.model';
-import { ChangeDetectorRef, Component, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import {
   NgbCollapseModule,
@@ -26,6 +33,8 @@ import { UsuarioApi } from '../../domain/usuario/usuario.api';
 import { UsuarioDTO } from '../../domain/usuario/usuario.model';
 import { ToastService } from '../toast/toast.service';
 import { AuthService } from '../../domain/auth/auth.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ModalCadastroTarefa } from '../modals/modal-cadastro-tarefa';
 
 @Component({
   selector: 'app-tarefa-drawers-component',
@@ -53,7 +62,8 @@ export class TarefaDrawersComponent implements OnInit {
   scrollToBottom(): void {
     setTimeout(() => {
       if (this.activityTimeline) {
-        this.activityTimeline.nativeElement.scrollTop = this.activityTimeline.nativeElement.scrollHeight;
+        this.activityTimeline.nativeElement.scrollTop =
+          this.activityTimeline.nativeElement.scrollHeight;
       }
     }, 100);
   }
@@ -87,6 +97,8 @@ export class TarefaDrawersComponent implements OnInit {
   solicitacaoAlteracaoDatas: SolicitacaoAlteracaoDatasDTO | null = null;
   solicitacaoAlteracaoDatasPendente: SolicitacaoAlteracaoDatasDTO | null = null;
 
+  subTarefas: CardDataDrawer[] = [];
+
   constructor(
     private offcanvas: NgbOffcanvas,
     private tarefaApi: TarefaApi,
@@ -94,6 +106,8 @@ export class TarefaDrawersComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
     private authService: AuthService,
+    private modalService: NgbModal,
+    private offCanvas: NgbOffcanvas
   ) {}
 
   ngOnInit(): void {
@@ -116,6 +130,11 @@ export class TarefaDrawersComponent implements OnInit {
         ativo: true,
       };
     }
+
+    if (this.tarefa.isMacroTarefa) {
+      this.carregarSubTarefas();
+    }
+
     this.cdr.detectChanges();
   }
 
@@ -127,15 +146,13 @@ export class TarefaDrawersComponent implements OnInit {
     if (!this.novoComentario.trim()) return;
 
     this.tarefaApi
-      .adicionarComentario(
-        this.tarefa.id!,
-        this.novoComentario,
-      )
+      .adicionarComentario(this.tarefa.id!, this.novoComentario)
       .subscribe({
         next: (dto) => {
           const atualizada = tarefaDtoToDrawer(dto);
 
           this.tarefa = {
+            ...this.tarefa,
             ...atualizada,
             atividades: this.ordernarAtividade([
               ...(atualizada.atividades ?? []),
@@ -178,17 +195,23 @@ export class TarefaDrawersComponent implements OnInit {
   salvarEdicaoComentario() {
     if (!this.atividadeEmEdicaoId || !this.comentarioEdicaoTexto.trim()) return;
 
-    this.tarefaApi.alterarComentario(this.tarefa.id!, this.atividadeEmEdicaoId, this.comentarioEdicaoTexto.trim()).subscribe({
-      next: () => {
-        this.toast.success('Comentário atualizado.');
-        this.atividadeEmEdicaoId = null;
-        this.listarAtividades();
-      },
-      error: (err) => {
-        console.error(err);
-        this.toast.error(err.error?.error ?? 'Erro ao editar comentário.');
-      }
-    });
+    this.tarefaApi
+      .alterarComentario(
+        this.tarefa.id!,
+        this.atividadeEmEdicaoId,
+        this.comentarioEdicaoTexto.trim(),
+      )
+      .subscribe({
+        next: () => {
+          this.toast.success('Comentário atualizado.');
+          this.atividadeEmEdicaoId = null;
+          this.listarAtividades();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error(err.error?.error ?? 'Erro ao editar comentário.');
+        },
+      });
   }
 
   apagarComentario(atividadeId: string) {
@@ -202,14 +225,15 @@ export class TarefaDrawersComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.toast.error(err.error?.error ?? 'Erro ao apagar comentário.');
-      }
+      },
     });
   }
 
   podeEditarApagarComentario(atividade: AtividadeDrawer): boolean {
     if (atividade.tipo !== 'comentario') return false;
     const usuarioLogado = this.authService.usuario();
-    if (!usuarioLogado || atividade.usuario !== usuarioLogado.nome) return false;
+    if (!usuarioLogado || atividade.usuario !== usuarioLogado.nome)
+      return false;
 
     const dataAtividade = new Date(atividade.data);
     const dataAtual = new Date();
@@ -244,16 +268,18 @@ export class TarefaDrawersComponent implements OnInit {
       return;
     }
 
-    this.tarefaApi.buscarSolicitacaoAlteracaoDatasPendente(this.tarefa.id).subscribe({
-      next: (solicitacao) => {
-        this.solicitacaoAlteracaoDatasPendente = solicitacao;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.solicitacaoAlteracaoDatasPendente = null;
-        this.cdr.detectChanges();
-      },
-    });
+    this.tarefaApi
+      .buscarSolicitacaoAlteracaoDatasPendente(this.tarefa.id)
+      .subscribe({
+        next: (solicitacao) => {
+          this.solicitacaoAlteracaoDatasPendente = solicitacao;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.solicitacaoAlteracaoDatasPendente = null;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   aprovarSolicitacaoAlteracaoDatas(): void {
@@ -370,6 +396,40 @@ export class TarefaDrawersComponent implements OnInit {
     });
   }
 
+  carregarSubTarefas() {
+    this.tarefaApi.buscarTodos().subscribe({
+      next: (todas) => {
+        const filhas = todas.filter(t => t.tarefaPaiId === this.tarefa.id);
+        this.subTarefas = filhas.map(t => tarefaDtoToDrawer(t));
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  novaSubTarefa() {
+    const modalRef = this.modalService.open(ModalCadastroTarefa, {
+      centered: true,
+      size: 'lg',
+    });
+
+    modalRef.result.then((novaTarefa) => {
+      if (novaTarefa) {
+        novaTarefa.tarefaPaiId = this.tarefa.id;
+        novaTarefa.isMacroTarefa = false;
+
+        this.tarefaApi.criar(novaTarefa).subscribe({
+          next: () => {
+            this.toast.success('Sub-tarefa criada com sucesso!');
+            this.carregarSubTarefas();
+          },
+          error: () => this.toast.error('Erro ao criar sub-tarefa.')
+        });
+      }
+    },
+      () => undefined
+    );
+  }
+
   fechar(): void {
     this.offcanvas.dismiss();
   }
@@ -448,12 +508,19 @@ export class TarefaDrawersComponent implements OnInit {
     if (!this.tarefa.id) return;
 
     if (!this.validarDatas()) {
-      this.toast.warning('A data de início não pode ser maior que a data de fim.');
+      this.toast.warning(
+        'A data de início não pode ser maior que a data de fim.',
+      );
       return;
     }
 
-    if (this.deveSolicitarAprovacaoDatas() && this.solicitacaoAlteracaoDatasPendente) {
-      this.toast.warning('Aguarde a aprovação ou reprovação da solicitação pendente.');
+    if (
+      this.deveSolicitarAprovacaoDatas() &&
+      this.solicitacaoAlteracaoDatasPendente
+    ) {
+      this.toast.warning(
+        'Aguarde a aprovação ou reprovação da solicitação pendente.',
+      );
       return;
     }
 
@@ -476,22 +543,28 @@ export class TarefaDrawersComponent implements OnInit {
     };
 
     if (this.deveSolicitarAprovacaoDatas()) {
-      this.tarefaApi.solicitarAlteracaoDatas(this.tarefa.id, payload).subscribe({
-        next: () => {
-          this.mostrandoCalendario = false;
-          this.salvandoDatas = false;
-          this.carregarSolicitacaoAlteracaoDatasPendente();
-          this.justificativaDatasTemp = '';
-          this.toast.success('Solicitação de alteração de datas enviada para aprovação.');
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error(err);
-          this.toast.error(err.error?.error ?? 'Erro ao solicitar alteração das datas.');
-          this.salvandoDatas = false;
-          this.cdr.detectChanges();
-        },
-      });
+      this.tarefaApi
+        .solicitarAlteracaoDatas(this.tarefa.id, payload)
+        .subscribe({
+          next: () => {
+            this.mostrandoCalendario = false;
+            this.salvandoDatas = false;
+            this.carregarSolicitacaoAlteracaoDatasPendente();
+            this.justificativaDatasTemp = '';
+            this.toast.success(
+              'Solicitação de alteração de datas enviada para aprovação.',
+            );
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error(err);
+            this.toast.error(
+              err.error?.error ?? 'Erro ao solicitar alteração das datas.',
+            );
+            this.salvandoDatas = false;
+            this.cdr.detectChanges();
+          },
+        });
       return;
     }
 
@@ -523,7 +596,9 @@ export class TarefaDrawersComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err.error?.error ?? 'Erro ao alterar as datas da tarefa.');
+        this.toast.error(
+          err.error?.error ?? 'Erro ao alterar as datas da tarefa.',
+        );
         this.salvandoDatas = false;
         this.cdr.detectChanges();
       },
@@ -583,7 +658,9 @@ export class TarefaDrawersComponent implements OnInit {
 
   abrirSelecaoResponsavel() {
     if (this.estaAvaliandoSolicitacaoAlteracaoDatas()) {
-      this.toast.error('Não é possível alterar o responsável ao avaliar alteração de datas.');
+      this.toast.error(
+        'Não é possível alterar o responsável ao avaliar alteração de datas.',
+      );
       return;
     }
 
@@ -610,47 +687,47 @@ export class TarefaDrawersComponent implements OnInit {
   selecionarResponsavel(usuario: Usuario) {
     if (this.estaAvaliandoSolicitacaoAlteracaoDatas()) {
       this.mostrarSelecaoResponsavel = false;
-      this.toast.error('Não é possível alterar o responsável ao avaliar alteração de datas.');
+      this.toast.error(
+        'Não é possível alterar o responsável ao avaliar alteração de datas.',
+      );
       return;
     }
 
     this.responsavelSelecionado = usuario;
     this.mostrarSelecaoResponsavel = false;
 
-    this.tarefaApi
-      .atribuirResponsavel(this.tarefa.id!, usuario.id)
-      .subscribe({
-        next: (dto) => {
-          const atualizada = tarefaDtoToDrawer(dto);
+    this.tarefaApi.atribuirResponsavel(this.tarefa.id!, usuario.id).subscribe({
+      next: (dto) => {
+        const atualizada = tarefaDtoToDrawer(dto);
 
-          this.tarefa = {
-            ...this.tarefa,
-            ...atualizada,
-            checklist: [...(atualizada.checklist ?? [])],
-            atividades: this.ordernarAtividade([
-              ...(atualizada.atividades ?? []),
-            ]),
-          };
+        this.tarefa = {
+          ...this.tarefa,
+          ...atualizada,
+          checklist: [...(atualizada.checklist ?? [])],
+          atividades: this.ordernarAtividade([
+            ...(atualizada.atividades ?? []),
+          ]),
+        };
 
-          this.responsavelSelecionado = this.tarefa.responsavel
-            ? {
+        this.responsavelSelecionado = this.tarefa.responsavel
+          ? {
               id: this.tarefa.responsavel.id,
               nome: this.tarefa.responsavel.nome,
               email: this.tarefa.responsavel.email,
               perfil: 'USER',
               ativo: true,
             }
-            : null;
+          : null;
 
-          this.tarefaAtualizada.emit(this.tarefa);
-          this.toast.success('Responsável atualizado.');
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Erro ao atribuir responsável:', err);
-          this.toast.error('Erro ao atribuir responsável.');
-        },
-      });
+        this.tarefaAtualizada.emit(this.tarefa);
+        this.toast.success('Responsável atualizado.');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erro ao atribuir responsável:', err);
+        this.toast.error('Erro ao atribuir responsável.');
+      },
+    });
   }
 
   setPrioridade(nova: string) {
@@ -665,36 +742,33 @@ export class TarefaDrawersComponent implements OnInit {
     this.tarefa.badgeClasseCor = this.prioridadeToBadge(nova);
     this.mostrarPrioridades = false;
 
-    this.tarefaApi
-      .alterarPrioridade(this.tarefa.id!, nova)
-      .subscribe({
-        next: (dto) => {
-          const atualizada = tarefaDtoToDrawer(dto);
+    this.tarefaApi.alterarPrioridade(this.tarefa.id!, nova).subscribe({
+      next: (dto) => {
+        const atualizada = tarefaDtoToDrawer(dto);
 
-          this.tarefa = {
-            ...this.tarefa,
-            ...atualizada,
-            checklist: [...(atualizada.checklist ?? [])],
-            atividades: [...(atualizada.atividades ?? [])],
-          };
+        this.tarefa = {
+          ...this.tarefa,
+          ...atualizada,
+          checklist: [...(atualizada.checklist ?? [])],
+          atividades: [...(atualizada.atividades ?? [])],
+        };
 
-          this.tarefaAtualizada.emit(this.tarefa); // ✅ AVISA O BOARD
+        this.tarefaAtualizada.emit(this.tarefa); // ✅ AVISA O BOARD
 
-          this.toast.success('Prioridade atualizada.');
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error(err);
-          this.tarefa.badgeTexto = prioridadeAnterior;
-          this.tarefa.badgeClasseCor =
-            this.prioridadeToBadge(prioridadeAnterior);
+        this.toast.success('Prioridade atualizada.');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.tarefa.badgeTexto = prioridadeAnterior;
+        this.tarefa.badgeClasseCor = this.prioridadeToBadge(prioridadeAnterior);
 
-          this.tarefaAtualizada.emit(this.tarefa); // ✅ volta pro board também
+        this.tarefaAtualizada.emit(this.tarefa); // ✅ volta pro board também
 
-          this.toast.error('Erro ao alterar prioridade.');
-          this.cdr.detectChanges();
-        },
-      });
+        this.toast.error('Erro ao alterar prioridade.');
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   toggleCalendario(event?: Event) {
@@ -738,7 +812,6 @@ export class TarefaDrawersComponent implements OnInit {
   // Validação básica das datas
   validarDatas(): boolean {
     if (this.dataInicioTemp && this.dataFimTemp) {
-
       if (this.dataInicioTemp > this.dataFimTemp) {
         return false;
       }
@@ -747,11 +820,17 @@ export class TarefaDrawersComponent implements OnInit {
   }
 
   deveInformarJustificativaDatas(): boolean {
-    return this.deveSolicitarAprovacaoDatas() || !!(this.tarefa.dataInicio || this.tarefa.dataFim);
+    return (
+      this.deveSolicitarAprovacaoDatas() ||
+      !!(this.tarefa.dataInicio || this.tarefa.dataFim)
+    );
   }
 
   deveSolicitarAprovacaoDatas(): boolean {
-    return !this.podeAlterarDatas() && !!(this.tarefa.dataInicio || this.tarefa.dataFim);
+    return (
+      !this.podeAlterarDatas() &&
+      !!(this.tarefa.dataInicio || this.tarefa.dataFim)
+    );
   }
 
   podeAlterarDatas(): boolean {
@@ -763,7 +842,10 @@ export class TarefaDrawersComponent implements OnInit {
     const perfil = this.authService.usuario()?.perfil?.toUpperCase();
 
     // Regra específica para tarefas de Geoprocessamento
-    if (this.tarefa.componenteCatalogo?.trim().toLowerCase() === 'geoprocessamento') {
+    if (
+      this.tarefa.componenteCatalogo?.trim().toLowerCase() ===
+      'geoprocessamento'
+    ) {
       return perfil === 'GESTOR_GEOPROCESSAMENTO';
     }
 

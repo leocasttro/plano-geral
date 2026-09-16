@@ -18,7 +18,9 @@ export class CreateTarefa {
     descricao?: string;
     projetoId: string;
     usuario: string;
-    usuarioNome: string
+    usuarioNome: string;
+    isMacroTarefa?: boolean;
+    tarefaPaiId?: string | null;
   }) {
 
     const projeto = await this.projetoRepo.findById(input.projetoId);
@@ -64,6 +66,14 @@ export class CreateTarefa {
       input.projetoId,
       input.tituloCatalogoId ?? null,
     );
+
+    if (input.isMacroTarefa) {
+      tarefa.transformarEmMacroTarefa();
+    }
+
+    if (input.tarefaPaiId) {
+      tarefa.vincularATarefaPai(input.tarefaPaiId);
+    }
 
     if (input.tituloCatalogoId) {
       const tituloCatalogoObj = await this.tituloCatalogoRepo.findById(input.tituloCatalogoId);

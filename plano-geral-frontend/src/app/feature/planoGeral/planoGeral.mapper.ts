@@ -5,7 +5,6 @@ import { splitDateTime } from '../../util/DateUtil';
 export function tarefaDtoToCardData(t: TarefaDTO): CardData {
   const dt = splitDateTime(t.atividades?.[0]?.data);
 
-  // ✅ Função para converter para string de forma segura
   const formatDateToString = (date: Date | string | null | undefined): string | undefined => {
     if (!date) return undefined;
 
@@ -30,11 +29,14 @@ export function tarefaDtoToCardData(t: TarefaDTO): CardData {
   return {
     id: t.id,
     titulo: t.titulo,
+    isMacroTarefa: t.isMacroTarefa,
+    tarefaPaiId: t.tarefaPaiId,
     descricao: t.descricao ?? '',
     status: (t.status ?? 'PENDENTE').toLowerCase(),
     responsavelId: t.responsavelId ?? t.responsavel?.id ?? null,
     responsavel: t.responsavel,
     tituloCatalogoId: t.tituloCatalogoId ?? null,
+    componenteCatalogo: t.componenteCatalogo ?? null,
     criadorId: t.criadorId ?? null,
     badgeTexto: t.prioridade,
     badgeClasseCor: mapPrioridadeParaBadge(t.prioridade),

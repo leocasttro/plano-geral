@@ -1,5 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { DatePipe, NgClass, SlicePipe, UpperCasePipe, CommonModule } from '@angular/common';
+import {
+  DatePipe,
+  NgClass,
+  SlicePipe,
+  UpperCasePipe,
+  CommonModule,
+} from '@angular/common';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faMinus } from '@fortawesome/free-solid-svg-icons';
@@ -44,6 +50,11 @@ export interface CardData {
   } | null;
   checklist: ChecklistItem[];
 
+  isMacroTarefa?: boolean;
+  tarefaPaiId?: string | null;
+  subTarefas?: CardData[];
+
+  componenteCatalogo?: string | null;
   /* Metadados simples */
   tags?: string[];
   dataInicio?: string;
@@ -75,6 +86,9 @@ export class CardComponent {
   @Output() checklistItemselected = new EventEmitter<ChecklistItem>();
   @Output() tituloClick = new EventEmitter<CardData>();
 
+  @Input() isExpandida = false; // <-- NOVO
+  @Output() expandirClick = new EventEmitter<string>();
+
   faMinus = faMinus;
   isCollapsed = true;
   collapseId!: string;
@@ -89,6 +103,11 @@ export class CardComponent {
 
   onTituloClick(): void {
     this.tituloClick.emit(this.data);
+  }
+
+  onExpandirClick(event: Event) {
+    event.stopPropagation();
+    this.expandirClick.emit(this.data.id);
   }
 
   getCorAvatar(nome: string | ''): string {

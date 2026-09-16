@@ -65,6 +65,8 @@ export class TarefaMapper {
       item.tarefa_id = row.id;
       return item;
     });
+    row.isMacroTarefa = tarefa.obterIsMacroTarefa();
+    row.tarefaPaiId = tarefa.obterTarefaPaiId();
 
     return row;
   }
@@ -119,6 +121,8 @@ export class TarefaMapper {
         : null,
       checklist,
       atividades,
+      isMacroTarefa: row.isMacroTarefa,
+      tarefaPaiId: row.tarefaPaiId,
     });
 
     // Verifica se tem datas para criar TarefaComPrazo

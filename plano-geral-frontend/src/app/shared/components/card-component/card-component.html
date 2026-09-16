@@ -1,5 +1,12 @@
 @if (data) {
-<div class="card mb-3" style="min-height: 210px">
+<div
+  class="card mb-3"
+  style="min-height: 210px"
+  [ngClass]="{
+           'card-stacked-1': !isExpandida && data.subTarefas?.length === 1,
+           'card-stacked-many': !isExpandida && (data.subTarefas?.length || 0) > 1
+         }"
+>
   <div class="card-body d-flex flex-column" (click)="onTituloClick()">
     <div class="mt-3">
       <div class="d-flex justify-content-between align-items-start gap-2">
@@ -8,17 +15,20 @@
           <span
             *ngIf="data.projeto"
             class="badge bg-secondary text-truncate"
-            style="max-width: 120px; font-size: 0.7em;"
+            style="max-width: 120px; font-size: 0.7em"
             [title]="data.projeto.nome + (data.projeto.centroCusto ? ' - ' + data.projeto.centroCusto : '')"
           >
-            {{ data.projeto.nome }}{{ data.projeto.centroCusto ? ' - ' + data.projeto.centroCusto : '' }}
+            {{ data.projeto.nome }}{{ data.projeto.centroCusto ? ' - ' +
+            data.projeto.centroCusto : '' }}
           </span>
           <span class="badge" [ngClass]="data.badgeClasseCor"
             >{{ data.badgeTexto }}</span
           >
         </div>
       </div>
-      <small class="text-muted descricao-truncada"> {{ data.descricao }} </small>
+      <small class="text-muted descricao-truncada">
+        {{ data.descricao }}
+      </small>
     </div>
 
     <div class="mt-auto d-flex justify-content-between align-items-center">
@@ -28,8 +38,26 @@
       >
         {{ data.responsavel?.nome | iniciais }}
       </div>
-      <small class="text-muted"> {{ data.dataCriacao | date:'dd/MM/yyyy HH:mm' }} </small>
+      <small class="text-muted">
+        {{ data.dataCriacao | date:'dd/MM/yyyy HH:mm' }}
+      </small>
     </div>
+  </div>
+  <div
+    class="mt-3 border-top pt-2 text-center"
+    *ngIf="data.isMacroTarefa && data.subTarefas?.length"
+  >
+    <button
+      class="btn btn-sm btn-light w-100 text-muted"
+      (click)="onExpandirClick($event)"
+    >
+      <i
+        class="fas"
+        [ngClass]="isExpandida ? 'fa-chevron-up' : 'fa-chevron-down'"
+      ></i>
+      {{ isExpandida ? 'Ocultar subtarefas' : 'Expandir ' +
+      data.subTarefas!.length + ' subtarefa(s)' }}
+    </button>
   </div>
 </div>
 }

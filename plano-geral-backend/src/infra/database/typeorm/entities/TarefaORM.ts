@@ -60,6 +60,19 @@ export class TarefaORM {
   @Column({ name: 'titulo_catalogo_id', type: 'uuid', nullable: true })
   tituloCatalogoId!: string | null;
 
+  @Column({ name: 'is_macro_tarefa', type: 'boolean', default: false})
+  isMacroTarefa!: boolean;
+
+  @Column({ name: 'tarefa_pai_id', type: 'uuid', nullable: true })
+  tarefaPaiId?: string | null;
+
+  @ManyToOne(() => TarefaORM, (tarefa) => tarefa.subTarefas, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'tarefa_pai_id' })
+  tarefaPai?: TarefaORM | null;
+
+  @OneToMany(() => TarefaORM, (tarefa) => tarefa.tarefaPai)
+  subTarefas?: TarefaORM[];
+
   @ManyToOne(() => TituloTarefaCatalogoORM, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'titulo_catalogo_id' })
   tituloCatalogo?: TituloTarefaCatalogoORM | null;

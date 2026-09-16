@@ -11,7 +11,9 @@
 
   <div class="kanban-board mt-4 ms-1" cdkDropListGroup>
     <!-- ======================= PENDENTE ======================= -->
-    <div class="kanban-column kanban-column--pendente shadow-sm border-start border-danger-subtle">
+    <div
+      class="kanban-column kanban-column--pendente shadow-sm border-start border-danger-subtle"
+    >
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-danger-subtle p-2 rounded-top"
       >
@@ -45,23 +47,30 @@
         (cdkDropListDropped)="drop($event, 'PENDENTE')"
       >
         @for (tarefa of filtrarTarefas(tarefasPendentes); track tarefa.id) {
-          <app-card-component
-            cdkDrag
-            [cdkDragDisabled]="filtrosAtivos()"
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-            (tituloClick)="abrirDetalheTarefa($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [cdkDragDisabled]="filtrosAtivos()"
+          [data]="tarefa"
+          [isExpandida]="isMacroExpandida(tarefa.id)"
+          (expandirClick)="toggleExpandirMacro($event)"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+          (tituloClick)="abrirDetalheTarefa($event)"
+        ></app-card-component>
         }
 
-        <div class="empty-column" *ngIf="!filtrarTarefas(tarefasPendentes).length">
+        <div
+          class="empty-column"
+          *ngIf="!filtrarTarefas(tarefasPendentes).length"
+        >
           Nenhuma tarefa pendente encontrada.
         </div>
       </div>
     </div>
 
     <!-- ======================= EM ANDAMENTO ======================= -->
-    <div class="kanban-column kanban-column--andamento shadow-sm border-start border-warning-subtle">
+    <div
+      class="kanban-column kanban-column--andamento shadow-sm border-start border-warning-subtle"
+    >
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-warning-subtle p-2 rounded-top"
       >
@@ -95,23 +104,28 @@
         (cdkDropListDropped)="drop($event, 'EM_ANDAMENTO')"
       >
         @for (tarefa of filtrarTarefas(tarefasEmAndamento); track tarefa.id) {
-          <app-card-component
-            cdkDrag
-            [cdkDragDisabled]="filtrosAtivos()"
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-            (tituloClick)="abrirDetalheTarefa($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [cdkDragDisabled]="filtrosAtivos()"
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+          (tituloClick)="abrirDetalheTarefa($event)"
+        ></app-card-component>
         }
 
-        <div class="empty-column" *ngIf="!filtrarTarefas(tarefasEmAndamento).length">
+        <div
+          class="empty-column"
+          *ngIf="!filtrarTarefas(tarefasEmAndamento).length"
+        >
           Nenhuma tarefa em andamento encontrada.
         </div>
       </div>
     </div>
 
     <!-- ======================= CONCLUÍDAS ======================= -->
-    <div class="kanban-column kanban-column--concluida shadow-sm border-start border-success-subtle">
+    <div
+      class="kanban-column kanban-column--concluida shadow-sm border-start border-success-subtle"
+    >
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-success-subtle p-2 rounded-top"
       >
@@ -145,23 +159,28 @@
         (cdkDropListDropped)="drop($event, 'CONCLUIDA')"
       >
         @for (tarefa of filtrarTarefas(tarefasConcluidas); track tarefa.id) {
-          <app-card-component
-            cdkDrag
-            [cdkDragDisabled]="filtrosAtivos()"
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-            (tituloClick)="abrirDetalheTarefa($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [cdkDragDisabled]="filtrosAtivos()"
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+          (tituloClick)="abrirDetalheTarefa($event)"
+        ></app-card-component>
         }
 
-        <div class="empty-column" *ngIf="!filtrarTarefas(tarefasConcluidas).length">
+        <div
+          class="empty-column"
+          *ngIf="!filtrarTarefas(tarefasConcluidas).length"
+        >
           Nenhuma tarefa concluída encontrada.
         </div>
       </div>
     </div>
 
     <!-- ======================= OUTROS ======================= -->
-    <div class="kanban-column kanban-column--outros shadow-sm border-start border-secondary-subtle">
+    <div
+      class="kanban-column kanban-column--outros shadow-sm border-start border-secondary-subtle"
+    >
       <div
         class="kanban-column-header d-flex justify-content-between align-items-center bg-light p-2 rounded-top"
       >
@@ -195,13 +214,13 @@
         (cdkDropListDropped)="drop($event, 'OUTROS')"
       >
         @for (tarefa of filtrarTarefas(tarefasTeste); track tarefa.id) {
-          <app-card-component
-            cdkDrag
-            [cdkDragDisabled]="filtrosAtivos()"
-            [data]="tarefa"
-            (checklistItemselected)="handleChecklistItemClick($event)"
-            (tituloClick)="abrirDetalheTarefa($event)"
-          ></app-card-component>
+        <app-card-component
+          cdkDrag
+          [cdkDragDisabled]="filtrosAtivos()"
+          [data]="tarefa"
+          (checklistItemselected)="handleChecklistItemClick($event)"
+          (tituloClick)="abrirDetalheTarefa($event)"
+        ></app-card-component>
         }
 
         <div class="empty-column" *ngIf="!filtrarTarefas(tarefasTeste).length">

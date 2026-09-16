@@ -29,6 +29,8 @@ interface CriarTarefaBody {
   tituloCatalogoId?: string | null;
   descricao?: string;
   projetoId: string;
+  isMacroTarefa?: boolean;
+  tarefaPaiId?: string | null;
 }
 
 type Deps = {
@@ -87,13 +89,15 @@ export class TarefasController {
   constructor(private deps: Deps) {}
 
   async criar(req: Request<{}, {}, CriarTarefaBody>, res: Response) {
-    const { titulo, descricao, projetoId, tituloCatalogoId  } = req.body;
+    const { titulo, descricao, projetoId, tituloCatalogoId, isMacroTarefa, tarefaPaiId } = req.body;
 
     const tarefa = await this.deps.createTarefa.execute({
       titulo,
       tituloCatalogoId,
       descricao,
       projetoId,
+      isMacroTarefa,
+      tarefaPaiId,
       usuario: getAuthenticatedUserId(req),
       usuarioNome: getAuthenticatedUser(req),
     });
