@@ -1,14 +1,4 @@
 <div class="personal-report-page">
-  <section class="report-header">
-    <div>
-      <h2>Meu relatório</h2>
-      <p>{{ nomeUsuario }} · desempenho e tarefas vinculadas ao seu usuário</p>
-    </div>
-
-    <button type="button" (click)="carregar()" [disabled]="loading">
-      Atualizar
-    </button>
-  </section>
 
   <div *ngIf="loading" class="state-card">Carregando seu relatório...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>

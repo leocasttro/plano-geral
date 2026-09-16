@@ -73,6 +73,8 @@ export class Pedidos implements OnInit, OnDestroy {
   projetosFiltro: ProjetoDTO[] = [];
   usuariosFiltro: UsuarioDTO[] = [];
   catalogosFiltro: TituloTarefaCatalogoDTO[] = [];
+  todasTarefas: CardData[] = [];
+  macroTarefasExpandidas = new Set<string>();
 
   faPlus = faPlus;
 
@@ -98,10 +100,11 @@ export class Pedidos implements OnInit, OnDestroy {
     this.filtersSub = this.kanbanSearch.toggleFilters$.subscribe(() => {
       this.alternarFiltros();
     });
-    this.drawerNavigationSub = this.tarefaDrawerNavigation.abrirTarefa$.subscribe(
-      ({ tarefaId, solicitacaoAlteracaoDatasId }) =>
-        this.abrirDetalheTarefaPorId(tarefaId, solicitacaoAlteracaoDatasId),
-    );
+    this.drawerNavigationSub =
+      this.tarefaDrawerNavigation.abrirTarefa$.subscribe(
+        ({ tarefaId, solicitacaoAlteracaoDatasId }) =>
+          this.abrirDetalheTarefaPorId(tarefaId, solicitacaoAlteracaoDatasId),
+      );
     this.carregarTarefas();
     this.carregarFiltros();
   }
@@ -114,26 +117,67 @@ export class Pedidos implements OnInit, OnDestroy {
   carregarTarefas(): void {
     this.tarefaApi.buscarTodos().subscribe({
       next: (tarefasDto) => {
-        this.tarefasPendentes = [];
-        this.tarefasEmAndamento = [];
-        this.tarefasConcluidas = [];
-        this.tarefasTeste = [];
-
-        tarefasDto.forEach((t) => {
-          const card = tarefaDtoToCardData(t);
-          const status = String(card.status ?? '').toUpperCase();
-
-          if (status === 'PENDENTE') this.tarefasPendentes.push(card);
-          else if (status === 'EM_ANDAMENTO')
-            this.tarefasEmAndamento.push(card);
-          else if (status === 'CONCLUIDA') this.tarefasConcluidas.push(card);
-          else this.tarefasTeste.push(card);
-        });
-
-        this.cdr.detectChanges();
+        // Armazena as tarefas puras para não precisar ir no banco de novo ao expandir
+        this.todasTarefas = tarefasDto.map((t) => tarefaDtoToCardData(t));
+        this.distribuirTarefasNasColunas();
       },
       error: (err) => console.error(err),
     });
+  }
+
+  // Método que recalcula as colunas do zero
+  distribuirTarefasNasColunas(): void {
+    this.tarefasPendentes = [];
+    this.tarefasEmAndamento = [];
+    this.tarefasConcluidas = [];
+    this.tarefasTeste = [];
+
+    const principais = this.todasTarefas.filter((t) => !t.tarefaPaiId);
+    const filhas = this.todasTarefas.filter((t) => !!t.tarefaPaiId);
+
+    // Embute as filhas
+    principais.forEach((pai) => {
+      pai.subTarefas = filhas.filter((f) => f.tarefaPaiId === pai.id);
+    });
+
+    const tarefasParaRenderizar: CardData[] = [];
+
+    // Adiciona as principais na tela
+    tarefasParaRenderizar.push(...principais);
+
+    // MÁGICA AQUI: Se a Macro-Tarefa está expandida, joga os filhos na tela também!
+    principais.forEach((pai) => {
+      if (this.isMacroExpandida(pai.id) && pai.subTarefas) {
+        tarefasParaRenderizar.push(...pai.subTarefas);
+      }
+    });
+
+    // Distribui nas colunas
+    tarefasParaRenderizar.forEach((card) => {
+      const status = String(card.status ?? '').toUpperCase();
+      if (status === 'PENDENTE') this.tarefasPendentes.push(card);
+      else if (status === 'EM_ANDAMENTO') this.tarefasEmAndamento.push(card);
+      else if (status === 'CONCLUIDA') this.tarefasConcluidas.push(card);
+      else this.tarefasTeste.push(card);
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  toggleExpandirMacro(tarefaId: string) {
+    console.log('Fui clicado! O ID da tarefa é:', tarefaId); // <-- ADICIONE ISSO
+
+    if (this.macroTarefasExpandidas.has(tarefaId)) {
+      this.macroTarefasExpandidas.delete(tarefaId);
+    } else {
+      this.macroTarefasExpandidas.add(tarefaId);
+    }
+    this.distribuirTarefasNasColunas();
+  }
+
+  isMacroExpandida(tarefaId?: string): boolean {
+    if (!tarefaId) return false;
+    return this.macroTarefasExpandidas.has(tarefaId);
   }
 
   carregarFiltros(): void {
@@ -200,7 +244,8 @@ export class Pedidos implements OnInit, OnDestroy {
 
   atualizarFiltrosTarefas(filtros: FiltrosOperacionais): void {
     this.filtrosTarefas = filtros;
-    this.mostrarFiltrosTarefas = this.filtrosTarefasAtivos() || this.mostrarFiltrosTarefas;
+    this.mostrarFiltrosTarefas =
+      this.filtrosTarefasAtivos() || this.mostrarFiltrosTarefas;
   }
 
   filtrarTarefas(tarefas: CardData[]): CardData[] {
@@ -231,7 +276,7 @@ export class Pedidos implements OnInit, OnDestroy {
                 // Cai aqui se for PENDENTE ou qualquer outro não mapeado
                 this.tarefasPendentes = [card, ...this.tarefasPendentes];
               }
-              
+
               this.cdr.detectChanges();
             },
           });
@@ -244,27 +289,19 @@ export class Pedidos implements OnInit, OnDestroy {
   onTarefaAtualizada(tarefaAtualizada: CardData) {
     const patch = (list: CardData[]) =>
       (list ?? []).map((t) =>
-        t.id === tarefaAtualizada.id ? { ...tarefaAtualizada } : t,
+        t.id === tarefaAtualizada.id ? { ...t, ...tarefaAtualizada } : t,
       );
 
-    this.tarefasPendentes = patch(this.tarefasPendentes);
-    this.tarefasEmAndamento = patch(this.tarefasEmAndamento);
-    this.tarefasConcluidas = patch(this.tarefasConcluidas);
-    this.tarefasTeste = patch(this.tarefasTeste);
-
-    this.cdr.detectChanges();
+    this.todasTarefas = patch(this.todasTarefas);
+    this.distribuirTarefasNasColunas();
   }
 
   onTarefaExcluida(tarefaId: string): void {
     const remover = (list: CardData[]) =>
       (list ?? []).filter((tarefa) => tarefa.id !== tarefaId);
 
-    this.tarefasPendentes = remover(this.tarefasPendentes);
-    this.tarefasEmAndamento = remover(this.tarefasEmAndamento);
-    this.tarefasConcluidas = remover(this.tarefasConcluidas);
-    this.tarefasTeste = remover(this.tarefasTeste);
-
-    this.cdr.detectChanges();
+    this.todasTarefas = remover(this.todasTarefas);
+    this.distribuirTarefasNasColunas();
   }
 
   handleChecklistItemClick(item: ChecklistItem): void {
@@ -307,32 +344,43 @@ export class Pedidos implements OnInit, OnDestroy {
 
     tarefaMovida.status = statusNovo;
 
+    const tarefaNaMestre = this.todasTarefas.find(
+      (t) => t.id === tarefaMovida.id,
+    );
+    if (tarefaNaMestre) {
+      tarefaNaMestre.status = statusNovo;
+    }
+
     if (!tarefaMovida.id) return;
 
-    this.tarefaApi
-      .atualizarStatus(tarefaMovida.id, statusNovo)
-      .subscribe({
-        next: (tarefaAtualizada) => {
-          tarefaMovida.status = String(tarefaAtualizada.status).toUpperCase();
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error(err);
+    this.tarefaApi.atualizarStatus(tarefaMovida.id, statusNovo).subscribe({
+      next: (tarefaAtualizada) => {
+        const statusCorrigido = String(tarefaAtualizada.status).toUpperCase();
+        tarefaMovida.status = statusCorrigido;
 
-          transferArrayItem(
-            event.container.data,
-            event.previousContainer.data,
-            event.currentIndex,
-            event.previousIndex,
-          );
+        if (tarefaNaMestre) tarefaNaMestre.status = statusCorrigido;
 
-          tarefaMovida.status = statusAnterior;
-          this.toast.error(
-            err.error?.error ?? err.error?.message ?? 'Erro ao alterar status da tarefa.',
-          );
-          this.cdr.detectChanges();
-        },
-      });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+
+        transferArrayItem(
+          event.container.data,
+          event.previousContainer.data,
+          event.currentIndex,
+          event.previousIndex,
+        );
+
+        tarefaMovida.status = statusAnterior;
+        this.toast.error(
+          err.error?.error ??
+            err.error?.message ??
+            'Erro ao alterar status da tarefa.',
+        );
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   private podeMoverParaStatus(tarefa: CardData, novoStatus: string): boolean {
@@ -394,12 +442,14 @@ export class Pedidos implements OnInit, OnDestroy {
   }
 
   private encontrarTarefaPorId(tarefaId: string): CardData | null {
-    return [
-      ...this.tarefasPendentes,
-      ...this.tarefasEmAndamento,
-      ...this.tarefasConcluidas,
-      ...this.tarefasTeste,
-    ].find((tarefa) => tarefa.id === tarefaId) ?? null;
+    return (
+      [
+        ...this.tarefasPendentes,
+        ...this.tarefasEmAndamento,
+        ...this.tarefasConcluidas,
+        ...this.tarefasTeste,
+      ].find((tarefa) => tarefa.id === tarefaId) ?? null
+    );
   }
 
   private normalizarTexto(valor?: string | null): string {
@@ -415,26 +465,47 @@ export class Pedidos implements OnInit, OnDestroy {
       return true;
     }
 
-    if (this.filtrosTarefas.projetoId && tarefa.projetoId !== this.filtrosTarefas.projetoId) {
+    if (
+      this.filtrosTarefas.projetoId &&
+      tarefa.projetoId !== this.filtrosTarefas.projetoId
+    ) {
       return false;
     }
 
     const responsavelId = tarefa.responsavelId || tarefa.responsavel?.id || '';
-    if (this.filtrosTarefas.usuarioId && responsavelId !== this.filtrosTarefas.usuarioId) {
+    if (
+      this.filtrosTarefas.usuarioId &&
+      responsavelId !== this.filtrosTarefas.usuarioId
+    ) {
       return false;
     }
 
     const catalogo = this.catalogoDaTarefa(tarefa);
 
-    if (!this.textoCatalogoIgual(catalogo?.componente, this.filtrosTarefas.componente)) {
+    if (
+      !this.textoCatalogoIgual(
+        catalogo?.componente,
+        this.filtrosTarefas.componente,
+      )
+    ) {
       return false;
     }
 
-    if (!this.textoCatalogoIgual(catalogo?.atividadePrincipal, this.filtrosTarefas.atividadePrincipal)) {
+    if (
+      !this.textoCatalogoIgual(
+        catalogo?.atividadePrincipal,
+        this.filtrosTarefas.atividadePrincipal,
+      )
+    ) {
       return false;
     }
 
-    if (!this.textoCatalogoIgual(catalogo?.subatividade, this.filtrosTarefas.subatividade)) {
+    if (
+      !this.textoCatalogoIgual(
+        catalogo?.subatividade,
+        this.filtrosTarefas.subatividade,
+      )
+    ) {
       return false;
     }
 
@@ -450,10 +521,18 @@ export class Pedidos implements OnInit, OnDestroy {
       return true;
     }
 
-    const inicioFiltro = this.filtrosTarefas.inicio ? this.dataLocal(this.filtrosTarefas.inicio) : null;
-    const fimFiltro = this.filtrosTarefas.fim ? this.dataLocal(this.filtrosTarefas.fim, true) : null;
-    const dataInicio = tarefa.dataInicio ? this.dataLocal(tarefa.dataInicio) : null;
-    const dataFim = tarefa.dataFim ? this.dataLocal(tarefa.dataFim, true) : dataInicio;
+    const inicioFiltro = this.filtrosTarefas.inicio
+      ? this.dataLocal(this.filtrosTarefas.inicio)
+      : null;
+    const fimFiltro = this.filtrosTarefas.fim
+      ? this.dataLocal(this.filtrosTarefas.fim, true)
+      : null;
+    const dataInicio = tarefa.dataInicio
+      ? this.dataLocal(tarefa.dataInicio)
+      : null;
+    const dataFim = tarefa.dataFim
+      ? this.dataLocal(tarefa.dataFim, true)
+      : dataInicio;
 
     if (!dataInicio && !dataFim) {
       return false;
@@ -473,7 +552,10 @@ export class Pedidos implements OnInit, OnDestroy {
     return true;
   }
 
-  private textoCatalogoIgual(valor: string | null | undefined, filtro?: string): boolean {
+  private textoCatalogoIgual(
+    valor: string | null | undefined,
+    filtro?: string,
+  ): boolean {
     if (!filtro?.trim()) {
       return true;
     }
@@ -481,16 +563,24 @@ export class Pedidos implements OnInit, OnDestroy {
     return this.normalizarTexto(valor) === this.normalizarTexto(filtro);
   }
 
-  private catalogoDaTarefa(tarefa: CardData): TituloTarefaCatalogoDTO | undefined {
+  private catalogoDaTarefa(
+    tarefa: CardData,
+  ): TituloTarefaCatalogoDTO | undefined {
     return (
-      this.catalogosFiltro.find((item) => item.id === tarefa.tituloCatalogoId) ??
       this.catalogosFiltro.find(
-        (item) => this.normalizarTexto(item.tituloExibicao) === this.normalizarTexto(tarefa.titulo),
+        (item) => item.id === tarefa.tituloCatalogoId,
+      ) ??
+      this.catalogosFiltro.find(
+        (item) =>
+          this.normalizarTexto(item.tituloExibicao) ===
+          this.normalizarTexto(tarefa.titulo),
       )
     );
   }
 
   private dataLocal(valor: string, fimDoDia = false): Date {
-    return new Date(`${valor.slice(0, 10)}T${fimDoDia ? '23:59:59.999' : '00:00:00.000'}`);
+    return new Date(
+      `${valor.slice(0, 10)}T${fimDoDia ? '23:59:59.999' : '00:00:00.000'}`,
+    );
   }
 }
