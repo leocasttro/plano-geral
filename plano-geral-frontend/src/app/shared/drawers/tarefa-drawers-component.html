@@ -47,9 +47,9 @@
   <div>
     <strong>Solicitação de alteração de datas</strong>
     <span *ngIf="solicitacaoAlteracaoDatas as solicitacao">
-      {{ solicitacao.solicitanteNome }} solicitou
-      {{ formatarDataSolicitacao(solicitacao.dataInicio) }} até
-      {{ formatarDataSolicitacao(solicitacao.dataFim) }}.
+      {{ solicitacao.solicitanteNome }} solicitou {{
+      formatarDataSolicitacao(solicitacao.dataInicio) }} até {{
+      formatarDataSolicitacao(solicitacao.dataFim) }}.
     </span>
     <p *ngIf="solicitacaoAlteracaoDatas as solicitacao">
       {{ solicitacao.justificativa }}
@@ -108,6 +108,41 @@
         </p>
       </section>
 
+      <section class="mb-4" *ngIf="tarefa.isMacroTarefa">
+        <div
+          class="d-flex justify-content-between align-items-center checklist-header pb-2 border-bottom"
+        >
+          <h6 class="section-title mb-0">
+            <i class="fas fa-sitemap me-2 text-primary"></i> Sub-tarefas ({{
+            subTarefas.length }})
+          </h6>
+          <button
+            class="btn btn-sm btn-outline-primary"
+            (click)="novaSubTarefa()"
+          >
+            <i class="fas fa-plus"></i> Nova Sub-tarefa
+          </button>
+        </div>
+
+        <div class="mt-3">
+          <div *ngIf="!subTarefas.length" class="text-muted fst-italic">
+            Nenhuma sub-tarefa desmembrada ainda.
+          </div>
+
+          <!-- Lista as tarefas filhas -->
+          <div
+            *ngFor="let sub of subTarefas"
+            class="d-flex justify-content-between align-items-center border p-2 mb-2 rounded shadow-sm bg-white"
+          >
+            <span class="fw-bold text-dark" style="font-size: 0.9rem"
+              >{{ sub.titulo }}</span
+            >
+            <span class="badge" [ngClass]="sub.badgeClasseCor"
+              >{{ sub.status | uppercase }}</span
+            >
+          </div>
+        </div>
+      </section>
       <!-- CHECKLIST -->
       <section class="mb-4">
         <div
@@ -211,11 +246,30 @@
 
               <!-- COMENTÁRIO -->
               <div *ngIf="log.tipo === 'comentario'" class="comment-item">
-                <div *ngIf="podeEditarApagarComentario(log)" class="comment-actions">
-                  <button type="button" class="comment-action-btn btn-edit-comment" title="Editar" (click)="iniciarEdicaoComentario(log)">✎</button>
-                  <button type="button" class="comment-action-btn btn-delete-comment" title="Apagar" (click)="apagarComentario(log.id)">✖</button>
+                <div
+                  *ngIf="podeEditarApagarComentario(log)"
+                  class="comment-actions"
+                >
+                  <button
+                    type="button"
+                    class="comment-action-btn btn-edit-comment"
+                    title="Editar"
+                    (click)="iniciarEdicaoComentario(log)"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    class="comment-action-btn btn-delete-comment"
+                    title="Apagar"
+                    (click)="apagarComentario(log.id)"
+                  >
+                    ✖
+                  </button>
                 </div>
-                <div class="comment-header d-flex justify-content-between align-items-start">
+                <div
+                  class="comment-header d-flex justify-content-between align-items-start"
+                >
                   <div>
                     <strong>{{ log.usuario }}</strong>
                     <span class="activity-date">
@@ -224,13 +278,32 @@
                   </div>
                 </div>
 
-                <div class="comment-body" *ngIf="atividadeEmEdicaoId !== log.id">{{ log.comentario }}</div>
-                
+                <div
+                  class="comment-body"
+                  *ngIf="atividadeEmEdicaoId !== log.id"
+                >
+                  {{ log.comentario }}
+                </div>
+
                 <div class="mt-2" *ngIf="atividadeEmEdicaoId === log.id">
-                  <textarea class="form-control form-control-sm mb-2" rows="2" [(ngModel)]="comentarioEdicaoTexto"></textarea>
+                  <textarea
+                    class="form-control form-control-sm mb-2"
+                    rows="2"
+                    [(ngModel)]="comentarioEdicaoTexto"
+                  ></textarea>
                   <div class="d-flex justify-content-end gap-2">
-                    <button class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicaoComentario()">Cancelar</button>
-                    <button class="btn btn-sm btn-primary" (click)="salvarEdicaoComentario()">Salvar</button>
+                    <button
+                      class="btn btn-sm btn-outline-secondary"
+                      (click)="cancelarEdicaoComentario()"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      class="btn btn-sm btn-primary"
+                      (click)="salvarEdicaoComentario()"
+                    >
+                      Salvar
+                    </button>
                   </div>
                 </div>
               </div>
@@ -273,10 +346,12 @@
           *ngIf="responsavelSelecionado && !mostrarSelecaoResponsavel"
           class="d-flex align-items-center justify-content-between mb-2"
         >
-          <div class="d-flex align-items-center gap-2" 
-               (click)="podeAlterarResponsavel() ? abrirSelecaoResponsavel() : null" 
-               [style.cursor]="podeAlterarResponsavel() ? 'pointer' : 'default'" 
-               [title]="podeAlterarResponsavel() ? 'Alterar responsável' : ''">
+          <div
+            class="d-flex align-items-center gap-2"
+            (click)="podeAlterarResponsavel() ? abrirSelecaoResponsavel() : null"
+            [style.cursor]="podeAlterarResponsavel() ? 'pointer' : 'default'"
+            [title]="podeAlterarResponsavel() ? 'Alterar responsável' : ''"
+          >
             <div
               class="avatar"
               [style.backgroundColor]="getCorAvatar(responsavelSelecionado.nome)"
@@ -384,7 +459,10 @@
       <div class="sidebar-item">
         <span class="label">Projeto</span>
 
-        <span *ngIf="tarefa.projeto?.nome; else semProjeto" class="badge bg-primary">
+        <span
+          *ngIf="tarefa.projeto?.nome; else semProjeto"
+          class="badge bg-primary"
+        >
           {{ tarefa.projeto?.nome }}
         </span>
 
@@ -428,7 +506,8 @@
             class="alert alert-warning py-2 px-3 mb-3"
             *ngIf="deveSolicitarAprovacaoDatas() && solicitacaoAlteracaoDatasPendente"
           >
-            Existe uma solicitação de alteração de datas pendente para esta tarefa.
+            Existe uma solicitação de alteração de datas pendente para esta
+            tarefa.
           </div>
 
           <div class="mb-2">
@@ -476,7 +555,8 @@
                 *ngIf="salvandoDatas"
                 class="spinner-border spinner-border-sm me-1"
               ></span>
-              {{ deveSolicitarAprovacaoDatas() ? 'Solicitar aprovação' : 'Salvar' }}
+              {{ deveSolicitarAprovacaoDatas() ? 'Solicitar aprovação' :
+              'Salvar' }}
             </button>
             <button
               class="btn btn-sm btn-outline-secondary"
@@ -517,7 +597,9 @@
   <div class="drawer-danger-zone" *ngIf="podeApagar()">
     <div>
       <strong>Apagar tarefa</strong>
-      <span>Remove a tarefa, checklist, atividades e comentários vinculados.</span>
+      <span
+        >Remove a tarefa, checklist, atividades e comentários vinculados.</span
+      >
     </div>
 
     <button

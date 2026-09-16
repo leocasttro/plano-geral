@@ -1,14 +1,14 @@
 <div class="modal-body px-5">
   <div class="title py-4 fw-bold">
-    <h3 class="fw-bold text-secondary">
-      Cadastrar tarefa
-    </h3>
+    <h3 class="fw-bold text-secondary">Cadastrar tarefa</h3>
   </div>
 
   <form>
     <div class="catalog-selection-row mb-3">
       <div class="catalog-selection-card">
-        <label for="componente" class="fw-bold text-secondary">Componente</label>
+        <label for="componente" class="fw-bold text-secondary"
+          >Componente</label
+        >
         <select
           class="form-select"
           id="componente"
@@ -18,7 +18,8 @@
           (ngModelChange)="onComponenteChange()"
         >
           <option value="">
-            {{ carregandoTitulos ? 'Carregando componentes...' : 'Selecione um componente' }}
+            {{ carregandoTitulos ? 'Carregando componentes...' : 'Selecione um
+            componente' }}
           </option>
           <option *ngFor="let componente of componentes" [value]="componente">
             {{ componente }}
@@ -42,16 +43,16 @@
           (ngModelChange)="onAtividadePrincipalChange()"
         >
           <option value="">Selecione uma atividade</option>
-          <option *ngFor="let atividade of atividadesPrincipais" [value]="atividade">
+          <option
+            *ngFor="let atividade of atividadesPrincipais"
+            [value]="atividade"
+          >
             {{ atividade }}
           </option>
         </select>
       </div>
 
-      <div
-        class="catalog-selection-card"
-        *ngIf="deveSelecionarSubatividade()"
-      >
+      <div class="catalog-selection-card" *ngIf="deveSelecionarSubatividade()">
         <label for="subatividade" class="fw-bold text-secondary">
           Subatividade
         </label>
@@ -64,7 +65,10 @@
           (ngModelChange)="onSubatividadeChange()"
         >
           <option value="">Selecione uma subatividade</option>
-          <option *ngFor="let item of subatividades" [value]="item.subatividade">
+          <option
+            *ngFor="let item of subatividades"
+            [value]="item.subatividade"
+          >
             {{ item.subatividade }}
           </option>
         </select>
@@ -89,26 +93,33 @@
         Título vinculado ao catálogo.
       </small>
 
-      <small class="text-danger d-block mt-1" *ngIf="atividadePrincipalSelecionada && !tituloCatalogoSelecionado">
+      <small
+        class="text-danger d-block mt-1"
+        *ngIf="atividadePrincipalSelecionada && !tituloCatalogoSelecionado"
+      >
         Selecione uma opção do catálogo para salvar a tarefa.
       </small>
 
-      <small class="text-danger d-block mt-1" *ngIf="devePreencherTituloManual() && !titulo.trim()">
+      <small
+        class="text-danger d-block mt-1"
+        *ngIf="devePreencherTituloManual() && !titulo.trim()"
+      >
         Informe um título para salvar a tarefa.
       </small>
     </div>
 
     <div class="mb-3">
       <select
-      class="form-select"
-      id="projetoId"
-      [(ngModel)]="projetoId"
-      name="projetoId"
-      [disabled]="carregandoProjetos || projetos.length === 0"
-      required
+        class="form-select"
+        id="projetoId"
+        [(ngModel)]="projetoId"
+        name="projetoId"
+        [disabled]="carregandoProjetos || projetos.length === 0"
+        required
       >
         <option value="" disabled>
-          {{ carregandoProjetos ? 'Carregando projetos...' : 'Selecione um projeto' }}
+          {{ carregandoProjetos ? 'Carregando projetos...' : 'Selecione um
+          projeto' }}
         </option>
         <option *ngFor="let projeto of projetos" [value]="projeto.id">
           {{ projeto.nome }}
@@ -117,7 +128,6 @@
           </ng-container>
         </option>
       </select>
-
     </div>
 
     <!-- DESCRIÇÃO -->
@@ -130,6 +140,18 @@
         [(ngModel)]="descricao"
         name="descricao"
       ></textarea>
+    </div>
+    <div class="form-check mt-3 mb-3">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="checkMacro"
+        name="isMacroTarefa"
+        [(ngModel)]="isMacroTarefa"
+      />
+      <label class="form-check-label fw-bold text-primary" for="checkMacro">
+        É uma Macro-Tarefa (Poderá conter sub-tarefas)
+      </label>
     </div>
   </form>
 </div>

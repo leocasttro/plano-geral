@@ -21,6 +21,7 @@ import {
 })
 export class ModalCadastroTarefa implements OnInit{
   titulo = '';
+  isMacroTarefa = false;
   descricao = '';
   projetoId = '';
 
@@ -185,6 +186,7 @@ export class ModalCadastroTarefa implements OnInit{
       tituloCatalogoId: this.tituloCatalogoSelecionado?.id ?? null,
       descricao: this.descricao,
       projetoId: this.projetoId,
+      isMacroTarefa: this.isMacroTarefa,
     });
   }
 
