@@ -20,6 +20,8 @@ type TarefaProps = {
   tituloCatalogo?: TituloCatalogoResumo | null;
   checklist?: CheckListItem[];
   atividades?: Atividade[];
+  isMacroTarefa?: boolean;
+  tarefaPaiId?: string | null;
 };
 
 type ProjetoResumo = {
@@ -46,6 +48,8 @@ export class Tarefa {
   private prioridade: Prioridade;
   private projeto?: ProjetoResumo | null;
   private tituloCatalogo?: TituloCatalogoResumo | null;
+  private isMacroTarefa: boolean = false;
+  private tarefaPaiId?: string | null;
 
   constructor(
     public readonly id: string,
@@ -77,6 +81,8 @@ export class Tarefa {
     tarefa.checklist = props.checklist ?? [];
     tarefa.atividades = props.atividades ?? [];
     tarefa.tituloCatalogoId = props.tituloCatalogoId ?? null;
+    tarefa.isMacroTarefa = props.isMacroTarefa ?? false;
+    tarefa.tarefaPaiId = props.tarefaPaiId ?? null;
 
     return tarefa;
   }
@@ -291,6 +297,8 @@ export class Tarefa {
       tituloCatalogo: this.tituloCatalogo,
       checklist: [...this.checklist],
       atividades: [...this.atividades],
+      isMacroTarefa: this.isMacroTarefa,
+      tarefaPaiId: this.tarefaPaiId,
     });
 
     return tarefaComPrazo;
@@ -343,4 +351,12 @@ export class Tarefa {
   obterCriador(): string | undefined {
     return this.criadorId;
   }
+
+  obterIsMacroTarefa(): boolean { return this.isMacroTarefa; }
+
+  obterTarefaPaiId(): string | null { return this.tarefaPaiId ?? null; }
+
+  transformarEmMacroTarefa(): void { this.isMacroTarefa = true; }
+
+  vincularATarefaPai(paiId: string): void { this.tarefaPaiId = paiId; }
 }

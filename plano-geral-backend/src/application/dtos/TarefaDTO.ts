@@ -44,6 +44,8 @@ export interface TarefaDTOProps {
     descricao: string;
     data: Date;
   }[];
+  isMacroTarefa: boolean;
+  tarefaPaiId?: string | null;
 }
 
 function formatDateOnly(data: Date | null): string | null {
@@ -98,6 +100,8 @@ export class TarefaDTO {
         descricao: atividade.descricao,
         data: atividade.data,
       })),
+      isMacroTarefa: tarefa.obterIsMacroTarefa(),
+      tarefaPaiId: tarefa.obterTarefaPaiId(),
     };
   }
 }
