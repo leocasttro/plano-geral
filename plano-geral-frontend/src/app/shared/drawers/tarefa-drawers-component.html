@@ -137,8 +137,8 @@
             <span class="fw-bold text-dark" style="font-size: 0.9rem"
               >{{ sub.titulo }}</span
             >
-            <span class="badge" [ngClass]="sub.badgeClasseCor"
-              >{{ sub.status | uppercase }}</span
+            <span class="badge" [ngClass]="getCorStatus(sub.status)"
+              >{{ formatarStatus(sub.status) }}</span
             >
           </div>
         </div>

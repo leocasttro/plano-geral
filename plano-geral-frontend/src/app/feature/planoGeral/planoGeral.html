@@ -108,6 +108,8 @@
           cdkDrag
           [cdkDragDisabled]="filtrosAtivos()"
           [data]="tarefa"
+          [isExpandida]="isMacroExpandida(tarefa.id)"
+          (expandirClick)="toggleExpandirMacro($event)"
           (checklistItemselected)="handleChecklistItemClick($event)"
           (tituloClick)="abrirDetalheTarefa($event)"
         ></app-card-component>
@@ -163,6 +165,8 @@
           cdkDrag
           [cdkDragDisabled]="filtrosAtivos()"
           [data]="tarefa"
+          [isExpandida]="isMacroExpandida(tarefa.id)"
+          (expandirClick)="toggleExpandirMacro($event)"
           (checklistItemselected)="handleChecklistItemClick($event)"
           (tituloClick)="abrirDetalheTarefa($event)"
         ></app-card-component>
@@ -218,6 +222,8 @@
           cdkDrag
           [cdkDragDisabled]="filtrosAtivos()"
           [data]="tarefa"
+          [isExpandida]="isMacroExpandida(tarefa.id)"
+          (expandirClick)="toggleExpandirMacro($event)"
           (checklistItemselected)="handleChecklistItemClick($event)"
           (tituloClick)="abrirDetalheTarefa($event)"
         ></app-card-component>

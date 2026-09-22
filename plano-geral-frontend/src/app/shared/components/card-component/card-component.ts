@@ -8,7 +8,7 @@ import {
 } from '@angular/common';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faMinus, faExclamation } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 
 /* ================= MODELS ================= */
@@ -90,11 +90,27 @@ export class CardComponent {
   @Output() expandirClick = new EventEmitter<string>();
 
   faMinus = faMinus;
+  faExclamation = faExclamation;
   isCollapsed = true;
   collapseId!: string;
 
   ngOnInit(): void {
     this.collapseId = `cardID-${this.data.id}`;
+  }
+
+  get isAtrasada(): boolean {
+    if (!this.data || !this.data.dataFim) return false;
+    
+    if (String(this.data.status ?? '').toUpperCase() === 'CONCLUIDA') return false;
+
+    // dataFim vem no formato YYYY-MM-DD
+    const match = this.data.dataFim.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return false;
+
+    const [_, ano, mes, dia] = match;
+    const dataFim = new Date(Number(ano), Number(mes) - 1, Number(dia), 23, 59, 59, 999);
+    
+    return dataFim.getTime() < new Date().getTime();
   }
 
   onChecklistItemClick(item: ChecklistItem): void {
