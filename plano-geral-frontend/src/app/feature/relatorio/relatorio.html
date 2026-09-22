@@ -380,7 +380,7 @@
           <button
             type="button"
             class="user-row"
-            *ngFor="let usuario of carga.usuarios"
+            *ngFor="let usuario of cargaUsuariosPaginada"
             (click)="abrirUsuario(usuario)"
           >
             <div class="avatar">{{ iniciais(usuario.nome) }}</div>
@@ -403,6 +403,16 @@
             </div>
           </button>
         </div>
+
+        <div class="d-flex justify-content-center mt-3" *ngIf="carga.usuarios.length > tamanhoPaginaUsuarios">
+          <ngb-pagination
+            [(page)]="paginaDesempenho"
+            [pageSize]="tamanhoPaginaUsuarios"
+            [collectionSize]="carga.usuarios.length"
+            [maxSize]="5"
+            size="sm"
+          ></ngb-pagination>
+        </div>
       </section>
 
       <section class="report-panel availability-panel" *ngIf="disponibilidadeUsuarios as disponibilidade">
@@ -422,7 +432,7 @@
           <div class="availability-list">
             <div
               class="modal-task-card availability-row"
-              *ngFor="let usuario of disponibilidade.usuarios"
+              *ngFor="let usuario of disponibilidadePaginada"
             >
               <div class="task-line">
                 <div>
@@ -451,6 +461,16 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <div class="d-flex justify-content-center mt-3" *ngIf="disponibilidade.usuarios.length > tamanhoPaginaUsuarios">
+            <ngb-pagination
+              [(page)]="paginaDisponibilidade"
+              [pageSize]="tamanhoPaginaUsuarios"
+              [collectionSize]="disponibilidade.usuarios.length"
+              [maxSize]="5"
+              size="sm"
+            ></ngb-pagination>
           </div>
         </ng-template>
       </section>
