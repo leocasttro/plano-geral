@@ -44,7 +44,7 @@ export class MailService {
         <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
         <p>Clique no link abaixo para criar uma nova senha:</p>
         <p><a href="${link}">Refinir minha senha</a></p>
-        <p>Esse link expira em 1 hora. Se você não solicitou, pode ignorar este e-mail.</p>
+        <p>Esse link expira em 24 horas. Se você não solicitou, pode ignorar este e-mail.</p>
       `
     })
   }
