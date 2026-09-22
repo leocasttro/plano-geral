@@ -5,6 +5,7 @@ import {GetAllProjetos} from '../../../application/use-cases/projeto/GetAllProje
 import {GetProjetoById} from '../../../application/use-cases/projeto/GetProjetoById';
 import {UpdateProjetoStatus} from '../../../application/use-cases/projeto/UpdateProjetoStatus';
 import {UserTypeORMRepository} from '../../database/typeorm/entities/repositories/UserTypeORMRepository';
+import { UpdateProjetoCoordenador } from '../../../application/use-cases/projeto/UpdateProjetoCoordenador';
 
 export function makeProjetoController() {
   const repo = new ProjetoTypeORMRepository();
@@ -15,5 +16,6 @@ export function makeProjetoController() {
     getAllProjetos: new GetAllProjetos(repo),
     getProjetoById: new GetProjetoById(repo),
     updateProjetoStatus: new UpdateProjetoStatus(repo),
+    updateProjetoCoordenador: new UpdateProjetoCoordenador(repo, userRepo),
   });
 }

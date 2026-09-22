@@ -1,4 +1,5 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import { AuthService } from './../../domain/auth/auth.service';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -8,10 +9,12 @@ import { ProjetoEventsService } from '../../domain/projeto/projeto-events.servic
 import { TarefaDTO } from '../../domain/tarefa/tarefa.model';
 import { UsuarioApi } from '../../domain/usuario/usuario.api';
 import { UsuarioDTO } from '../../domain/usuario/usuario.model';
+import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-projeto',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FontAwesomeModule],
   templateUrl: './projeto.html',
   styleUrl: './projeto.scss',
 })
@@ -35,6 +38,10 @@ export class Projeto implements OnInit, OnDestroy {
   loading = false;
   error = '';
 
+  faPen = faPen;
+  editandoCoordenador: boolean = false;
+  novoCoordenadorId: string = '';
+
   statusMenuProjetoId: string | null = null;
 
   statusOptions = ['ATIVO', 'PAUSADO', 'CONCLUIDO', 'CANCELADO'];
@@ -46,6 +53,7 @@ export class Projeto implements OnInit, OnDestroy {
     private projetoEvents: ProjetoEventsService,
     private cdr: ChangeDetectorRef,
     private usuarioApi: UsuarioApi,
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
@@ -106,6 +114,7 @@ export class Projeto implements OnInit, OnDestroy {
   fecharModalTarefas() {
     this.modalTarefasProjetoAberto = false;
     this.projetoModalSelecionado = null;
+    this.editandoCoordenador = false;
     document.body.classList.remove('modal-open');
   }
 
@@ -144,7 +153,9 @@ export class Projeto implements OnInit, OnDestroy {
     });
   }
 
-  tarefasDoProjeto(projeto: ProjetoDTO | null = this.projetoModalSelecionado): TarefaDTO[] {
+  tarefasDoProjeto(
+    projeto: ProjetoDTO | null = this.projetoModalSelecionado,
+  ): TarefaDTO[] {
     return projeto?.tarefas ?? [];
   }
 
@@ -218,6 +229,45 @@ export class Projeto implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.usuario()?.perfil?.toUpperCase() === 'ADMIN';
+  }
+
+  get isGestorOrAdmin(): boolean {
+    const perfil = this.authService.usuario()?.perfil?.toUpperCase();
+    return perfil === 'ADMIN' || perfil === 'GESTOR';
+  }
+
+  get isGestor(): boolean {
+    return this.authService.usuario()?.perfil?.toUpperCase() === 'GESTOR';
+  }
+
+  iniciarEdicaoCoordenador() {
+    this.editandoCoordenador = true;
+    this.novoCoordenadorId = this.projetoModalSelecionado?.coordenadorId || '';
+  }
+
+  salvarCoordenador() {
+    if (!this.projetoModalSelecionado) return;
+
+    this.projetoApi
+      .alterarCoordenador(
+        this.projetoModalSelecionado.id,
+        this.novoCoordenadorId,
+      )
+      .subscribe({
+        next: (projetoAtualizado) => {
+          this.projetos = this.projetos.map((item) =>
+            item.id === projetoAtualizado.id ? projetoAtualizado : item,
+          );
+          this.projetoModalSelecionado = projetoAtualizado;
+          this.editandoCoordenador = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Erro ao alterar coordenador', err),
+      });
   }
 
   statusLabel(status: string): string {

@@ -57,6 +57,15 @@ export class Projeto {
     return projeto
   }
 
+  alterarCoordenador(coordenadorId: string | null, coordenadorNome: string | null): void {
+    if (this.status === StatusProjeto.CONCLUIDO) {
+      throw new Error('Não é possível alterar o coordenador de um projeto já concluído');
+    }
+    this.coordenadorId = coordenadorId ?? null;
+    this.coordenadorNome = coordenadorNome ?? null;
+    this.updatedAt = new Date();
+  }
+
   pausar(usuario: string): void {
     if (this.status === StatusProjeto.CONCLUIDO) {
       throw new Error('Não é possível pausar um projeto concluído');

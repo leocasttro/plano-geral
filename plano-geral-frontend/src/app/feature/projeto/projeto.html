@@ -102,11 +102,49 @@
               {{ projetoModalSelecionado?.descricao || 'Sem descrição' }}
             </div>
 
+            <!-- Coordenador Atual / Modo Edição -->
             <div
-              class="small text-muted"
-              *ngIf="projetoModalSelecionado?.coordenadorNome"
+              class="small text-muted d-flex align-items-center gap-2 mt-2"
+              *ngIf="projetoModalSelecionado"
             >
-              <strong>Coordenador:</strong> {{ projetoModalSelecionado?.coordenadorNome }}
+              <strong>Coordenador:</strong>
+
+              <!-- Visão normal -->
+              <span *ngIf="!editandoCoordenador" class="d-flex align-items-center gap-2">
+                {{ projetoModalSelecionado.coordenadorNome || 'Sem responsável' }}
+
+                <button
+                  *ngIf="isGestorOrAdmin"
+                  class="btn btn-sm btn-link text-secondary p-0 m-0"
+                  (click)="iniciarEdicaoCoordenador()"
+                  title="Editar Coordenador"
+                >
+                  <fa-icon [icon]="faPen"></fa-icon>
+                </button>
+              </span>
+
+              <!-- Visão de Edição -->
+              <div *ngIf="editandoCoordenador" class="d-flex align-items-center gap-1">
+                <select
+                  class="form-select form-select-sm"
+                  [(ngModel)]="novoCoordenadorId"
+                >
+                  <option value="">Sem responsável</option>
+                  <option *ngFor="let u of usuarios" [value]="u.id">{{ u.nome }}</option>
+                </select>
+                <button
+                  class="btn btn-sm btn-success"
+                  (click)="salvarCoordenador()"
+                >
+                  Salvar
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  (click)="editandoCoordenador = false"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
 
             <div

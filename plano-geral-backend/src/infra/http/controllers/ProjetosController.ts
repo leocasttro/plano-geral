@@ -6,6 +6,7 @@ import {GetProjetoById} from '../../../application/use-cases/projeto/GetProjetoB
 import {UpdateProjetoStatus} from '../../../application/use-cases/projeto/UpdateProjetoStatus';
 import {isStatusProjeto} from '../validators/projetoValidators';
 import {getAuthenticatedUser} from '../helpers/getAuthenticatedUser';
+import { UpdateProjetoCoordenador } from '../../../application/use-cases/projeto/UpdateProjetoCoordenador';
 
 interface CriarProjetoBody {
   nome: string;
@@ -19,6 +20,7 @@ type Deps = {
   getAllProjetos: GetAllProjetos;
   getProjetoById: GetProjetoById;
   updateProjetoStatus: UpdateProjetoStatus;
+  updateProjetoCoordenador: UpdateProjetoCoordenador;
 };
 
 export class ProjetosController {
@@ -89,6 +91,19 @@ export class ProjetosController {
       }
 
       return res.status(201).json(projetos);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  }
+
+  async alterarCoordenador(req: Request, res: Response) {
+    try {
+      const projeto = await this.deps.updateProjetoCoordenador.execute({
+        projetoId: req.params.id,
+        coordenadorId: req.body.coordenadorId,
+        usuarioPerfil: req.user.perfil
+      });
+      return res.json(ProjetoDTO.fromDomain(projeto));
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
     }

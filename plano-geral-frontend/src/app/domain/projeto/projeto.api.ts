@@ -27,4 +27,8 @@ export class ProjetoApi {
   atualizarStatus(id: string, status: string): Observable<ProjetoDTO> {
     return this.http.patch<ProjetoDTO>(`${this.apiUrl}/${id}/status`, { status });
   }
+
+  alterarCoordenador(id: string, coordenadorId: string): Observable<ProjetoDTO> {
+    return this.http.patch<ProjetoDTO>(`${this.apiUrl}/${id}/coordenador`, { coordenadorId });
+  }
 }
