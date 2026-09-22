@@ -4,7 +4,7 @@
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .report-filter-grid {
@@ -76,6 +76,8 @@
   background: #f6f0ff;
   color: #4f2cff;
   font-size: 0.82rem;
+  border-bottom-left-radius: 9px;
+  border-bottom-right-radius: 9px;
 }
 
 @media (max-width: 1200px) {
@@ -92,4 +94,29 @@
   .filter-actions {
     justify-content: flex-start;
   }
+}
+
+::ng-deep .report-filter-grid ng-select .ng-select-container {
+  height: 42px;
+  min-height: 42px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2a44;
+  font-size: 0.86rem;
+}
+
+::ng-deep .report-filter-grid ng-select.ng-select-disabled .ng-select-container {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+::ng-deep .report-filter-grid ng-select .ng-value-container .ng-input > input {
+  font-size: 0.86rem;
+}
+
+::ng-deep .report-filter-grid ng-select {
+  width: 100%;
+  min-width: 0;
 }

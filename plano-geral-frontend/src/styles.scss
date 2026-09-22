@@ -59,3 +59,8 @@ app-side-bar {
 // Como a navbar está fora do main, precisamos ajustar sua posição.
 // Uma forma é colocar a navbar DENTRO do main no seu HTML.
 // Se você fizer isso, o código acima já funciona perfeitamente.
+@import '@ng-select/ng-select/themes/default.theme.css';
+
+.ng-dropdown-panel {
+  z-index: 1060 !important;
+}

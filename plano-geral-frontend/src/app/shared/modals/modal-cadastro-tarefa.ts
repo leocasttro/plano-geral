@@ -12,10 +12,12 @@ import {
   subatividadeUnicaExigeTituloManual,
 } from '../../domain/titulo-tarefa/titulo-tarefa-manual-title';
 
+import { NgSelectModule } from '@ng-select/ng-select';
+
 @Component({
   selector: 'app-modal-cadastro-tarefa',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgbModalModule],
+  imports: [CommonModule, FormsModule, NgbModalModule, NgSelectModule],
   templateUrl: './modal-cadastro-tarefa.html',
   styleUrls: ['./modal-cadastro-tarefa.scss'],
 })
@@ -70,6 +72,12 @@ export class ModalCadastroTarefa implements OnInit{
     });
   }
 
+  searchProjetoFn = (term: string, item: ProjetoDTO) => {
+    term = term.toLowerCase();
+    const label = item.centroCusto ? `${item.nome} - ${item.centroCusto}`.toLowerCase() : item.nome.toLowerCase();
+    return label.includes(term);
+  };
+
   carregarCatalogoTitulos(): void {
     this.carregandoTitulos = true;
     this.erroTitulos = '';
@@ -93,7 +101,8 @@ export class ModalCadastroTarefa implements OnInit{
     });
   }
 
-  onComponenteChange(): void {
+  onComponenteChange(val: string): void {
+    this.componenteSelecionado = val ?? "";
     this.atividadePrincipalSelecionada = '';
     this.subatividadeSelecionada = '';
     this.tituloCatalogoSelecionado = null;
@@ -110,7 +119,8 @@ export class ModalCadastroTarefa implements OnInit{
     this.atualizarTitulo();
   }
 
-  onAtividadePrincipalChange(): void {
+  onAtividadePrincipalChange(val: string): void {
+    this.atividadePrincipalSelecionada = val ?? "";
     this.subatividadeSelecionada = '';
     this.titulo = '';
     this.tituloCatalogoSelecionado = null;
@@ -143,7 +153,8 @@ export class ModalCadastroTarefa implements OnInit{
     this.atualizarTitulo();
   }
 
-  onSubatividadeChange(): void {
+  onSubatividadeChange(val: string): void {
+    this.subatividadeSelecionada = val ?? "";
     this.tituloCatalogoSelecionado =
       this.titulosCatalogo.find(
         (item) =>

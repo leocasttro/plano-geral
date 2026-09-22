@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ProjetoDTO } from '../../../domain/projeto/projetoModel';
 import { TituloTarefaCatalogoDTO } from '../../../domain/titulo-tarefa/titulo-tarefa.model';
@@ -7,14 +7,16 @@ import { UsuarioDTO } from '../../../domain/usuario/usuario.model';
 import { PeriodoFilterComponent } from '../periodo-filter/periodo-filter';
 import { FiltrosOperacionais } from './filtros-operacionais.model';
 
+import { NgSelectModule } from '@ng-select/ng-select';
+
 @Component({
   selector: 'app-filtros-operacionais',
   standalone: true,
-  imports: [CommonModule, FormsModule, PeriodoFilterComponent],
+  imports: [CommonModule, FormsModule, PeriodoFilterComponent, NgSelectModule],
   templateUrl: './filtros-operacionais.html',
   styleUrl: './filtros-operacionais.scss',
 })
-export class FiltrosOperacionaisComponent {
+export class FiltrosOperacionaisComponent implements OnChanges {
   @Input() projetos: ProjetoDTO[] = [];
   @Input() usuarios: UsuarioDTO[] = [];
   @Input() catalogos: TituloTarefaCatalogoDTO[] = [];
@@ -30,36 +32,48 @@ export class FiltrosOperacionaisComponent {
       : projeto.nome;
   }
 
-  get componentesFiltro(): string[] {
-    return this.valoresUnicosCatalogo('componente', this.catalogos);
+  searchProjetoFn = (term: string, item: ProjetoDTO) => {
+    term = term.toLowerCase();
+    const label = this.projetoFiltroLabel(item).toLowerCase();
+    return label.includes(term);
+  };
+
+  componentesFiltro: string[] = [];
+  atividadesPrincipaisFiltro: string[] = [];
+  subatividadesFiltro: string[] = [];
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['catalogos'] || changes['filtros']) {
+      this.atualizarListas();
+    }
   }
 
-  get atividadesPrincipaisFiltro(): string[] {
+  private atualizarListas() {
+    this.componentesFiltro = this.valoresUnicosCatalogo('componente', this.catalogos);
+    
     if (!this.filtros.componente) {
-      return [];
+      this.atividadesPrincipaisFiltro = [];
+    } else {
+      this.atividadesPrincipaisFiltro = this.valoresUnicosCatalogo(
+        'atividadePrincipal',
+        this.catalogos.filter((item) =>
+          this.valorCatalogoIgual(item.componente, this.filtros.componente),
+        ),
+      );
     }
 
-    return this.valoresUnicosCatalogo(
-      'atividadePrincipal',
-      this.catalogos.filter((item) =>
-        this.valorCatalogoIgual(item.componente, this.filtros.componente),
-      ),
-    );
-  }
-
-  get subatividadesFiltro(): string[] {
     if (!this.filtros.componente || !this.filtros.atividadePrincipal) {
-      return [];
+      this.subatividadesFiltro = [];
+    } else {
+      this.subatividadesFiltro = this.valoresUnicosCatalogo(
+        'subatividade',
+        this.catalogos.filter(
+          (item) =>
+            this.valorCatalogoIgual(item.componente, this.filtros.componente) &&
+            this.valorCatalogoIgual(item.atividadePrincipal, this.filtros.atividadePrincipal),
+        ),
+      );
     }
-
-    return this.valoresUnicosCatalogo(
-      'subatividade',
-      this.catalogos.filter(
-        (item) =>
-          this.valorCatalogoIgual(item.componente, this.filtros.componente) &&
-          this.valorCatalogoIgual(item.atividadePrincipal, this.filtros.atividadePrincipal),
-      ),
-    );
   }
 
   alterarProjeto(projetoId: string): void {
