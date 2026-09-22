@@ -139,6 +139,7 @@ export class NavBar {
 
     this.pararPollingNotificacoes();
   }
+
   onNovaTarefaClick() {
     this.novaTarefa.emit();
   }
@@ -161,6 +162,11 @@ export class NavBar {
 
   onNovoProjetoClick() {
     this.novoProjeto.emit();
+  }
+
+  get podeCriarProjeto(): boolean {
+    const perfil = this.usuarioAtual?.perfil?.toUpperCase();
+    return perfil === 'ADMIN' || perfil === 'GESTOR' || perfil === 'GESTOR_GEOPROCESSAMENTO';
   }
 
   onFilterClick() {
