@@ -9,22 +9,18 @@
         <label for="componente" class="fw-bold text-secondary"
           >Componente</label
         >
-        <select
-          class="form-select"
+        <ng-select
+          [items]="componentes"
           id="componente"
-          [(ngModel)]="componenteSelecionado"
+          [ngModel]="componenteSelecionado || null"
           name="componente"
           [disabled]="carregandoTitulos || componentes.length === 0"
-          (ngModelChange)="onComponenteChange()"
+          (ngModelChange)="onComponenteChange($event)"
+          [placeholder]="carregandoTitulos ? 'Carregando componentes...' : 'Selecione um componente'"
+          [searchable]="true"
+
         >
-          <option value="">
-            {{ carregandoTitulos ? 'Carregando componentes...' : 'Selecione um
-            componente' }}
-          </option>
-          <option *ngFor="let componente of componentes" [value]="componente">
-            {{ componente }}
-          </option>
-        </select>
+        </ng-select>
         <small class="text-danger d-block mt-1" *ngIf="erroTitulos">
           {{ erroTitulos }}
         </small>
@@ -34,22 +30,18 @@
         <label for="atividadePrincipal" class="fw-bold text-secondary">
           Atividade principal
         </label>
-        <select
-          class="form-select"
+        <ng-select
+          [items]="atividadesPrincipais"
           id="atividadePrincipal"
-          [(ngModel)]="atividadePrincipalSelecionada"
+          [ngModel]="atividadePrincipalSelecionada || null"
           name="atividadePrincipal"
           [disabled]="!componenteSelecionado"
-          (ngModelChange)="onAtividadePrincipalChange()"
+          (ngModelChange)="onAtividadePrincipalChange($event)"
+          placeholder="Selecione uma atividade"
+          [searchable]="true"
+
         >
-          <option value="">Selecione uma atividade</option>
-          <option
-            *ngFor="let atividade of atividadesPrincipais"
-            [value]="atividade"
-          >
-            {{ atividade }}
-          </option>
-        </select>
+        </ng-select>
       </div>
 
       <div class="catalog-selection-card" *ngIf="deveSelecionarSubatividade()">
@@ -57,21 +49,18 @@
           Subatividade
         </label>
 
-        <select
-          class="form-select"
+        <ng-select
+          [items]="subatividades"
+          bindLabel="subatividade"
+          bindValue="subatividade"
           id="subatividade"
-          [(ngModel)]="subatividadeSelecionada"
+          [ngModel]="subatividadeSelecionada || null"
           name="subatividade"
-          (ngModelChange)="onSubatividadeChange()"
+          (ngModelChange)="onSubatividadeChange($event)"
+          placeholder="Selecione uma subatividade"
+          [searchable]="true"
         >
-          <option value="">Selecione uma subatividade</option>
-          <option
-            *ngFor="let item of subatividades"
-            [value]="item.subatividade"
-          >
-            {{ item.subatividade }}
-          </option>
-        </select>
+        </ng-select>
       </div>
     </div>
 
@@ -109,25 +98,27 @@
     </div>
 
     <div class="mb-3">
-      <select
-        class="form-select"
+      <label class="fw-bold text-secondary">Projeto</label>
+      <ng-select
+        [items]="projetos"
+        bindValue="id"
         id="projetoId"
-        [(ngModel)]="projetoId"
+        [ngModel]="projetoId || null"
         name="projetoId"
         [disabled]="carregandoProjetos || projetos.length === 0"
-        required
+        [placeholder]="carregandoProjetos ? 'Carregando projetos...' : 'Selecione um projeto'"
+        [searchable]="true"
+        [searchFn]="searchProjetoFn"
+        (ngModelChange)="projetoId = $event ?? ''"
+
       >
-        <option value="" disabled>
-          {{ carregandoProjetos ? 'Carregando projetos...' : 'Selecione um
-          projeto' }}
-        </option>
-        <option *ngFor="let projeto of projetos" [value]="projeto.id">
-          {{ projeto.nome }}
-          <ng-container *ngIf="projeto.centroCusto">
-            - {{ projeto.centroCusto }}
-          </ng-container>
-        </option>
-      </select>
+        <ng-template ng-option-tmp let-item="item">
+          {{ item.nome }} <ng-container *ngIf="item.centroCusto">- {{ item.centroCusto }}</ng-container>
+        </ng-template>
+        <ng-template ng-label-tmp let-item="item">
+          {{ item.nome }} <ng-container *ngIf="item.centroCusto">- {{ item.centroCusto }}</ng-container>
+        </ng-template>
+      </ng-select>
     </div>
 
     <!-- DESCRIÇÃO -->
