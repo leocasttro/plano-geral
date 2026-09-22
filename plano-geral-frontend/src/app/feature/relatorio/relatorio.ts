@@ -1195,7 +1195,7 @@ export class Relatorio implements OnInit {
         this.tempoVisualTitulo(b) - this.tempoVisualTitulo(a) ||
         b.totalTarefas - a.totalTarefas ||
         a.titulo.localeCompare(b.titulo),
-    );
+    ).slice(0, 10);
   }
 
   private filtrosRelatorioRequest() {

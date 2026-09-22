@@ -2534,7 +2534,7 @@
 
 .title-time-column-chart {
   grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
-  align-items: end;
+  align-items: stretch;
 }
 
 .time-column-item,
@@ -2545,7 +2545,7 @@
   background: transparent;
   color: inherit;
   display: grid;
-  grid-template-rows: auto 150px auto auto auto;
+  grid-template-rows: auto 150px 1fr auto;
   gap: 7px;
   justify-items: center;
   text-align: center;
