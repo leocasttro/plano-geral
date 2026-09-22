@@ -132,8 +132,12 @@ export class Pedidos implements OnInit, OnDestroy {
     this.tarefasConcluidas = [];
     this.tarefasTeste = [];
 
-    const principais = this.todasTarefas.filter((t) => !t.tarefaPaiId);
-    const filhas = this.todasTarefas.filter((t) => !!t.tarefaPaiId);
+    const principais = this.todasTarefas.filter(
+      (t) => !t.tarefaPaiId || !this.todasTarefas.some((p) => p.id === t.tarefaPaiId)
+    );
+    const filhas = this.todasTarefas.filter(
+      (t) => !!t.tarefaPaiId && this.todasTarefas.some((p) => p.id === t.tarefaPaiId)
+    );
 
     // Embute as filhas
     principais.forEach((pai) => {

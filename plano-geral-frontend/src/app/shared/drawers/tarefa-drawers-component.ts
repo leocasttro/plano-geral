@@ -633,6 +633,30 @@ export class TarefaDrawersComponent implements OnInit {
     return item.id;
   }
 
+  private getStatusLabel(status: string): string {
+    switch (status.toUpperCase()) {
+      case 'PENDENTE': return 'Pendente';
+      case 'EM_ANDAMENTO': return 'Em Andamento';
+      case 'CONCLUIDA': return 'Concluída';
+      default: return 'Outro';
+    }
+  }
+
+  getCorStatus(status?: string): string {
+    const s = String(status ?? '').toUpperCase();
+    if (s === 'PENDENTE') return 'bg-danger text-white';
+    if (s === 'EM_ANDAMENTO') return 'bg-warning text-dark';
+    if (s === 'CONCLUIDA') return 'bg-success text-white';
+    return 'bg-secondary text-white';
+  }
+
+  formatarStatus(status?: string): string {
+    const s = String(status ?? '').toUpperCase();
+    if (s === 'EM_ANDAMENTO') return 'EM ANDAMENTO';
+    if (s === 'CONCLUIDA') return 'CONCLUÍDA';
+    return s;
+  }
+
   private prioridadeToBadge(prioridade: string): string {
     switch (String(prioridade).toUpperCase()) {
       case 'CRITICA':
