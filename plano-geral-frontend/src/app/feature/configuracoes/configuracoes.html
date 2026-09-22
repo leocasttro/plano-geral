@@ -129,6 +129,16 @@
               <button
                 type="button"
                 class="row-action"
+                style="color: #4f46e5; border-color: #c7d2fe; background: #eef2ff;"
+                (click)="reenviarSenha(usuario)"
+                title="Reenviar link de redefinição de senha"
+              >
+                Reset Senha
+              </button>
+
+              <button
+                type="button"
+                class="row-action"
                 [class.danger]="usuario.ativo"
                 (click)="alterarStatus(usuario)"
               >

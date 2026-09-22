@@ -257,4 +257,23 @@ export class Configuracoes implements OnInit {
       item.id === usuario.id ? usuario : item,
     );
   }
+
+  reenviarSenha(usuario: UsuarioDTO): void {
+    this.error = '';
+    this.success = '';
+    
+    if (confirm(`Deseja reenviar o link de redefinição de senha para o e-mail: ${usuario.email}?`)) {
+      this.authService.requestPasswordReset({ email: usuario.email }).subscribe({
+        next: () => {
+          this.success = 'Link de redefinição de senha enviado com sucesso.';
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.error = 'Erro ao enviar link de redefinição de senha.';
+          this.cdr.detectChanges();
+        }
+      });
+    }
+  }
 }

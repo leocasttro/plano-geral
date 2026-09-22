@@ -163,9 +163,9 @@
 .table-head,
 .user-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 140px 100px 190px;
+  grid-template-columns: minmax(220px, 1fr) 150px 80px max-content;
   gap: 12px;
-  align-items: center;
+  align-items: start;
 }
 
 .table-head {
@@ -210,6 +210,8 @@
 }
 
 .status-pill {
+  align-self: start;
+  margin-top: 6px;
   width: fit-content;
   border-radius: 999px;
   padding: 4px 9px;

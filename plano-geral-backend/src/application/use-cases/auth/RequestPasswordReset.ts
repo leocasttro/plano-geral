@@ -19,7 +19,7 @@ export class RequestPasswordReset {
     const tokenHash = await bcrypt.hash(resetToken, 10);
 
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1);
+    expiresAt.setHours(expiresAt.getHours() + 24);
 
     user.definirTokenTrocaSenha(tokenHash, expiresAt);
     await this.userRepository.save(user);
