@@ -33,6 +33,7 @@ import { FiltrosOperacionais } from '../../shared/components/filtros-operacionai
 import { ProjectStatusChartComponent } from '../../shared/dashboard/project-status-chart/project-status-chart';
 import { UserPerformanceChartComponent } from '../../shared/dashboard/user-performance-chart/user-performance-chart';
 import { ProjectRadarChartComponent } from '../../shared/dashboard/project-radar-chart/project-radar-chart';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 
 type UsuarioCarga = RelatorioCargaUsuariosDTO['usuarios'][number];
 type MetricaProjeto = RelatorioMetricasProjetosDTO['projetos'][number];
@@ -50,6 +51,7 @@ type PeriodoThroughput = '15d' | '30d' | '90d' | 'ano';
     ProjectStatusChartComponent,
     UserPerformanceChartComponent,
     ProjectRadarChartComponent,
+    NgbPaginationModule,
   ],
   templateUrl: './relatorio.html',
   styleUrl: './relatorio.scss',
@@ -112,6 +114,48 @@ export class Relatorio implements OnInit {
 
   leadTime: RelatorioLeadTimeDTO | null = null;
   disponibilidadeUsuarios: RelatorioDisponibilidadeUsuariosDTO | null = null;
+
+  paginaDesempenho = 1;
+  paginaDisponibilidade = 1;
+  tamanhoPaginaUsuarios = 5;
+
+  get cargaUsuariosPaginada() {
+    if (!this.cargaUsuarios) return [];
+    
+    const sorted = [...this.cargaUsuarios.usuarios].sort((a, b) => {
+      return b.atrasadas - a.atrasadas || b.emAndamento - a.emAndamento || b.totalTarefas - a.totalTarefas;
+    });
+    
+    const startIndex = (this.paginaDesempenho - 1) * this.tamanhoPaginaUsuarios;
+    return sorted.slice(startIndex, startIndex + this.tamanhoPaginaUsuarios);
+  }
+
+  get disponibilidadePaginada() {
+    if (!this.disponibilidadeUsuarios) return [];
+    
+    const sorted = [...this.disponibilidadeUsuarios.usuarios].sort((a, b) => {
+      const aOcupado = a.statusDisponibilidade === 'OCUPADO' ? 1 : 0;
+      const bOcupado = b.statusDisponibilidade === 'OCUPADO' ? 1 : 0;
+      
+      if (aOcupado !== bOcupado) {
+        return bOcupado - aOcupado;
+      }
+      
+      if (aOcupado && bOcupado) {
+        const dateA = a.disponivelEm ? new Date(a.disponivelEm).getTime() : 0;
+        const dateB = b.disponivelEm ? new Date(b.disponivelEm).getTime() : 0;
+        return dateA - dateB;
+      }
+      
+      const aDisp = a.statusDisponibilidade === 'DISPONIVEL' ? 1 : 0;
+      const bDisp = b.statusDisponibilidade === 'DISPONIVEL' ? 1 : 0;
+      
+      return bDisp - aDisp;
+    });
+    
+    const startIndex = (this.paginaDisponibilidade - 1) * this.tamanhoPaginaUsuarios;
+    return sorted.slice(startIndex, startIndex + this.tamanhoPaginaUsuarios);
+  }
 
   constructor(
     private relatorioApi: RelatorioApi,
