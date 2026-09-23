@@ -36,6 +36,7 @@ import { ToastService } from '../toast/toast.service';
 import { AuthService } from '../../domain/auth/auth.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ModalCadastroTarefa } from '../modals/modal-cadastro-tarefa';
+import { LinkifyPipe } from '../pipes/linkify.pipe';
 
 @Component({
   selector: 'app-tarefa-drawers-component',
@@ -49,6 +50,7 @@ import { ModalCadastroTarefa } from '../modals/modal-cadastro-tarefa';
     NgbTypeaheadModule,
     IniciaisPipe,
     NgSelectModule,
+    LinkifyPipe,
   ],
   templateUrl: './tarefa-drawers-component.html',
   styleUrls: ['./tarefa-drawers-component.scss'],
@@ -391,8 +393,6 @@ export class TarefaDrawersComponent implements OnInit {
         const perfilLogado = usuarioLogado?.perfil?.toUpperCase();
         let permitidos = usuarios.map((user) => this.mapearUsuario(user));
 
-        // Se o usuário NÃO for gestor/admin (ou seja, for um colaborador/usuário normal)
-        // ele só pode atribuir a tarefa para pessoas do MESMO PERFIL que o dele.
         const isGestor = perfilLogado === 'ADMIN' || perfilLogado === 'MANAGER' || perfilLogado === 'GESTOR' || perfilLogado === 'GESTOR_GEOPROCESSAMENTO';
 
         if (!isGestor && perfilLogado) {
@@ -401,7 +401,7 @@ export class TarefaDrawersComponent implements OnInit {
               (u.perfil?.toUpperCase() || 'USUARIO') === perfilLogado ||
               (u.perfil?.toUpperCase() || 'USUARIO') === 'USUARIO' ||
               (u.perfil?.toUpperCase() || 'USUARIO') === 'USER' ||
-              u.id === usuarioLogado?.id // Garante que o próprio usuário sempre apareça
+              u.id === usuarioLogado?.id
           );
         }
 
@@ -740,19 +740,6 @@ export class TarefaDrawersComponent implements OnInit {
     }
 
     this.tarefa.responsaveisIds = ids;
-
-    // if (ids.length === 0) {
-    //   return;
-    // }
-
-    // const selecionados = ids.map(id => this.listaUsuarios.find(u => u.id === id)).filter((u): u is Usuario => !!u);
-
-    // if (selecionados.length === 0 && ids.length > 0) {
-    //    this.toast.error("Usuário selecionado não encontrado na lista permitida.");
-    //    return;
-    // }
-
-    // this.selecionarResponsavel(selecionados);
   }
 
   fecharSelecaoResponsavel() {
