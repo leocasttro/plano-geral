@@ -107,10 +107,10 @@ export class TarefaApi {
     return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/prioridade`, {novaPrioridade},);
   }
 
-  atribuirResponsavel(id: string, responsavelId: string): Observable<TarefaDTO> {
+  atribuirResponsavel(id: string, responsaveisIds: string[]): Observable<TarefaDTO> {
     return this.http.post<TarefaDTO>(
       `${this.apiUrl}/${id}/atribuirResponsavel`,
-      { responsavelId },
+      { responsaveisIds },
     );
   }
 

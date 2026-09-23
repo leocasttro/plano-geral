@@ -18,7 +18,7 @@ export class DeleteTarefa {
       throw new Error('Apenas o criador da tarefa pode apagá-la');
     }
 
-    const responsavelId = tarefa.obterResponsavel();
+    const responsavelId = tarefa.obterResponsaveis()[0];
 
     await this.tarefaRepository.delete(input.tarefaId);
 

@@ -335,10 +335,8 @@ export class Relatorio implements OnInit {
         }),
         map((tarefas) =>
           tarefas.filter((tarefa) => {
-            const responsavelId =
-              tarefa.responsavelId ?? tarefa.responsavel?.id ?? null;
-
-            return responsavelId === usuario.usuarioId;
+            const responsaveisIds = tarefa.responsaveisIds ?? (tarefa.responsaveis?.map(r => r.id) ?? []);
+            return responsaveisIds.includes(usuario.usuarioId);
           }),
         ),
         switchMap((tarefas) => {

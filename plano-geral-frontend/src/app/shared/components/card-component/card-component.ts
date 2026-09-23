@@ -8,7 +8,7 @@ import {
 } from '@angular/common';
 import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faMinus, faExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faMinus, faExclamation, faUsers, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 
 /* ================= MODELS ================= */
@@ -32,12 +32,12 @@ export interface CardData {
   /* Datas */
   dataCriacao: Date;
 
-  responsavelId?: string | null;
-  responsavel?: {
+  responsaveisIds?: string[];
+  responsaveis?: {
     id: string;
     nome: string;
     email: string;
-  } | null;
+  }[];
   status?: string;
   tituloCatalogoId?: string | null;
   criadorId?: string | null;
@@ -91,6 +91,10 @@ export class CardComponent {
 
   faMinus = faMinus;
   faExclamation = faExclamation;
+  faUsers = faUsers;
+  faUserPlus = faUserPlus;
+
+  @Output() editarResponsaveisClick = new EventEmitter<CardData>();
   isCollapsed = true;
   collapseId!: string;
 
@@ -100,16 +104,15 @@ export class CardComponent {
 
   get isAtrasada(): boolean {
     if (!this.data || !this.data.dataFim) return false;
-    
+
     if (String(this.data.status ?? '').toUpperCase() === 'CONCLUIDA') return false;
 
-    // dataFim vem no formato YYYY-MM-DD
     const match = this.data.dataFim.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if (!match) return false;
 
     const [_, ano, mes, dia] = match;
     const dataFim = new Date(Number(ano), Number(mes) - 1, Number(dia), 23, 59, 59, 999);
-    
+
     return dataFim.getTime() < new Date().getTime();
   }
 
@@ -119,6 +122,11 @@ export class CardComponent {
 
   onTituloClick(): void {
     this.tituloClick.emit(this.data);
+  }
+
+  onEditarResponsaveisClick(event: Event): void {
+    event.stopPropagation();
+    this.editarResponsaveisClick.emit(this.data);
   }
 
   onExpandirClick(event: Event) {

@@ -34,8 +34,8 @@ export interface TarefaDTO {
   status: StatusTarefa;
   prioridade: Prioridade;
   criadorId?: string | null;
-  responsavelId?: string | null;
-  responsavel?: ResponsavelTarefaDTO | null;
+  responsaveisIds: string[];
+  responsaveis: ResponsavelTarefaDTO[];
 
   projetoId?: string | null;
   projeto?: ProjetoResumoDTO | null;

@@ -22,7 +22,7 @@ export class TarefaAccessPolicy {
 
     return (
       tarefa.obterCriador() === usuario.id ||
-      tarefa.obterResponsavel() === usuario.id ||
+      tarefa.obterResponsaveis().includes(usuario.id) ||
       tarefa.obterAtividades().some((atividade) => {
         return (
           atividade.tipo === TipoAtividade.CRIACAO &&

@@ -29,7 +29,7 @@ export class AdicionarComentario {
 
     await this.repo.save(tarefa);
 
-    const responsavelId = tarefa.obterResponsavel();
+    const responsavelId = tarefa.obterResponsaveis()[0];
 
     if (responsavelId) {
       this.notificacaoService.notificarUsuario({

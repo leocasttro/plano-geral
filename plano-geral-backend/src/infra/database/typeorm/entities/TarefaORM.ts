@@ -31,15 +31,11 @@ export class TarefaORM {
   @Column({ length: 30 })
   prioridade!: string;
 
-  @Column({ name: 'responsavel_id', type: 'uuid', nullable: true })
-  responsavel?: string | null;
+  @Column({ name: 'responsaveis_ids', type: 'uuid', array: true, default: [] })
+  responsaveis!: string[];
 
   @Column({ name: 'criador_id', type: 'uuid', nullable: true })
   criadorId?: string | null;
-
-  @ManyToOne(() => UserORM, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'responsavel_id' })
-  responsavelUsuario?: UserORM | null;
 
   @ManyToOne(() => UserORM, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'criador_id' })

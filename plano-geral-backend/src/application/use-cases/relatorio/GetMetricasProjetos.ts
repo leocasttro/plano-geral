@@ -40,7 +40,7 @@ export class GetMetricasProjetos {
         const tarefasPendentes = this.contarPorStatus(tarefas, StatusTarefa.PENDENTE);
         const tarefasEmAndamento = this.contarPorStatus(tarefas, StatusTarefa.EM_ANDAMENTO);
         const tarefasConcluidas = this.contarPorStatus(tarefas, StatusTarefa.CONCLUIDA);
-        const tarefasSemResponsavel = tarefas.filter((tarefa) => !tarefa.obterResponsavel()).length;
+        const tarefasSemResponsavel = tarefas.filter((tarefa) => tarefa.obterResponsaveis().length === 0).length;
         const tarefasCriticasAbertas = tarefas.filter(
           (tarefa) =>
             tarefa.obterPrioridade() === 'CRITICA' &&
@@ -310,27 +310,29 @@ export class GetMetricasProjetos {
     }>();
 
     tarefas.forEach((tarefa) => {
-      const usuarioId = tarefa.obterResponsavel();
-      if (!usuarioId) return;
+      const responsaveis = tarefa.obterResponsaveis();
+      if (responsaveis.length === 0) return;
 
-      const item = mapa.get(usuarioId) ?? {
-        usuarioId,
-        totalTarefas: 0,
-        pendentes: 0,
-        emAndamento: 0,
-        concluidas: 0,
-        atrasadas: 0,
-        percentualConclusao: 0,
-      };
+      for (const usuarioId of responsaveis) {
+        const item = mapa.get(usuarioId) ?? {
+          usuarioId,
+          totalTarefas: 0,
+          pendentes: 0,
+          emAndamento: 0,
+          concluidas: 0,
+          atrasadas: 0,
+          percentualConclusao: 0,
+        };
 
-      item.totalTarefas += 1;
-      if (tarefa.obterStatus() === StatusTarefa.PENDENTE) item.pendentes += 1;
-      if (tarefa.obterStatus() === StatusTarefa.EM_ANDAMENTO) item.emAndamento += 1;
-      if (tarefa.obterStatus() === StatusTarefa.CONCLUIDA) item.concluidas += 1;
-      if (tarefa instanceof TarefaComPrazo && tarefa.obterStatus() !== StatusTarefa.CONCLUIDA && tarefa.estaAtrasada()) item.atrasadas += 1;
-      item.percentualConclusao = this.percentual(item.concluidas, item.totalTarefas);
+        item.totalTarefas += 1;
+        if (tarefa.obterStatus() === StatusTarefa.PENDENTE) item.pendentes += 1;
+        if (tarefa.obterStatus() === StatusTarefa.EM_ANDAMENTO) item.emAndamento += 1;
+        if (tarefa.obterStatus() === StatusTarefa.CONCLUIDA) item.concluidas += 1;
+        if (tarefa instanceof TarefaComPrazo && tarefa.obterStatus() !== StatusTarefa.CONCLUIDA && tarefa.estaAtrasada()) item.atrasadas += 1;
+        item.percentualConclusao = this.percentual(item.concluidas, item.totalTarefas);
 
-      mapa.set(usuarioId, item);
+        mapa.set(usuarioId, item);
+      }
     });
 
     return Array.from(mapa.values()).sort((a, b) => b.totalTarefas - a.totalTarefas);

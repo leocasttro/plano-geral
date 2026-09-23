@@ -50,9 +50,9 @@ export class GetCargaUsuarios {
     const projetosPorUsuario = new Map<string, Set<string>>();
 
     tarefas.forEach((tarefa) => {
-      const responsavel = tarefa.obterResponsavel();
-
-      if (!responsavel) return;
+      const responsaveis = tarefa.obterResponsaveis();
+      if (responsaveis.length === 0) return;
+      for (const responsavel of responsaveis) {
 
       if (!projetosPorUsuario.has(responsavel)) {
         projetosPorUsuario.set(responsavel, new Set());
@@ -86,9 +86,11 @@ export class GetCargaUsuarios {
         carga.atrasadas += 1;
       }
 
-      usuariosMap.forEach((carga, usuarioId) => {
-        carga.projetos = projetosPorUsuario.get(usuarioId)?.size ?? 0;
-      });
+      } // end for responsaveis
+    }); // end forEach tarefas
+
+    usuariosMap.forEach((carga, usuarioId) => {
+      carga.projetos = projetosPorUsuario.get(usuarioId)?.size ?? 0;
     });
 
     return {

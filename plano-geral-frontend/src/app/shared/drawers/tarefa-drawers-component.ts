@@ -18,11 +18,12 @@ import {
   NgbTypeaheadModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faCalendar } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar, faPencilAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 import { EventEmitter, Output } from '@angular/core';
 
 import { IniciaisPipe } from '../pipes/iniciais.pipe';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import {
   AtividadeDrawer,
@@ -47,6 +48,7 @@ import { ModalCadastroTarefa } from '../modals/modal-cadastro-tarefa';
     FormsModule,
     NgbTypeaheadModule,
     IniciaisPipe,
+    NgSelectModule,
   ],
   templateUrl: './tarefa-drawers-component.html',
   styleUrls: ['./tarefa-drawers-component.scss'],
@@ -69,6 +71,8 @@ export class TarefaDrawersComponent implements OnInit {
   }
 
   faCalendar = faCalendar;
+  faPencilAlt = faPencilAlt;
+  faPlus = faPlus;
 
   isChecklistCollapsed = false;
   participantes: string[] = [];
@@ -81,7 +85,7 @@ export class TarefaDrawersComponent implements OnInit {
   prioridades = ['BAIXA', 'NORMAL', 'ALTA', 'CRITICA'];
 
   mostrarSelecaoResponsavel = false;
-  responsavelSelecionado: Usuario | null = null;
+  responsaveisSelecionados: Usuario[] = [];
   listaUsuarios: Usuario[] = [];
   filtroUsuario = '';
   usuariosFiltrados: Usuario[] = [];
@@ -121,15 +125,13 @@ export class TarefaDrawersComponent implements OnInit {
       ...new Set(this.tarefa.atividades.map((a) => a.usuario)),
     ];
 
-    if (this.tarefa.responsavel) {
-      this.responsavelSelecionado = {
-        id: this.tarefa.responsavel.id,
-        nome: this.tarefa.responsavel.nome,
-        email: this.tarefa.responsavel.email,
-        perfil: 'USER',
-        ativo: true,
-      };
-    }
+    this.responsaveisSelecionados = (this.tarefa.responsaveis ?? []).map(r => ({
+      id: r.id,
+      nome: r.nome,
+      email: r.email,
+      perfil: 'USER',
+      ativo: true
+    }));
 
     if (this.tarefa.isMacroTarefa) {
       this.carregarSubTarefas();
@@ -385,8 +387,25 @@ export class TarefaDrawersComponent implements OnInit {
   listarUsuarios() {
     this.usuarioApi.buscarTodos().subscribe({
       next: (usuarios: UsuarioDTO[]) => {
-        // Converter DTO para Usuario
-        this.listaUsuarios = usuarios.map((user) => this.mapearUsuario(user));
+        const usuarioLogado = this.authService.usuario();
+        const perfilLogado = usuarioLogado?.perfil?.toUpperCase();
+        let permitidos = usuarios.map((user) => this.mapearUsuario(user));
+
+        // Se o usuário NÃO for gestor/admin (ou seja, for um colaborador/usuário normal)
+        // ele só pode atribuir a tarefa para pessoas do MESMO PERFIL que o dele.
+        const isGestor = perfilLogado === 'ADMIN' || perfilLogado === 'MANAGER' || perfilLogado === 'GESTOR' || perfilLogado === 'GESTOR_GEOPROCESSAMENTO';
+
+        if (!isGestor && perfilLogado) {
+          permitidos = permitidos.filter(
+            (u) =>
+              (u.perfil?.toUpperCase() || 'USUARIO') === perfilLogado ||
+              (u.perfil?.toUpperCase() || 'USUARIO') === 'USUARIO' ||
+              (u.perfil?.toUpperCase() || 'USUARIO') === 'USER' ||
+              u.id === usuarioLogado?.id // Garante que o próprio usuário sempre apareça
+          );
+        }
+
+        this.listaUsuarios = permitidos;
         this.usuariosFiltrados = this.listaUsuarios;
         this.cdr.detectChanges();
       },
@@ -708,48 +727,77 @@ export class TarefaDrawersComponent implements OnInit {
     }
   }
 
-  selecionarResponsavel(usuario: Usuario) {
+  onResponsaveisChange(ids: string[]) {
+    if (!ids) ids = [];
+
+    const limite = this.podeSelecionarMultiplosResponsaveis() ? 3 : 1;
+    if (ids.length > limite) {
+      this.toast.error(`No máximo ${limite} responsável(is) permitido(s).`);
+      ids = ids.slice(0, limite);
+      setTimeout(() => {
+        this.tarefa.responsaveisIds = [...ids];
+      });
+    }
+
+    this.tarefa.responsaveisIds = ids;
+
+    if (ids.length === 0) {
+      return;
+    }
+
+    const selecionados = ids.map(id => this.listaUsuarios.find(u => u.id === id)).filter((u): u is Usuario => !!u);
+
+    if (selecionados.length === 0 && ids.length > 0) {
+       this.toast.error("Usuário selecionado não encontrado na lista permitida.");
+       return;
+    }
+
+    this.selecionarResponsavel(selecionados);
+  }
+
+  fecharSelecaoResponsavel() {
+    this.mostrarSelecaoResponsavel = false;
+    if (!this.tarefa.responsaveisIds || this.tarefa.responsaveisIds.length === 0) {
+      this.tarefa.responsaveisIds = this.responsaveisSelecionados.map(r => r.id);
+    }
+  }
+
+  selecionarResponsavel(usuarios: Usuario[]) {
     if (this.estaAvaliandoSolicitacaoAlteracaoDatas()) {
-      this.mostrarSelecaoResponsavel = false;
       this.toast.error(
         'Não é possível alterar o responsável ao avaliar alteração de datas.',
       );
       return;
     }
 
-    this.responsavelSelecionado = usuario;
+    this.responsaveisSelecionados = usuarios;
     this.mostrarSelecaoResponsavel = false;
 
-    this.tarefaApi.atribuirResponsavel(this.tarefa.id!, usuario.id).subscribe({
+    this.tarefaApi.atribuirResponsavel(this.tarefa.id!, usuarios.map(u => u.id)).subscribe({
       next: (dto) => {
         const atualizada = tarefaDtoToDrawer(dto);
-
         this.tarefa = {
           ...this.tarefa,
-          ...atualizada,
-          checklist: [...(atualizada.checklist ?? [])],
+          responsaveis: atualizada.responsaveis,
+          responsaveisIds: atualizada.responsaveisIds,
           atividades: this.ordernarAtividade([
             ...(atualizada.atividades ?? []),
           ]),
         };
 
-        this.responsavelSelecionado = this.tarefa.responsavel
-          ? {
-              id: this.tarefa.responsavel.id,
-              nome: this.tarefa.responsavel.nome,
-              email: this.tarefa.responsavel.email,
-              perfil: 'USER',
-              ativo: true,
-            }
-          : null;
+        this.responsaveisSelecionados = (this.tarefa.responsaveis ?? []).map(r => ({
+          id: r.id,
+          nome: r.nome,
+          email: r.email,
+          perfil: 'USER',
+          ativo: true,
+        }));
 
+        this.toast.success('Responsáveis atualizados.');
         this.tarefaAtualizada.emit(this.tarefa);
-        this.toast.success('Responsável atualizado.');
-        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erro ao atribuir responsável:', err);
-        this.toast.error('Erro ao atribuir responsável.');
+        this.toast.error(err.error?.error || 'Erro ao atribuir responsáveis.');
       },
     });
   }
@@ -777,7 +825,7 @@ export class TarefaDrawersComponent implements OnInit {
           atividades: [...(atualizada.atividades ?? [])],
         };
 
-        this.tarefaAtualizada.emit(this.tarefa); // ✅ AVISA O BOARD
+        this.tarefaAtualizada.emit(this.tarefa);
 
         this.toast.success('Prioridade atualizada.');
         this.cdr.detectChanges();
@@ -787,7 +835,7 @@ export class TarefaDrawersComponent implements OnInit {
         this.tarefa.badgeTexto = prioridadeAnterior;
         this.tarefa.badgeClasseCor = this.prioridadeToBadge(prioridadeAnterior);
 
-        this.tarefaAtualizada.emit(this.tarefa); // ✅ volta pro board também
+        this.tarefaAtualizada.emit(this.tarefa);
 
         this.toast.error('Erro ao alterar prioridade.');
         this.cdr.detectChanges();
@@ -808,7 +856,6 @@ export class TarefaDrawersComponent implements OnInit {
     this.mostrandoCalendario = !this.mostrandoCalendario;
   }
 
-  // Método para cancelar edição
   cancelarEdicao() {
     this.mostrandoCalendario = false;
     this.dataInicioTemp = '';
@@ -816,7 +863,6 @@ export class TarefaDrawersComponent implements OnInit {
     this.justificativaDatasTemp = '';
   }
 
-  // Formatar data para exibição (DD/MM/YYYY)
   formatarDataExibicao(data: string | undefined): string {
     if (!data) return '—';
 
@@ -833,7 +879,6 @@ export class TarefaDrawersComponent implements OnInit {
     return this.formatarDataExibicao(data ?? undefined);
   }
 
-  // Validação básica das datas
   validarDatas(): boolean {
     if (this.dataInicioTemp && this.dataFimTemp) {
       if (this.dataInicioTemp > this.dataFimTemp) {
@@ -862,19 +907,32 @@ export class TarefaDrawersComponent implements OnInit {
     return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR';
   }
 
-  podeAlterarResponsavel(): boolean {
+  podeSelecionarMultiplosResponsaveis(): boolean {
     const perfil = this.authService.usuario()?.perfil?.toUpperCase();
+    return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR' || perfil === 'GESTOR_GEOPROCESSAMENTO';
+  }
 
-    // Regra específica para tarefas de Geoprocessamento
-    if (
-      this.tarefa.componenteCatalogo?.trim().toLowerCase() ===
-      'geoprocessamento'
-    ) {
-      return perfil === 'GESTOR_GEOPROCESSAMENTO';
+  podeAlterarResponsavel(): boolean {
+    const usuarioLogado = this.authService.usuario();
+    const perfil = usuarioLogado?.perfil?.toUpperCase();
+    const isCriador = usuarioLogado?.id === this.tarefa.criadorId;
+
+    if (this.tarefa.componenteCatalogo?.trim().toLowerCase() === 'geoprocessamento') {
+      if (perfil === 'GESTOR_GEOPROCESSAMENTO' || perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR') {
+        return true;
+      }
+      if (isCriador) return true;
+
+      return false;
     }
 
-    // Regra geral para outras tarefas (somente Gestores e Admins podem reatribuir)
-    return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR';
+    if (perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR') {
+      return true;
+    }
+
+    if (isCriador) return true;
+
+    return false;
   }
 
   podeApagar(): boolean {

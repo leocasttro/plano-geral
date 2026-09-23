@@ -81,7 +81,7 @@ export class GetCalendarioTarefas {
     const dataInicio = inicio ?? fim!;
     const dataFim = fim ?? inicio!;
     const projeto = tarefa.obterProjeto();
-    const responsavelId = tarefa.obterResponsavel() ?? null;
+    const responsavelId = tarefa.obterResponsaveis()[0] ?? null;
 
     return {
       id: tarefa.id,

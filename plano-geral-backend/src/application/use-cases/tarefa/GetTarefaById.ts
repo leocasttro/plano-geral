@@ -29,22 +29,20 @@ export class GetTarefaById {
       throw new Error('Acesso não permitido para esta tarefa')
     }
 
-    const responsavelId = tarefa.obterResponsavel();
+    const responsaveisIds = tarefa.obterResponsaveis();
+    const responsaveis = [];
 
-    let responsavel = null;
-
-    if (responsavelId) {
+    for (const responsavelId of responsaveisIds) {
       const usuario = await this.userRepository.findById(responsavelId);
-
-      responsavel = usuario
-        ? {
+      if (usuario) {
+        responsaveis.push({
           id: usuario.id,
           nome: usuario.nome,
           email: usuario.email,
-        }
-        : null;
+        });
+      }
     }
 
-    return TarefaDTO.fromDomain(tarefa, responsavel);
+    return TarefaDTO.fromDomain(tarefa, responsaveis);
   }
 }

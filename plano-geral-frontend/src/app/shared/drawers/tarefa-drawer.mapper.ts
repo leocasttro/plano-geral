@@ -35,9 +35,9 @@ export function tarefaDtoToDrawer(dto: TarefaDTO): CardDataDrawer {
     badgeClasseCor: prioridadeToBadge(dto.prioridade),
     urlImagem: 'https://placehold.co/32x32',
 
-    responsavelId: dto.responsavelId ?? null,
+    responsaveisIds: dto.responsaveisIds ?? [],
     criadorId: dto.criadorId ?? null,
-    responsavel: dto.responsavel ?? null,
+    responsaveis: dto.responsaveis ?? [],
     dataCriacao: dto.atividades?.length
       ? new Date(dto.atividades[0].data)
       : new Date(),

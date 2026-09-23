@@ -29,9 +29,7 @@ export class GetAllTarefas {
 
     const responsaveisIds = Array.from(
       new Set(
-        tarefas
-          .map((tarefa) => tarefa.obterResponsavel())
-          .filter((id): id is string => !!id),
+        tarefas.flatMap((tarefa) => tarefa.obterResponsaveis())
       ),
     );
 
@@ -50,12 +48,11 @@ export class GetAllTarefas {
       });
 
     return tarefas.map((tarefa) => {
-      const responsavelId = tarefa.obterResponsavel();
-      const responsavel = responsavelId
-        ? usuariosMap.get(responsavelId) ?? null
-        : null;
+      const responsaveis = tarefa.obterResponsaveis()
+        .map(id => usuariosMap.get(id))
+        .filter((u): u is ResponsavelDTO => !!u);
 
-      return TarefaDTO.fromDomain(tarefa, responsavel);
+      return TarefaDTO.fromDomain(tarefa, responsaveis);
     });
   }
 }

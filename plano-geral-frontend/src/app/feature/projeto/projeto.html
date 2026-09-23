@@ -218,8 +218,8 @@
                         {{ t.prioridade }}
                       </span>
 
-                      <span class="small text-muted" *ngIf="t.responsavel">
-                        {{ t.responsavel }}
+                      <span class="small text-muted" *ngIf="t.responsaveis?.length">
+                        <span *ngFor="let r of t.responsaveis; let last = last">{{ r.nome }}{{ !last ? ', ' : '' }}</span>
                       </span>
                     </div>
                   </div>
@@ -258,8 +258,8 @@
                         {{ t.prioridade }}
                       </span>
 
-                      <span class="small text-muted" *ngIf="t.responsavel">
-                        {{ t.responsavel }}
+                      <span class="small text-muted" *ngIf="t.responsaveis?.length">
+                        <span *ngFor="let r of t.responsaveis; let last = last">{{ r.nome }}{{ !last ? ', ' : '' }}</span>
                       </span>
                     </div>
                   </div>
@@ -298,8 +298,8 @@
                         {{ t.prioridade }}
                       </span>
 
-                      <span class="small text-muted" *ngIf="t.responsavel">
-                        {{ t.responsavel }}
+                      <span class="small text-muted" *ngIf="t.responsaveis?.length">
+                        <span *ngFor="let r of t.responsaveis; let last = last">{{ r.nome }}{{ !last ? ', ' : '' }}</span>
                       </span>
                     </div>
                   </div>

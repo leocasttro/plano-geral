@@ -32,7 +32,7 @@ export class GetRelatorioPessoal {
 
   async execute(input: { usuarioId: string }): Promise<RelatorioPessoalDTO> {
     const tarefas = (await this.tarefaRepository.list())
-      .filter((tarefa) => tarefa.obterResponsavel() === input.usuarioId)
+      .filter((tarefa) => tarefa.obterResponsaveis().includes(input.usuarioId))
       .sort((a, b) => this.ordenarTarefas(a, b));
 
     const totalTarefas = tarefas.length;
