@@ -741,25 +741,46 @@ export class TarefaDrawersComponent implements OnInit {
 
     this.tarefa.responsaveisIds = ids;
 
-    if (ids.length === 0) {
-      return;
-    }
+    // if (ids.length === 0) {
+    //   return;
+    // }
 
-    const selecionados = ids.map(id => this.listaUsuarios.find(u => u.id === id)).filter((u): u is Usuario => !!u);
+    // const selecionados = ids.map(id => this.listaUsuarios.find(u => u.id === id)).filter((u): u is Usuario => !!u);
 
-    if (selecionados.length === 0 && ids.length > 0) {
-       this.toast.error("Usuário selecionado não encontrado na lista permitida.");
-       return;
-    }
+    // if (selecionados.length === 0 && ids.length > 0) {
+    //    this.toast.error("Usuário selecionado não encontrado na lista permitida.");
+    //    return;
+    // }
 
-    this.selecionarResponsavel(selecionados);
+    // this.selecionarResponsavel(selecionados);
   }
 
   fecharSelecaoResponsavel() {
-    this.mostrarSelecaoResponsavel = false;
     if (!this.tarefa.responsaveisIds || this.tarefa.responsaveisIds.length === 0) {
       this.tarefa.responsaveisIds = this.responsaveisSelecionados.map(r => r.id);
+      this.mostrarSelecaoResponsavel = false;
+      return;
     }
+
+    const idsAtuais = this.responsaveisSelecionados.map(r => r.id).sort().join(',');
+    const idsNovos = [...this.tarefa.responsaveisIds].sort().join(',');
+
+    if (idsAtuais === idsNovos) {
+      this.mostrarSelecaoResponsavel = false;
+      return;
+    }
+
+    const selecionados = this.tarefa.responsaveisIds
+      .map(id => this.listaUsuarios.find(u => u.id === id))
+      .filter((u): u is Usuario => !!u);
+
+    if (selecionados.length === 0 && this.tarefa.responsaveisIds.length > 0) {
+      this.toast.error('Usuário selecionado não encontrado na lista permitida.');
+      return;
+    }
+
+    this.selecionarResponsavel(selecionados);
+    this.mostrarSelecaoResponsavel = false;
   }
 
   selecionarResponsavel(usuarios: Usuario[]) {
@@ -927,6 +948,7 @@ export class TarefaDrawersComponent implements OnInit {
     }
 
     if (perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR') {
+      console.log('pode alterar')
       return true;
     }
 
