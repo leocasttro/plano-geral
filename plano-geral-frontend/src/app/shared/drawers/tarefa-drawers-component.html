@@ -103,8 +103,7 @@
       <!-- DESCRIÇÃO -->
       <section class="mb-4">
         <h6 class="section-title">Descrição</h6>
-        <p class="text-muted">
-          {{ tarefa.descricao || 'Nenhuma descrição informada.' }}
+        <p class="text-muted text-break" [innerHTML]="tarefa.descricao | linkify">
         </p>
       </section>
 
