@@ -26,7 +26,7 @@ export class TarefaMapper {
     row.descricao = tarefa.descricao ?? (null as any);
     row.status = tarefa.obterStatus();
     row.prioridade = tarefa.obterPrioridade();
-    row.responsavel = tarefa.obterResponsavel() ?? (null as any);
+    row.responsaveis = tarefa.obterResponsaveis();
     row.criadorId = tarefa.obterCriador() ?? (null as any);
     row.projeto = { id: tarefa.obterProjetoId() } as any;
 
@@ -99,7 +99,7 @@ export class TarefaMapper {
       titulo: row.titulo,
       tituloCatalogoId: row.tituloCatalogoId ?? null,
       descricao: row.descricao ?? undefined,
-      responsavel: row.responsavel ?? undefined,
+      responsaveis: row.responsaveis ?? [],
       criadorId: row.criadorId ?? undefined,
       projetoId: row.projeto?.id || '',
       status: row.status as StatusTarefa,

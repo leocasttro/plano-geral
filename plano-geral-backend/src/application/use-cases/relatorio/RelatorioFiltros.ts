@@ -31,7 +31,7 @@ export function filtrarTarefasRelatorio(
       return false;
     }
 
-    if (filtros.usuarioId && tarefa.obterResponsavel() !== filtros.usuarioId) {
+    if (filtros.usuarioId && !tarefa.obterResponsaveis().includes(filtros.usuarioId)) {
       return false;
     }
 

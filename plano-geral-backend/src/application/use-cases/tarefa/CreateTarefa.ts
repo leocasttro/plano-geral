@@ -75,15 +75,36 @@ export class CreateTarefa {
       tarefa.vincularATarefaPai(input.tarefaPaiId);
     }
 
+    const users = await this.userRepo.findAllActive();
+    const criador = users.find(u => u.id === input.usuario);
+    const isGestor = criador?.perfil === 'ADMIN' || criador?.perfil === 'MANAGER' || criador?.perfil === 'GESTOR' || criador?.perfil === 'GESTOR_GEOPROCESSAMENTO';
+
+    const responsaveisIds: string[] = [];
+    const responsaveisNomes: string[] = [];
+
     if (input.tituloCatalogoId) {
       const tituloCatalogoObj = await this.tituloCatalogoRepo.findById(input.tituloCatalogoId);
-      if (tituloCatalogoObj?.componente?.trim().toLowerCase() === 'geoprocessamento') {
-        const users = await this.userRepo.findAllActive();
+      const isGeo = tituloCatalogoObj?.componente?.trim().toLowerCase() === 'geoprocessamento';
+      
+      if (isGeo) {
         const gestorGeo = users.find(u => u.perfil === 'GESTOR_GEOPROCESSAMENTO');
         if (gestorGeo) {
-          tarefa.atribuirResponsavel(gestorGeo.id, input.usuarioNome, gestorGeo.nome);
+          responsaveisIds.push(gestorGeo.id);
+          responsaveisNomes.push(gestorGeo.nome);
         }
       }
+    }
+
+    // Se o criador for um colaborador (não gestor), ele é atribuído automaticamente a qualquer tarefa que criar.
+    if (criador && !isGestor) {
+      if (!responsaveisIds.includes(criador.id)) {
+        responsaveisIds.push(criador.id);
+        responsaveisNomes.push(criador.nome);
+      }
+    }
+
+    if (responsaveisIds.length > 0) {
+      tarefa.atribuirResponsaveis(responsaveisIds, input.usuarioNome, responsaveisNomes);
     }
 
     tarefa.definirProjeto({

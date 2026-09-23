@@ -34,7 +34,7 @@ export class GetDisponibilidadeUsuarios {
       .map((usuario): DisponibilidadeUsuarioDTO => {
       const tarefasDoUsuario = tarefas.filter(
         (tarefa) =>
-          tarefa.obterResponsavel() === usuario.id &&
+          tarefa.obterResponsaveis().includes(usuario.id) &&
           tarefa.obterStatus() !== StatusTarefa.CONCLUIDA,
       );
 

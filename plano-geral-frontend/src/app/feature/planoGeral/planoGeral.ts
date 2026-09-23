@@ -281,6 +281,9 @@ export class Pedidos implements OnInit, OnDestroy {
                 this.tarefasPendentes = [card, ...this.tarefasPendentes];
               }
 
+              // Garante que a tarefa recém-criada vá para a lista mestre
+              this.todasTarefas = [card, ...this.todasTarefas];
+
               this.cdr.detectChanges();
             },
           });
@@ -393,10 +396,14 @@ export class Pedidos implements OnInit, OnDestroy {
     }
 
     return !!(
-      (tarefa.responsavelId || tarefa.responsavel?.id) &&
+      (((tarefa.responsaveisIds?.length ?? 0) > 0) || ((tarefa.responsaveis?.length ?? 0) > 0)) &&
       tarefa.dataInicio &&
       tarefa.dataFim
     );
+  }
+
+  abrirEdicaoResponsaveis(tarefa: CardData): void {
+    this.abrirDetalheTarefa(tarefa);
   }
 
   abrirDetalheTarefa(
@@ -476,10 +483,10 @@ export class Pedidos implements OnInit, OnDestroy {
       return false;
     }
 
-    const responsavelId = tarefa.responsavelId || tarefa.responsavel?.id || '';
+    const responsaveisIds = tarefa.responsaveisIds ?? (tarefa.responsaveis?.map(r => r.id) ?? []);
     if (
       this.filtrosTarefas.usuarioId &&
-      responsavelId !== this.filtrosTarefas.usuarioId
+      !responsaveisIds.includes(this.filtrosTarefas.usuarioId)
     ) {
       return false;
     }

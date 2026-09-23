@@ -102,20 +102,22 @@ export class TarefasController {
       usuarioNome: getAuthenticatedUser(req),
     });
 
-    let responsavelDto = null;
-    const responsavelId = tarefa.obterResponsavel();
-    if (responsavelId) {
-      const respUser = await this.deps.userRepo.findById(responsavelId);
-      if (respUser) {
-        responsavelDto = {
-          id: respUser.id,
-          nome: respUser.nome,
-          email: respUser.email,
-        };
+    let responsaveisDtos = [];
+    const responsaveisIds = tarefa.obterResponsaveis();
+    if (responsaveisIds.length > 0) {
+      for (const responsavelId of responsaveisIds) {
+        const respUser = await this.deps.userRepo.findById(responsavelId);
+        if (respUser) {
+          responsaveisDtos.push({
+            id: respUser.id,
+            nome: respUser.nome,
+            email: respUser.email,
+          });
+        }
       }
     }
 
-    return res.status(201).json(TarefaDTO.fromDomain(tarefa, responsavelDto));
+    return res.status(201).json(TarefaDTO.fromDomain(tarefa, responsaveisDtos));
   }
 
   async buscarTodas(req: Request, res: Response) {
@@ -324,11 +326,11 @@ export class TarefasController {
 
   async atribuirResponsavel(req: Request, res: Response) {
     try {
-      const { responsavelId } = req.body;
+      const { responsaveisIds } = req.body;
 
-      if (!responsavelId || !String(responsavelId).trim()) {
+      if (!responsaveisIds || !Array.isArray(responsaveisIds) || responsaveisIds.length === 0) {
         return res.status(400).json({
-          error: 'Responsável é obrigatório',
+          error: 'Pelo menos um responsável é obrigatório',
         });
       }
 
@@ -336,7 +338,7 @@ export class TarefasController {
 
       const result = await this.deps.responsavelTarefa.execute({
         tarefaId: req.params.id,
-        responsavelId,
+        responsaveisIds,
         usuario: getAuthenticatedUserId(req),
       });
 

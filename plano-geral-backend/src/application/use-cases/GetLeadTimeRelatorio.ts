@@ -47,7 +47,7 @@ export class GetLeadTimeRelatorio {
           : null;
 
       const projeto = tarefa.obterProjeto();
-      const responsavelId = tarefa.obterResponsavel() ?? null;
+      const responsavelId = tarefa.obterResponsaveis()[0] ?? null;
 
       return {
         projetoId: projeto?.id ?? tarefa.obterProjetoId() ?? null,

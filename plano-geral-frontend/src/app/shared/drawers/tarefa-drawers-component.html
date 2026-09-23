@@ -341,122 +341,79 @@
     <!-- COLUNA LATERAL -->
     <div class="col-md-4 sidebar">
       <div class="sidebar-item">
-        <span class="label">Responsável</span>
-        <div
-          *ngIf="responsavelSelecionado && !mostrarSelecaoResponsavel"
-          class="d-flex align-items-center justify-content-between mb-2"
-        >
-          <div
-            class="d-flex align-items-center gap-2"
-            (click)="podeAlterarResponsavel() ? abrirSelecaoResponsavel() : null"
-            [style.cursor]="podeAlterarResponsavel() ? 'pointer' : 'default'"
-            [title]="podeAlterarResponsavel() ? 'Alterar responsável' : ''"
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="label mb-0">Responsáveis</span>
+          <div 
+            class="d-flex gap-2"
+            *ngIf="!mostrarSelecaoResponsavel && !estaAvaliandoSolicitacaoAlteracaoDatas() && podeAlterarResponsavel() && tarefa.componenteCatalogo === 'Geoprocessamento'"
           >
-            <div
-              class="avatar"
-              [style.backgroundColor]="getCorAvatar(responsavelSelecionado.nome)"
+            <button 
+              class="btn btn-sm rounded-circle bg-warning text-dark border-0"
+              style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.3); padding: 0;"
+              title="Editar responsáveis"
+              (click)="mostrarSelecaoResponsavel = true"
             >
-              {{ responsavelSelecionado.nome | iniciais }}
-            </div>
-            <div>
-              <strong>{{ responsavelSelecionado.nome }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Botão para adicionar responsável -->
-        <div
-          *ngIf="
-            !responsavelSelecionado &&
-            !mostrarSelecaoResponsavel &&
-            !estaAvaliandoSolicitacaoAlteracaoDatas() &&
-            podeAlterarResponsavel()
-          "
-        >
-          <button
-            class="btn btn-sm btn-outline-primary w-100"
-            (click)="abrirSelecaoResponsavel()"
-          >
-            <i class="bi bi-person-plus"></i> Atribuir responsável
-          </button>
-        </div>
-
-        <div
-          *ngIf="
-            !responsavelSelecionado &&
-            !mostrarSelecaoResponsavel &&
-            estaAvaliandoSolicitacaoAlteracaoDatas()
-          "
-          class="text-muted small"
-        >
-          Sem responsável
-        </div>
-
-        <!-- Seletor de responsável -->
-        <div
-          *ngIf="
-            mostrarSelecaoResponsavel &&
-            !estaAvaliandoSolicitacaoAlteracaoDatas()
-          "
-          class="mt-2"
-        >
-          <!-- Campo de busca -->
-          <div class="mb-2">
-            <input
-              type="text"
-              class="form-control form-control-sm"
-              placeholder="Buscar usuário..."
-              [(ngModel)]="filtroUsuario"
-              (input)="filtrarUsuarios()"
-              autofocus
-            />
-          </div>
-
-          <div class="lista-usuarios">
-            <div
-              *ngIf="usuariosFiltrados.length === 0"
-              class="text-muted text-center p-2"
-            >
-              Nenhum usuário encontrado
-            </div>
-            <div
-              *ngFor="let usuario of usuariosFiltrados"
-              class="usuario-option"
-              (click)="selecionarResponsavel(usuario)"
-            >
-              <div class="d-flex align-items-center gap-2">
-                <div
-                  class="avatar"
-                  [style.backgroundColor]="getCorAvatar(usuario.nome)"
-                >
-                  {{ usuario.nome | iniciais }}
-                </div>
-                <div class="flex-grow-1">
-                  <div class="fw-bold" style="font-size: small">
-                    {{ usuario.nome }}
-                  </div>
-                </div>
-                <i
-                  class="bi bi-check-circle"
-                  *ngIf="usuario.id === responsavelSelecionado?.id"
-                ></i>
-              </div>
-            </div>
-          </div>
-
-          <!-- Botão cancelar -->
-          <div class="mt-2">
-            <button
-              class="btn btn-sm btn-secondary w-100"
-              (click)="mostrarSelecaoResponsavel = false"
-            >
-              Cancelar
+              <fa-icon [icon]="faPencilAlt" style="font-size: 0.75rem;"></fa-icon>
             </button>
           </div>
         </div>
-      </div>
 
-      <div class="sidebar-item">
+        <!-- AVATAR VIEW MODE -->
+        <div *ngIf="!mostrarSelecaoResponsavel && !estaAvaliandoSolicitacaoAlteracaoDatas()">
+          <div class="avatar-group" style="display: inline-flex;">
+            <!-- Se não tiver responsável -->
+            <div 
+              *ngIf="!responsaveisSelecionados.length" 
+              class="avatar bg-secondary text-white" 
+              style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"
+            >
+              ?
+            </div>
+
+            <!-- Se tiver responsáveis -->
+            <div
+              *ngFor="let responsavel of responsaveisSelecionados; let i = index"
+              class="avatar"
+              [style.zIndex]="50 - i"
+              [style.backgroundColor]="getCorAvatar(responsavel.nome)"
+              [title]="responsavel.nome"
+              style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"
+            >
+              {{ responsavel.nome | iniciais }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Seletor com ng-select (EDIT MODE) -->
+        <div class="mt-2" *ngIf="mostrarSelecaoResponsavel && !estaAvaliandoSolicitacaoAlteracaoDatas()">
+          <ng-select
+            [items]="listaUsuarios"
+            [multiple]="true"
+            [maxSelectedItems]="podeSelecionarMultiplosResponsaveis() ? 3 : 1"
+            bindLabel="nome"
+            bindValue="id"
+            [disabled]="!podeAlterarResponsavel()"
+            [ngModel]="tarefa.responsaveisIds"
+            (ngModelChange)="onResponsaveisChange($event)"
+            placeholder="Selecione até 3 usuários"
+            [closeOnSelect]="false"
+          >
+          </ng-select>
+          <div class="text-end mt-2">
+            <button class="btn btn-sm btn-outline-secondary" (click)="fecharSelecaoResponsavel()">Concluir</button>
+          </div>
+        </div>
+        
+        <div
+          *ngIf="estaAvaliandoSolicitacaoAlteracaoDatas()"
+          class="text-muted small mt-2"
+        >
+          <span *ngFor="let r of responsaveisSelecionados">{{ r.nome }}<br></span>
+          <span *ngIf="!responsaveisSelecionados.length">Sem responsável</span>
+        </div>
+      </div>
+      
+<div class="sidebar-item">
         <span class="label">Projeto</span>
 
         <span

@@ -28,8 +28,8 @@ export interface TarefaDTOProps {
   status: StatusTarefa;
   prioridade: Prioridade;
   criadorId?: string | null;
-  responsavelId?: string | null;
-  responsavel?: ResponsavelDTO | null;
+  responsaveisIds: string[];
+  responsaveis: ResponsavelDTO[];
   projetoId: string | null;
   projeto?: ProjetoResumoDTO | null;
   checklist: {
@@ -61,7 +61,7 @@ function formatDateOnly(data: Date | null): string | null {
 export class TarefaDTO {
   static fromDomain(
     tarefa: Tarefa,
-    responsavel?: ResponsavelDTO | null,
+    responsaveis: ResponsavelDTO[] = [],
   ): TarefaDTOProps {
     let dataInicio: Date | null = null;
     let dataFim: Date | null = null;
@@ -71,7 +71,7 @@ export class TarefaDTO {
       dataFim = tarefa.getPeriodo().getFim();
     }
 
-    const responsavelId = tarefa.obterResponsavel() ?? null;
+    const responsaveisIds = tarefa.obterResponsaveis();
 
     return {
       id: tarefa.id,
@@ -84,8 +84,8 @@ export class TarefaDTO {
       status: tarefa.obterStatus(),
       prioridade: tarefa.obterPrioridade(),
       criadorId: tarefa.obterCriador() ?? null,
-      responsavelId,
-      responsavel: responsavel ?? null,
+      responsaveisIds,
+      responsaveis: responsaveis,
       projetoId: tarefa.obterProjetoId(),
       projeto: tarefa.obterProjeto(),
       checklist: tarefa.obterChecklist().map((item: CheckListItem) => ({

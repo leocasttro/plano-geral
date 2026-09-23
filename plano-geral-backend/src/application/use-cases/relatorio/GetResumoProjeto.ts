@@ -52,7 +52,7 @@ export class GetResumoProjeto {
     const responsaveisMap = new Map<string, ResponsavelResumoProjetoDTO>();
 
     tarefas.forEach((tarefa) => {
-      const responsavel = tarefa.obterResponsavel();
+      const responsavel = tarefa.obterResponsaveis()[0] ?? undefined;
 
       if (!responsavel) return;
 

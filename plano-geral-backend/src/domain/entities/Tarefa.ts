@@ -13,7 +13,7 @@ type TarefaProps = {
   descricao?: string;
   status: StatusTarefa;
   prioridade: Prioridade;
-  responsavel?: string;
+  responsaveis: string[];
   criadorId?: string;
   projetoId: string;
   projeto?: ProjetoResumo | null;
@@ -42,7 +42,7 @@ export class Tarefa {
   private status: StatusTarefa;
   private checklist: CheckListItem[] = [];
   private atividades: Atividade[] = [];
-  private responsavel?: string;
+  private responsaveis: string[] = [];
   private criadorId?: string;
   private projetoId: string;
   private prioridade: Prioridade;
@@ -73,7 +73,7 @@ export class Tarefa {
 
     tarefa.status = props.status;
     tarefa.prioridade = props.prioridade;
-    tarefa.responsavel = props.responsavel;
+    tarefa.responsaveis = props.responsaveis ?? [];
     tarefa.criadorId = props.criadorId;
     tarefa.projetoId = props.projetoId;
     tarefa.projeto = props.projeto ?? null;
@@ -166,24 +166,20 @@ export class Tarefa {
     );
   }
 
-  atribuirResponsavel(
-    responsavelId: string,
-    usuarioAcao: string,
-    nomeResponsavel: string,
-  ) {
-    if (!responsavelId || responsavelId.trim().length === 0) {
-      throw new Error('Responsável inválido');
+  atribuirResponsaveis(responsaveisIds: string[], usuarioAcao: string, nomesResponsaveis: string[]) {
+    if (responsaveisIds.length > 3) {
+      throw new Error('A tarefa pode ter no máximo 3 responsáveis');
     }
 
-    this.responsavel = responsavelId;
+    this.responsaveis = responsaveisIds;
 
     this.registrarAtividade(
       new Atividade(
         randomUUID(),
         TipoAtividade.ATRIBUICAO_RESPONSAVEL,
         usuarioAcao,
-        `Responsável atribuído: ${nomeResponsavel}`
-      ),
+        `Responsáveis atribuídos: ${nomesResponsaveis.join(', ')}`
+      )
     );
   }
 
@@ -290,7 +286,7 @@ export class Tarefa {
     Object.assign(tarefaComPrazo, {
       status: this.status,
       prioridade: this.prioridade,
-      responsavel: this.responsavel,
+      responsaveis: this.responsaveis,
       criadorId: this.criadorId,
       projeto: this.projeto,
       tituloCatalogoId: this.tituloCatalogoId,
@@ -344,8 +340,8 @@ export class Tarefa {
     return this.prioridade;
   }
 
-  obterResponsavel(): string | undefined {
-    return this.responsavel;
+  obterResponsaveis(): string[] {
+    return [...this.responsaveis];
   }
 
   obterCriador(): string | undefined {

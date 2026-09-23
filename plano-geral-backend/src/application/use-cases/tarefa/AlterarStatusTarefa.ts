@@ -74,7 +74,7 @@ export class AlterarStatusTarefa {
       return;
     }
 
-    if (!tarefa.obterResponsavel()) {
+    if (tarefa.obterResponsaveis().length === 0) {
       throw new Error('Defina um responsável antes de mover a tarefa');
     }
 
