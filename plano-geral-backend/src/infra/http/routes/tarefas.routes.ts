@@ -8,6 +8,7 @@ const controller = makeTarefaController();
 router.use(ensureAuthenticated);
 
 router.post("/", ensureAuthenticated, (req, res) => controller.criar(req, res));
+router.patch('/:id/descricao', (req, res) => controller.alterarDescricaoTarefa(req, res));
 router.get("/", (req, res) => controller.buscarTodas(req, res));
 router.post('/solicitacoes-datas/:solicitacaoId/aprovar', (req, res) =>
   controller.aprovarAlteracaoDatas(req, res),
