@@ -1,5 +1,6 @@
 import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 import {UserRepository} from '../../../domain/repositories/UserRepository';
+import {ProjetoRepository} from '../../../domain/repositories/ProjetoRepository';
 import {TarefaDTO, TarefaDTOProps} from '../../dtos/TarefaDTO';
 import {TarefaAccessPolicy} from '../../../domain/policies/TarefaAccessPolicy';
 
@@ -7,6 +8,7 @@ export class GetTarefaById {
   constructor(
     private tarefaRepository: TarefaRepository,
     private userRepository: UserRepository,
+    private projetoRepository: ProjetoRepository,
     private tarefaAccessPolicy = new TarefaAccessPolicy()
   ) {}
 
@@ -17,12 +19,19 @@ export class GetTarefaById {
       throw new Error('Tarefa não encontrada');
     }
 
+    const todosProjetos = await this.projetoRepository.findAll();
+    const meusProjetosIds = todosProjetos
+      .filter((p) => p.obterCoordenadorId() === input.usuarioId)
+      .map((p) => p.id);
+
     const usuarioPodeVisualizar = this.tarefaAccessPolicy.podeVisualizar(
-      tarefa, {
+      tarefa, 
+      {
         id: input.usuarioId,
         nome: input.usuarioNome,
         perfil: input.perfil,
-      }
+      },
+      meusProjetosIds
     );
 
     if (!usuarioPodeVisualizar) {

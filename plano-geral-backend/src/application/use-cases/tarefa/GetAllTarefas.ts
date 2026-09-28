@@ -1,5 +1,6 @@
 import { TarefaRepository } from "../../../domain/repositories/TarefaRepository";
 import {UserRepository} from '../../../domain/repositories/UserRepository';
+import {ProjetoRepository} from '../../../domain/repositories/ProjetoRepository';
 import {TarefaDTO, TarefaDTOProps} from '../../dtos/TarefaDTO';
 import {TarefaAccessPolicy} from '../../../domain/policies/TarefaAccessPolicy';
 
@@ -13,18 +14,28 @@ export class GetAllTarefas {
   constructor(
     private tarefaRepository: TarefaRepository,
     private userRepository: UserRepository,
+    private projetoRepository: ProjetoRepository,
     private tarefaAccessPolicy = new TarefaAccessPolicy()
   ) {}
 
   async execute(input: { usuarioId: string; usuarioNome?: string; perfil: string }): Promise<TarefaDTOProps[]> {
     const todasTarefas = await this.tarefaRepository.list();
+    const todosProjetos = await this.projetoRepository.findAll();
+    
+    const meusProjetosIds = todosProjetos
+      .filter((p) => p.obterCoordenadorId() === input.usuarioId)
+      .map((p) => p.id);
 
     const tarefas = todasTarefas.filter((tarefa) =>
-      this.tarefaAccessPolicy.podeVisualizar(tarefa, {
-        id: input.usuarioId,
-        nome: input.usuarioNome,
-        perfil: input.perfil,
-      }),
+      this.tarefaAccessPolicy.podeVisualizar(
+        tarefa, 
+        {
+          id: input.usuarioId,
+          nome: input.usuarioNome,
+          perfil: input.perfil,
+        },
+        meusProjetosIds
+      ),
     );
 
     const responsaveisIds = Array.from(
