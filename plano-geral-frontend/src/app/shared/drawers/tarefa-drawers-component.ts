@@ -18,7 +18,11 @@ import {
   NgbTypeaheadModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faCalendar, faPencilAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCalendar,
+  faPencilAlt,
+  faPlus,
+} from '@fortawesome/free-solid-svg-icons';
 import { FormsModule } from '@angular/forms';
 import { EventEmitter, Output } from '@angular/core';
 
@@ -105,6 +109,12 @@ export class TarefaDrawersComponent implements OnInit {
 
   subTarefas: CardDataDrawer[] = [];
 
+  atividadeEmEdicaoId: string | null = null;
+  comentarioEdicaoTexto: string = '';
+
+  editandoDescricao = false;
+  novaDescricaoTemporaria = '';
+
   constructor(
     private offcanvas: NgbOffcanvas,
     private tarefaApi: TarefaApi,
@@ -113,7 +123,7 @@ export class TarefaDrawersComponent implements OnInit {
     private toast: ToastService,
     private authService: AuthService,
     private modalService: NgbModal,
-    private offCanvas: NgbOffcanvas
+    private offCanvas: NgbOffcanvas,
   ) {}
 
   ngOnInit(): void {
@@ -127,13 +137,15 @@ export class TarefaDrawersComponent implements OnInit {
       ...new Set(this.tarefa.atividades.map((a) => a.usuario)),
     ];
 
-    this.responsaveisSelecionados = (this.tarefa.responsaveis ?? []).map(r => ({
-      id: r.id,
-      nome: r.nome,
-      email: r.email,
-      perfil: 'USER',
-      ativo: true
-    }));
+    this.responsaveisSelecionados = (this.tarefa.responsaveis ?? []).map(
+      (r) => ({
+        id: r.id,
+        nome: r.nome,
+        email: r.email,
+        perfil: 'USER',
+        ativo: true,
+      }),
+    );
 
     if (this.tarefa.isMacroTarefa) {
       this.carregarSubTarefas();
@@ -182,8 +194,39 @@ export class TarefaDrawersComponent implements OnInit {
       });
   }
 
-  atividadeEmEdicaoId: string | null = null;
-  comentarioEdicaoTexto: string = '';
+  podeEditarDescricao(): boolean {
+    const usuarioLogado = this.authService.usuario();
+
+    return (
+      usuarioLogado?.id === this.tarefa.criadorId ||
+      usuarioLogado?.perfil === 'ADMIN'
+    );
+  }
+
+  habilitarEdicaoDescricao() {
+    this.novaDescricaoTemporaria = this.tarefa.descricao;
+    this.editandoDescricao = true;
+  }
+
+  cancelarEdicaoDescricao() {
+    this.editandoDescricao = false;
+  }
+
+  salvarDescricao() {
+    this.tarefaApi
+      .alterarDescricao(this.tarefa.id!, this.novaDescricaoTemporaria)
+      .subscribe({
+        next: (dto) => {
+          this.tarefa.descricao = dto.descricao || '';
+          this.editandoDescricao = false;
+          this.tarefaAtualizada.emit(this.tarefa);
+          this.toast.success('Descrição atualizada com sucesso.');
+          this.cdr.detectChanges();
+        },
+        error: (err) =>
+          this.toast.error(err.error?.error || 'Erro ao atualizar descrição.'),
+      });
+  }
 
   iniciarEdicaoComentario(atividade: AtividadeDrawer) {
     if (!this.podeEditarApagarComentario(atividade)) return;
@@ -393,7 +436,11 @@ export class TarefaDrawersComponent implements OnInit {
         const perfilLogado = usuarioLogado?.perfil?.toUpperCase();
         let permitidos = usuarios.map((user) => this.mapearUsuario(user));
 
-        const isGestor = perfilLogado === 'ADMIN' || perfilLogado === 'MANAGER' || perfilLogado === 'GESTOR' || perfilLogado === 'GESTOR_GEOPROCESSAMENTO';
+        const isGestor =
+          perfilLogado === 'ADMIN' ||
+          perfilLogado === 'MANAGER' ||
+          perfilLogado === 'GESTOR' ||
+          perfilLogado === 'GESTOR_GEOPROCESSAMENTO';
 
         if (!isGestor && perfilLogado) {
           permitidos = permitidos.filter(
@@ -401,7 +448,7 @@ export class TarefaDrawersComponent implements OnInit {
               (u.perfil?.toUpperCase() || 'USUARIO') === perfilLogado ||
               (u.perfil?.toUpperCase() || 'USUARIO') === 'USUARIO' ||
               (u.perfil?.toUpperCase() || 'USUARIO') === 'USER' ||
-              u.id === usuarioLogado?.id
+              u.id === usuarioLogado?.id,
           );
         }
 
@@ -418,10 +465,10 @@ export class TarefaDrawersComponent implements OnInit {
   carregarSubTarefas() {
     this.tarefaApi.buscarTodos().subscribe({
       next: (todas) => {
-        const filhas = todas.filter(t => t.tarefaPaiId === this.tarefa.id);
-        this.subTarefas = filhas.map(t => tarefaDtoToDrawer(t));
+        const filhas = todas.filter((t) => t.tarefaPaiId === this.tarefa.id);
+        this.subTarefas = filhas.map((t) => tarefaDtoToDrawer(t));
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -431,21 +478,25 @@ export class TarefaDrawersComponent implements OnInit {
       size: 'lg',
     });
 
-    modalRef.result.then((novaTarefa) => {
-      if (novaTarefa) {
-        novaTarefa.tarefaPaiId = this.tarefa.id;
-        novaTarefa.isMacroTarefa = false;
+    modalRef.componentInstance.isSubtarefaMode = true;
+    modalRef.componentInstance.projetoId = this.tarefa.projetoId || '';
 
-        this.tarefaApi.criar(novaTarefa).subscribe({
-          next: () => {
-            this.toast.success('Sub-tarefa criada com sucesso!');
-            this.carregarSubTarefas();
-          },
-          error: () => this.toast.error('Erro ao criar sub-tarefa.')
-        });
-      }
-    },
-      () => undefined
+    modalRef.result.then(
+      (novaTarefa) => {
+        if (novaTarefa) {
+          novaTarefa.tarefaPaiId = this.tarefa.id;
+          novaTarefa.isMacroTarefa = false;
+
+          this.tarefaApi.criar(novaTarefa).subscribe({
+            next: () => {
+              this.toast.success('Sub-tarefa criada com sucesso!');
+              this.carregarSubTarefas();
+            },
+            error: () => this.toast.error('Erro ao criar sub-tarefa.'),
+          });
+        }
+      },
+      () => undefined,
     );
   }
 
@@ -654,10 +705,14 @@ export class TarefaDrawersComponent implements OnInit {
 
   private getStatusLabel(status: string): string {
     switch (status.toUpperCase()) {
-      case 'PENDENTE': return 'Pendente';
-      case 'EM_ANDAMENTO': return 'Em Andamento';
-      case 'CONCLUIDA': return 'Concluída';
-      default: return 'Outro';
+      case 'PENDENTE':
+        return 'Pendente';
+      case 'EM_ANDAMENTO':
+        return 'Em Andamento';
+      case 'CONCLUIDA':
+        return 'Concluída';
+      default:
+        return 'Outro';
     }
   }
 
@@ -743,13 +798,21 @@ export class TarefaDrawersComponent implements OnInit {
   }
 
   fecharSelecaoResponsavel() {
-    if (!this.tarefa.responsaveisIds || this.tarefa.responsaveisIds.length === 0) {
-      this.tarefa.responsaveisIds = this.responsaveisSelecionados.map(r => r.id);
+    if (
+      !this.tarefa.responsaveisIds ||
+      this.tarefa.responsaveisIds.length === 0
+    ) {
+      this.tarefa.responsaveisIds = this.responsaveisSelecionados.map(
+        (r) => r.id,
+      );
       this.mostrarSelecaoResponsavel = false;
       return;
     }
 
-    const idsAtuais = this.responsaveisSelecionados.map(r => r.id).sort().join(',');
+    const idsAtuais = this.responsaveisSelecionados
+      .map((r) => r.id)
+      .sort()
+      .join(',');
     const idsNovos = [...this.tarefa.responsaveisIds].sort().join(',');
 
     if (idsAtuais === idsNovos) {
@@ -758,11 +821,13 @@ export class TarefaDrawersComponent implements OnInit {
     }
 
     const selecionados = this.tarefa.responsaveisIds
-      .map(id => this.listaUsuarios.find(u => u.id === id))
+      .map((id) => this.listaUsuarios.find((u) => u.id === id))
       .filter((u): u is Usuario => !!u);
 
     if (selecionados.length === 0 && this.tarefa.responsaveisIds.length > 0) {
-      this.toast.error('Usuário selecionado não encontrado na lista permitida.');
+      this.toast.error(
+        'Usuário selecionado não encontrado na lista permitida.',
+      );
       return;
     }
 
@@ -781,33 +846,42 @@ export class TarefaDrawersComponent implements OnInit {
     this.responsaveisSelecionados = usuarios;
     this.mostrarSelecaoResponsavel = false;
 
-    this.tarefaApi.atribuirResponsavel(this.tarefa.id!, usuarios.map(u => u.id)).subscribe({
-      next: (dto) => {
-        const atualizada = tarefaDtoToDrawer(dto);
-        this.tarefa = {
-          ...this.tarefa,
-          responsaveis: atualizada.responsaveis,
-          responsaveisIds: atualizada.responsaveisIds,
-          atividades: this.ordernarAtividade([
-            ...(atualizada.atividades ?? []),
-          ]),
-        };
+    this.tarefaApi
+      .atribuirResponsavel(
+        this.tarefa.id!,
+        usuarios.map((u) => u.id),
+      )
+      .subscribe({
+        next: (dto) => {
+          const atualizada = tarefaDtoToDrawer(dto);
+          this.tarefa = {
+            ...this.tarefa,
+            responsaveis: atualizada.responsaveis,
+            responsaveisIds: atualizada.responsaveisIds,
+            atividades: this.ordernarAtividade([
+              ...(atualizada.atividades ?? []),
+            ]),
+          };
 
-        this.responsaveisSelecionados = (this.tarefa.responsaveis ?? []).map(r => ({
-          id: r.id,
-          nome: r.nome,
-          email: r.email,
-          perfil: 'USER',
-          ativo: true,
-        }));
+          this.responsaveisSelecionados = (this.tarefa.responsaveis ?? []).map(
+            (r) => ({
+              id: r.id,
+              nome: r.nome,
+              email: r.email,
+              perfil: 'USER',
+              ativo: true,
+            }),
+          );
 
-        this.toast.success('Responsáveis atualizados.');
-        this.tarefaAtualizada.emit(this.tarefa);
-      },
-      error: (err) => {
-        this.toast.error(err.error?.error || 'Erro ao atribuir responsáveis.');
-      },
-    });
+          this.toast.success('Responsáveis atualizados.');
+          this.tarefaAtualizada.emit(this.tarefa);
+        },
+        error: (err) => {
+          this.toast.error(
+            err.error?.error || 'Erro ao atribuir responsáveis.',
+          );
+        },
+      });
   }
 
   setPrioridade(nova: string) {
@@ -917,7 +991,12 @@ export class TarefaDrawersComponent implements OnInit {
 
   podeSelecionarMultiplosResponsaveis(): boolean {
     const perfil = this.authService.usuario()?.perfil?.toUpperCase();
-    return perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR' || perfil === 'GESTOR_GEOPROCESSAMENTO';
+    return (
+      perfil === 'ADMIN' ||
+      perfil === 'MANAGER' ||
+      perfil === 'GESTOR' ||
+      perfil === 'GESTOR_GEOPROCESSAMENTO'
+    );
   }
 
   podeAlterarResponsavel(): boolean {
@@ -925,8 +1004,16 @@ export class TarefaDrawersComponent implements OnInit {
     const perfil = usuarioLogado?.perfil?.toUpperCase();
     const isCriador = usuarioLogado?.id === this.tarefa.criadorId;
 
-    if (this.tarefa.componenteCatalogo?.trim().toLowerCase() === 'geoprocessamento') {
-      if (perfil === 'GESTOR_GEOPROCESSAMENTO' || perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR') {
+    if (
+      this.tarefa.componenteCatalogo?.trim().toLowerCase() ===
+      'geoprocessamento'
+    ) {
+      if (
+        perfil === 'GESTOR_GEOPROCESSAMENTO' ||
+        perfil === 'ADMIN' ||
+        perfil === 'MANAGER' ||
+        perfil === 'GESTOR'
+      ) {
         return true;
       }
       if (isCriador) return true;
@@ -935,7 +1022,7 @@ export class TarefaDrawersComponent implements OnInit {
     }
 
     if (perfil === 'ADMIN' || perfil === 'MANAGER' || perfil === 'GESTOR') {
-      console.log('pode alterar')
+      console.log('pode alterar');
       return true;
     }
 

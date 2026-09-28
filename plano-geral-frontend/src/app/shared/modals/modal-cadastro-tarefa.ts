@@ -22,6 +22,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
   styleUrls: ['./modal-cadastro-tarefa.scss'],
 })
 export class ModalCadastroTarefa implements OnInit{
+  isSubtarefaMode = false;
   titulo = '';
   isMacroTarefa = false;
   descricao = '';

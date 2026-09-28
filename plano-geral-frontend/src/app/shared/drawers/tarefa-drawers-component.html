@@ -102,9 +102,48 @@
     <div class="col-md-8">
       <!-- DESCRIÇÃO -->
       <section class="mb-4">
-        <h6 class="section-title">Descrição</h6>
-        <p class="text-muted text-break" [innerHTML]="tarefa.descricao | linkify">
-        </p>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="section-title mb-0">Descrição</h6>
+          <!-- Só exibe o lápis se a função retornar true -->
+          <button
+            *ngIf="podeEditarDescricao()"
+            class="btn btn-sm rounded-circle bg-warning text-dark border-0 ms-2"
+            style="width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); padding: 0;"
+            (click)="habilitarEdicaoDescricao()"
+            title="Editar descrição"
+          >
+            <fa-icon [icon]="faPencilAlt" style="font-size: 0.75rem"></fa-icon>
+          </button>
+        </div>
+
+        <!-- Estado Normal: Exibe o texto -->
+        <div *ngIf="!editandoDescricao">
+          <p
+            class="text-muted text-break"
+            [innerHTML]="tarefa.descricao | linkify"
+          ></p>
+        </div>
+
+        <!-- Estado Edição: Exibe a caixa de texto e botões -->
+        <div *ngIf="editandoDescricao">
+          <textarea
+            class="form-control mb-2"
+            rows="4"
+            [(ngModel)]="novaDescricaoTemporaria"
+            name="novaDescricaoTemporaria"
+          ></textarea>
+          <div class="text-end">
+            <button
+              class="btn btn-sm btn-secondary me-2"
+              (click)="cancelarEdicaoDescricao()"
+            >
+              Cancelar
+            </button>
+            <button class="btn btn-sm btn-primary" (click)="salvarDescricao()">
+              Salvar
+            </button>
+          </div>
+        </div>
       </section>
 
       <section class="mb-4" *ngIf="tarefa.isMacroTarefa">
@@ -348,23 +387,43 @@
           >
             <button
               class="btn btn-sm rounded-circle bg-warning text-dark border-0"
-              style="width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.3); padding: 0;"
+              style="
+                width: 22px;
+                height: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+                padding: 0;
+              "
               title="Editar responsáveis"
               (click)="mostrarSelecaoResponsavel = true"
             >
-              <fa-icon [icon]="faPencilAlt" style="font-size: 0.75rem;"></fa-icon>
+              <fa-icon
+                [icon]="faPencilAlt"
+                style="font-size: 0.75rem"
+              ></fa-icon>
             </button>
           </div>
         </div>
 
         <!-- AVATAR VIEW MODE -->
-        <div *ngIf="!mostrarSelecaoResponsavel && !estaAvaliandoSolicitacaoAlteracaoDatas()">
-          <div class="avatar-group" style="display: inline-flex;">
+        <div
+          *ngIf="!mostrarSelecaoResponsavel && !estaAvaliandoSolicitacaoAlteracaoDatas()"
+        >
+          <div class="avatar-group" style="display: inline-flex">
             <!-- Se não tiver responsável -->
             <div
               *ngIf="!responsaveisSelecionados.length"
               class="avatar bg-secondary text-white"
-              style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"
+              style="
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.1rem;
+              "
             >
               ?
             </div>
@@ -376,7 +435,14 @@
               [style.zIndex]="50 - i"
               [style.backgroundColor]="getCorAvatar(responsavel.nome)"
               [title]="responsavel.nome"
-              style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"
+              style="
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.1rem;
+              "
             >
               {{ responsavel.nome | iniciais }}
             </div>
@@ -384,7 +450,10 @@
         </div>
 
         <!-- Seletor com ng-select (EDIT MODE) -->
-        <div class="mt-2" *ngIf="mostrarSelecaoResponsavel && !estaAvaliandoSolicitacaoAlteracaoDatas()">
+        <div
+          class="mt-2"
+          *ngIf="mostrarSelecaoResponsavel && !estaAvaliandoSolicitacaoAlteracaoDatas()"
+        >
           <ng-select
             [items]="listaUsuarios"
             [multiple]="true"
@@ -399,7 +468,12 @@
           >
           </ng-select>
           <div class="text-end mt-2">
-            <button class="btn btn-sm btn-outline-warning" (click)="fecharSelecaoResponsavel()">Alterar</button>
+            <button
+              class="btn btn-sm btn-outline-warning"
+              (click)="fecharSelecaoResponsavel()"
+            >
+              Alterar
+            </button>
           </div>
         </div>
 
@@ -407,12 +481,14 @@
           *ngIf="estaAvaliandoSolicitacaoAlteracaoDatas()"
           class="text-muted small mt-2"
         >
-          <span *ngFor="let r of responsaveisSelecionados">{{ r.nome }}<br></span>
+          <span *ngFor="let r of responsaveisSelecionados"
+            >{{ r.nome }}<br
+          /></span>
           <span *ngIf="!responsaveisSelecionados.length">Sem responsável</span>
         </div>
       </div>
 
-<div class="sidebar-item">
+      <div class="sidebar-item">
         <span class="label">Projeto</span>
 
         <span
