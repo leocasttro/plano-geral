@@ -38,6 +38,10 @@ export class TarefaApi {
     return this.http.post<TarefaDTO>(this.apiUrl, payload);
   }
 
+  alterarDescricao(id: string, descricao: string): Observable<TarefaDTO> {
+    return this.http.patch<TarefaDTO>(`${this.apiUrl}/${id}/descricao`, { descricao });
+  }
+
   buscarTodos(): Observable<TarefaDTO[]> {
     return this.http.get<TarefaDTO[]>(this.apiUrl);
   }

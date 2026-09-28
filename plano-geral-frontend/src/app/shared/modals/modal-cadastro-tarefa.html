@@ -101,11 +101,11 @@
       <label class="fw-bold text-secondary">Projeto</label>
       <ng-select
         [items]="projetos"
+        [disabled]="carregandoProjetos || projetos.length === 0 || isSubtarefaMode"
         bindValue="id"
         id="projetoId"
         [ngModel]="projetoId || null"
         name="projetoId"
-        [disabled]="carregandoProjetos || projetos.length === 0"
         [placeholder]="carregandoProjetos ? 'Carregando projetos...' : 'Selecione um projeto'"
         [searchable]="true"
         [searchFn]="searchProjetoFn"
@@ -132,7 +132,7 @@
         name="descricao"
       ></textarea>
     </div>
-    <div class="form-check mt-3 mb-3">
+    <div class="form-check mt-3 mb-3" *ngIf="!isSubtarefaMode">
       <input
         class="form-check-input"
         type="checkbox"
