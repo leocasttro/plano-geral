@@ -8,7 +8,11 @@ type UsuarioTarefa = {
 }
 
 export class TarefaAccessPolicy {
-  podeVisualizar(tarefa: Tarefa, usuario: UsuarioTarefa): boolean {
+  podeVisualizar(
+    tarefa: Tarefa, 
+    usuario: UsuarioTarefa,
+    projetosCoordenadosIds: string[] = []
+  ): boolean {
     if (usuario.perfil === 'ADMIN') {
       return true;
     }
@@ -23,6 +27,7 @@ export class TarefaAccessPolicy {
     return (
       tarefa.obterCriador() === usuario.id ||
       tarefa.obterResponsaveis().includes(usuario.id) ||
+      projetosCoordenadosIds.includes(tarefa.obterProjetoId()) ||
       tarefa.obterAtividades().some((atividade) => {
         return (
           atividade.tipo === TipoAtividade.CRIACAO &&

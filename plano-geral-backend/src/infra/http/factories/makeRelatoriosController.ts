@@ -32,7 +32,7 @@ export function makeRelatoriosController() {
     getDashboardRelatorio: new GetDashboardRelatorio(projetoRepository, tarefaRepository,
       userRepository, calcularFluxoCumulativoService, tituloTarefaCatalogoRepository),
     getMetricasProjetos: new GetMetricasProjetos(projetoRepository, tituloTarefaCatalogoRepository),
-    getCalendarioTarefas: new GetCalendarioTarefas(tarefaRepository, userRepository),
+    getCalendarioTarefas: new GetCalendarioTarefas(tarefaRepository, userRepository, projetoRepository),
     getTempoConclusaoPorTitulo: new GetTempoConclusaoPorTitulo(tarefaRepository),
     getTempoMedioPorTitulo: new GetTempoMedioPorTitulo(tarefaRepository, tituloTarefaCatalogoRepository),
     getLeadTimeRelatorio: new GetLeadTimeRelatorio(tarefaRepository, userRepository),

@@ -1,6 +1,7 @@
 import { TarefaComPrazo } from '../../../domain/entities/TarefaComPrazo';
 import { TarefaRepository } from '../../../domain/repositories/TarefaRepository';
 import { UserRepository } from '../../../domain/repositories/UserRepository';
+import { ProjetoRepository } from '../../../domain/repositories/ProjetoRepository';
 import { StatusTarefa } from '../../../domain/value-objects/StatusTarefa';
 import { TarefaAccessPolicy } from '../../../domain/policies/TarefaAccessPolicy';
 import {
@@ -21,6 +22,7 @@ export class GetCalendarioTarefas {
   constructor(
     private tarefaRepository: TarefaRepository,
     private userRepository?: UserRepository,
+    private projetoRepository?: ProjetoRepository,
     private tarefaAccessPolicy = new TarefaAccessPolicy(),
   ) {}
 
@@ -33,16 +35,28 @@ export class GetCalendarioTarefas {
     }
 
     const tarefas = await this.tarefaRepository.list();
+    let meusProjetosIds: string[] = [];
+    
+    if (this.projetoRepository) {
+      const todosProjetos = await this.projetoRepository.findAll();
+      meusProjetosIds = todosProjetos
+        .filter((p) => p.obterCoordenadorId() === input.usuarioId)
+        .map((p) => p.id);
+    }
 
     const usuariosMap = await this.mapearUsuarios();
 
     const itens = tarefas
       .filter((tarefa) =>
-        this.tarefaAccessPolicy.podeVisualizar(tarefa, {
-          id: input.usuarioId,
-          nome: input.usuarioNome,
-          perfil: input.perfil,
-        }),
+        this.tarefaAccessPolicy.podeVisualizar(
+          tarefa, 
+          {
+            id: input.usuarioId,
+            nome: input.usuarioNome,
+            perfil: input.perfil,
+          },
+          meusProjetosIds
+        ),
       )
       .filter((tarefa) => tarefa instanceof TarefaComPrazo)
       .filter((tarefa) => !input.projetoId || tarefa.obterProjetoId() === input.projetoId)

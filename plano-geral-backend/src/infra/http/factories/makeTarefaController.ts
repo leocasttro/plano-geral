@@ -52,8 +52,8 @@ export function makeTarefaController() {
   return new TarefasController({
     createTarefa: new CreateTarefa(repo, projetoRepo, tituloCatalogoRepo, userRepo),
     alterarDescricaoTarefa: new AlterarDescricaoTarefa(repo),
-    getById: new GetTarefaById(repo, userRepo),
-    getAllTarefas: new GetAllTarefas(repo, userRepo),
+    getById: new GetTarefaById(repo, userRepo, projetoRepo),
+    getAllTarefas: new GetAllTarefas(repo, userRepo, projetoRepo),
     addComentario: new AdicionarComentario(
       repo,
       notificacaoService,
