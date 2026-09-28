@@ -28,6 +28,7 @@ import {
 } from '../../database/typeorm/entities/repositories/TituloTarefaCatalogoTypeORMRepository';
 import { MailService } from '../../../application/services/MailService';
 import { GestorProjetoNotificacaoService } from '../../../application/services/GestorProjetoNotificacaoService';
+import { AlterarDescricaoTarefa } from '../../../application/use-cases/tarefa/AlterarDescricaoTarefa';
 
 export function makeTarefaController() {
   const repo = new TarefaTypeORMRepository();
@@ -48,9 +49,9 @@ export function makeTarefaController() {
     new SolicitacaoAlteracaoDatasTypeORMRepository();
   const tituloCatalogoRepo = new TituloTarefaCatalogoTypeORMRepository();
 
-
   return new TarefasController({
     createTarefa: new CreateTarefa(repo, projetoRepo, tituloCatalogoRepo, userRepo),
+    alterarDescricaoTarefa: new AlterarDescricaoTarefa(repo),
     getById: new GetTarefaById(repo, userRepo),
     getAllTarefas: new GetAllTarefas(repo, userRepo),
     addComentario: new AdicionarComentario(
@@ -94,4 +95,5 @@ export function makeTarefaController() {
     deleteTarefa: new DeleteTarefa(repo, notificacaoService),
     userRepo,
   });
+
 }

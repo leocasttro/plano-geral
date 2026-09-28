@@ -22,6 +22,7 @@ import { ReprovarAlteracaoDatas } from '../../../application/use-cases/tarefa/Re
 import { GetSolicitacaoAlteracaoDatas } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatas';
 import { GetSolicitacaoAlteracaoDatasPendente } from '../../../application/use-cases/tarefa/GetSolicitacaoAlteracaoDatasPendente';
 import { SolicitacaoAlteracaoDatasDTO } from '../../../application/dtos/SolicitacaoAlteracaoDatasDTO';
+import { AlterarDescricaoTarefa } from '../../../application/use-cases/tarefa/AlterarDescricaoTarefa';
 
 
 interface CriarTarefaBody {
@@ -35,6 +36,7 @@ interface CriarTarefaBody {
 
 type Deps = {
   createTarefa: CreateTarefa;
+  alterarDescricaoTarefa: AlterarDescricaoTarefa;
   getById: GetTarefaById;
   getAllTarefas: GetAllTarefas;
   addComentario: AdicionarComentario;
@@ -118,6 +120,33 @@ export class TarefasController {
     }
 
     return res.status(201).json(TarefaDTO.fromDomain(tarefa, responsaveisDtos));
+  }
+
+  async alterarDescricaoTarefa(req: Request, res: Response) {
+    try {
+      const { descricao } = req.body;
+      const tarefaId = req.params.id;
+
+      await this.validarAcessoTarefa(req, tarefaId);
+
+      await this.deps.alterarDescricaoTarefa.execute({
+        tarefaId,
+        descricao,
+        usuarioId: req.user.id,
+        perfil: req.user.perfil
+      });
+
+      const dto = await this.deps.getById.execute({
+        id: tarefaId,
+        usuarioId: req.user.id,
+        usuarioNome: req.user.nome,
+        perfil: req.user.perfil,
+      });
+
+      return res.json(dto);
+    } catch (error: any) {
+      return res.status(403).json({ error: error.message });
+    }
   }
 
   async buscarTodas(req: Request, res: Response) {
